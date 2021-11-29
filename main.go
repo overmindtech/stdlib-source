@@ -15,7 +15,7 @@ limitations under the License.
 */
 package main
 
-import "github.com/overmindtech/source-template/cmd"
+import "github.com/overmindtech/global-stdlib/cmd"
 
 func main() {
 	cmd.Execute()

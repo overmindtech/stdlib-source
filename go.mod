@@ -1,4 +1,4 @@
-module github.com/overmindtech/source-template
+module github.com/overmindtech/global-stdlib
 
 go 1.17
 
