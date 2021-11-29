@@ -1,0 +1,71 @@
+*   Trying 2a04:4e42:4b::645:443...
+* Connected to www.plex.com (2a04:4e42:4b::645) port 443 (#0)
+* ALPN, offering h2
+* ALPN, offering http/1.1
+* successfully set certificate verify locations:
+*  CAfile: /etc/ssl/cert.pem
+*  CApath: none
+* TLSv1.2 (OUT), TLS handshake, Client hello (1):
+* TLSv1.2 (IN), TLS handshake, Server hello (2):
+* TLSv1.2 (IN), TLS handshake, Certificate (11):
+* TLSv1.2 (IN), TLS handshake, Server key exchange (12):
+* TLSv1.2 (IN), TLS handshake, Server finished (14):
+* TLSv1.2 (OUT), TLS handshake, Client key exchange (16):
+* TLSv1.2 (OUT), TLS change cipher, Change cipher spec (1):
+* TLSv1.2 (OUT), TLS handshake, Finished (20):
+* TLSv1.2 (IN), TLS change cipher, Change cipher spec (1):
+* TLSv1.2 (IN), TLS handshake, Finished (20):
+* SSL connection using TLSv1.2 / ECDHE-RSA-AES128-GCM-SHA256
+* ALPN, server accepted to use h2
+* Server certificate:
+*  subject: CN=*.plex.com
+*  start date: Oct 30 23:43:44 2021 GMT
+*  expire date: Jan 28 23:43:43 2022 GMT
+*  subjectAltName: host "www.plex.com" matched cert's "*.plex.com"
+*  issuer: C=US; O=Let's Encrypt; CN=R3
+*  SSL certificate verify ok.
+* Using HTTP2, server supports multi-use
+* Connection state changed (HTTP/2 confirmed)
+* Copying HTTP/2 data in stream buffer to connection buffer after upgrade: len=0
+* Using Stream ID: 1 (easy handle 0x7fa08d80d400)
+> GET / HTTP/2
+> Host: www.plex.com
+> user-agent: curl/7.77.0
+> accept: */*
+> 
+< HTTP/2 200 
+< cache-control: max-age=86400, public
+< content-language: en
+< content-security-policy: font-src 'self' https://*.typekit.net https://*.googleusercontent.com https://*.gstatic.com https://*.googleapis.com https://*.hotjar.com https://*.hushly.com https://tribl.io https://*.tribl.io; img-src 'self' data: https://*.bing.com https://*.linkedin.com https://*.eloqua.com https://*.google.com https://tribl.io https://*.tribl.io https://*.adsymptotic.com https://*.google.com.co https://*.vidyard.com https://*.google-analytics.com https://*.google.vg https://*.gstatic.com https://*.googleusercontent.com https://*.amazonaws.com/ https://*.hotjar.com https://*.hushly.com https://*.twimg.com https://*.twitter.com https://*.googletagmanager.com https://googleads.g.doubleclick.net https://*.gartner.com https://cookiesstaging.blob.core.windows.net/ https://*.facebook.com; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.googletagmanager.com https://*.vidyard.com https://*.googleadservices.com https://*.google-analytics.com https://*.google.com https://*.google.vg https://*.licdn.com https://*.tribl.io https://*.bing.com https://*.hotjar.com https://*.doubleclick.net https://*.newrelic.com https://*.jquery.com https://*.want7feed.com https://*.en25.com https://*.nr-data.net https://*.driftt.com https://*.cloudfront.net https://*.eloqua.com https://tribl.io https://*.bidr.io https://*.addthis.com https://*.ampproject.org https://*.moatads.com https://*.addthisedge.com https://*.jquery.js https://*.jobvite.com https://*.fullcircleinsights.com https://*.hushly.com https://*.twitter.com https://*.twimg.com https://*.zoominfo.com https://googleads.g.doubleclick.net https://*.gartner.com https://cookiesstaging.blob.core.windows.net https://cdn.cookielaw.org https://*.onetrust.com https://*.facebook.net https://*.facebook.com https://unpkg.com; style-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.typekit.net https://*.tribl.io https://*.google.com https://*.googleapis.com https://tribl.io https://*.hushly.com https://*.twitter.com https://*.twimg.com https://*.gartner.com fonts.googleapis.com https://unpkg.com; frame-ancestors 'self' http://*.lookbookhq.com https://*.lookbookhq.com http://*.pathfactory.com https://*.pathfactory.com http://resources.plex.com https://resources.plex.com; report-uri https://www.plex.com/report-uri/enforce
+< content-type: text/html; charset=UTF-8
+< etag: W/"1638203806"
+< expires: Sun, 19 Nov 1978 05:00:00 GMT
+< last-modified: Mon, 29 Nov 2021 16:36:46 GMT
+< link: <https://www.plex.com/>; rel="canonical", <https://www.plex.com/>; rel="shortlink"
+< link: <https://www.plex.com/smart-manufacturing-platform-0>; rel="revision"
+< permissions-policy: interest-cohort=()
+< server: nginx
+< x-drupal-cache: HIT
+< x-drupal-dynamic-cache: MISS
+< x-frame-options: ALLOW-FROM https://plexsystems.lookbookhq.com
+< x-generator: Drupal 9 (https://www.drupal.org)
+< x-pantheon-styx-hostname: styx-fe1-b-d985bc577-c4w29
+< x-styx-req-id: a8a0ce00-5132-11ec-abfa-8691663dadd1
+< x-ua-compatible: IE=edge
+< age: 37
+< accept-ranges: bytes
+< via: 1.1 varnish, 1.1 varnish, 1.1 varnish, 1.1 varnish
+< x-xss-protection: 1
+< x-content-type-options: nosniff
+< referer-policy: same-origin
+< feature-policy: self
+< strict-transport-security: max-age=31536000
+< date: Mon, 29 Nov 2021 16:38:13 GMT
+< x-served-by: cache-mdw17350-MDW, cache-mdw17353-MDW, cache-lon4249-LON, cache-lon4225-LON
+< x-cache: HIT, MISS, MISS, MISS
+< x-cache-hits: 4, 0, 0, 0
+< x-timer: S1638203893.439645,VS0,VE94
+< vary: orig-host
+< content-length: 170655
+< 
+* Connection #0 to host www.plex.com left intact
