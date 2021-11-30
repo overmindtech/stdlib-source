@@ -3,6 +3,7 @@ package network
 import (
 	"context"
 	"crypto/tls"
+	"encoding/pem"
 	"fmt"
 	"net/http"
 	"runtime"
@@ -121,6 +122,13 @@ func (s *HTTPSource) Get(ctx context.Context, itemContext string, query string) 
 		}
 	}
 
+	item := sdp.Item{
+		Type:            "http",
+		UniqueAttribute: "name",
+		Attributes:      attributes,
+		Context:         "global",
+	}
+
 	if tlsState := res.TLS; tlsState != nil {
 		var version string
 
@@ -146,22 +154,27 @@ func (s *HTTPSource) Get(ctx context.Context, itemContext string, query string) 
 			"certificate": CertToName(tlsState.PeerCertificates[0]),
 			"serverName":  tlsState.ServerName,
 		})
-	}
 
-	item := sdp.Item{
-		Type:               "http",
-		UniqueAttribute:    "name",
-		Attributes:         attributes,
-		Context:            "global",
-		LinkedItemRequests: []*sdp.ItemRequest{
-			// TODO: Add linked item request for the certificate once we've created that source
-			// {
-			// 	Type: "certificate",
-			// 	Method: sdp.RequestMethod_SEARCH,
-			// }
-		},
-	}
+		if len(tlsState.PeerCertificates) > 0 {
+			// Create a PEM bundle and then linked item request
+			var certs []string
 
+			for _, cert := range tlsState.PeerCertificates {
+				block := pem.Block{
+					Type:  "CERTIFICATE",
+					Bytes: cert.Raw,
+				}
+
+				certs = append(certs, string(pem.EncodeToMemory(&block)))
+			}
+
+			item.LinkedItemRequests = append(item.LinkedItemRequests, &sdp.ItemRequest{
+				Type:   "certificate",
+				Method: sdp.RequestMethod_SEARCH,
+				Query:  strings.Join(certs, "\n"),
+			})
+		}
+	}
 	// Detect redirect and add a linked item for the redirect target
 	if res.StatusCode >= 300 && res.StatusCode < 400 {
 		if loc := res.Header.Get("Location"); loc != "" {
