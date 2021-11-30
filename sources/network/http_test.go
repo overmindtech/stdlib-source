@@ -11,7 +11,7 @@ import (
 const TestHTTPTimeout = 3 * time.Second
 
 // TODO: better tests in a controlled environment
-func TestGet(t *testing.T) {
+func TestHTTPGet(t *testing.T) {
 	src := HTTPSource{}
 
 	t.Run("With a valid endpoint", func(t *testing.T) {
