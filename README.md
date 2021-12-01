@@ -9,7 +9,7 @@ Follow this getting started guide to copy this template and customize it to your
 1. Make a copy of this template using the **Use this template** button ![use this template](https://docs.github.com/assets/images/help/repository/use-this-template-button.png)
 1. Give the new repo a name and description ![name](https://docs.github.com/assets/images/help/repository/create-repository-name.png)
 1. Click **Create repository from template**. Then [clone the new repo locally](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository).
-1. In order for our code to work, we need to replace all instances of `github.com/overmindtech/global-stdlib` with the name of your new repo e.g. `github.com/your-username/your-source`. Use find and replace in your editor (or CLI) to do this e.g. [VSCode](https://code.visualstudio.com/docs/editor/codebasics#_find-and-replace)
+1. In order for our code to work, we need to replace all instances of `github.com/overmindtech/stdlib-source` with the name of your new repo e.g. `github.com/your-username/your-source`. Use find and replace in your editor (or CLI) to do this e.g. [VSCode](https://code.visualstudio.com/docs/editor/codebasics#_find-and-replace)
 1. Install all required modules:
     ```shell
     go mod vendor

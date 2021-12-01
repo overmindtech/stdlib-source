@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/overmindtech/discovery"
-	"github.com/overmindtech/global-stdlib/sources/network"
+	"github.com/overmindtech/stdlib-source/sources/network"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 

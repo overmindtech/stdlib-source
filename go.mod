@@ -1,4 +1,4 @@
-module github.com/overmindtech/global-stdlib
+module github.com/overmindtech/stdlib-source
 
 go 1.17
 
