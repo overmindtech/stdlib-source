@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/overmindtech/discovery"
-	"github.com/overmindtech/global-stdlib/sources"
+	"github.com/overmindtech/global-stdlib/sources/network"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
@@ -75,9 +75,13 @@ Edit this once you have created your source
 		}
 
 		// ⚠️ Here is where you add your sources
-		colourNameSource := sources.ColourNameSource{}
+		sources := []discovery.Source{
+			&network.CertificateSource{},
+			&network.DNSSource{},
+			&network.HTTPSource{},
+		}
 
-		e.AddSources(&colourNameSource)
+		e.AddSources(sources...)
 
 		// Start HTTP server for status
 		healthCheckPort := 8080
