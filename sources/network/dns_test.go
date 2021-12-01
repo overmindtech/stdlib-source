@@ -5,6 +5,7 @@ import (
 	"net"
 	"testing"
 
+	"github.com/overmindtech/discovery"
 	"github.com/overmindtech/sdp-go"
 )
 
@@ -24,11 +25,13 @@ func TestDnsGet(t *testing.T) {
 	src := DNSSource{}
 
 	t.Run("working request", func(t *testing.T) {
-		_, err := src.Get(context.Background(), "global", "one.one.one.one")
+		item, err := src.Get(context.Background(), "global", "one.one.one.one")
 
 		if err != nil {
 			t.Fatal(err)
 		}
+
+		discovery.TestValidateItem(t, item)
 	})
 
 	t.Run("bad dns entry", func(t *testing.T) {

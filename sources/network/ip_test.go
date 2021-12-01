@@ -4,6 +4,8 @@ import (
 	"context"
 	"regexp"
 	"testing"
+
+	"github.com/overmindtech/discovery"
 )
 
 func TestIPGet(t *testing.T) {
@@ -23,6 +25,8 @@ func TestIPGet(t *testing.T) {
 		} else {
 			t.Error("could not find 'private' attribute")
 		}
+
+		discovery.TestValidateItem(t, item)
 	})
 
 	t.Run("with ipv6 address", func(t *testing.T) {
@@ -39,6 +43,8 @@ func TestIPGet(t *testing.T) {
 		} else {
 			t.Error("could not find 'private' attribute")
 		}
+
+		discovery.TestValidateItem(t, item)
 	})
 
 	t.Run("with invalid address", func(t *testing.T) {

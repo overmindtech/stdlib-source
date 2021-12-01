@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/overmindtech/discovery"
 	"github.com/overmindtech/sdp-go"
 )
 
@@ -110,6 +111,7 @@ func (c *CertTest) Run(t *testing.T, cert *sdp.Item) {
 			t.Errorf("expected to find cert has a %v", c.Attribute)
 		}
 	})
+	discovery.TestValidateItem(t, cert)
 }
 
 func TestCertificateSearch(t *testing.T) {

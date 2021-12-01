@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"testing"
 	"time"
+
+	"github.com/overmindtech/discovery"
 )
 
 const TestHTTPTimeout = 3 * time.Second
@@ -34,6 +36,8 @@ func TestHTTPGet(t *testing.T) {
 		} else {
 			t.Error("expected item to have tls info")
 		}
+
+		discovery.TestValidateItem(t, item)
 	})
 
 	t.Run("With a 404", func(t *testing.T) {
@@ -54,6 +58,8 @@ func TestHTTPGet(t *testing.T) {
 		if status != float64(404) {
 			t.Errorf("expected status to be 404, got: %v", status)
 		}
+
+		discovery.TestValidateItem(t, item)
 	})
 
 	t.Run("With a timeout", func(t *testing.T) {
@@ -84,6 +90,8 @@ func TestHTTPGet(t *testing.T) {
 		if status != float64(500) {
 			t.Errorf("expected status to be 500, got: %v", status)
 		}
+
+		discovery.TestValidateItem(t, item)
 	})
 
 	t.Run("With a 301 redirect", func(t *testing.T) {
@@ -108,6 +116,8 @@ func TestHTTPGet(t *testing.T) {
 		if len(item.LinkedItemRequests) == 0 {
 			t.Error("expected a linked item to redirected location, got none")
 		}
+
+		discovery.TestValidateItem(t, item)
 	})
 
 	t.Run("With no TLS", func(t *testing.T) {
@@ -122,5 +132,7 @@ func TestHTTPGet(t *testing.T) {
 		if err == nil {
 			t.Error("Expected to not find TLS info")
 		}
+
+		discovery.TestValidateItem(t, item)
 	})
 }
