@@ -1,0 +1,65 @@
+package network
+
+import (
+	"context"
+	"net"
+	"testing"
+
+	"github.com/overmindtech/sdp-go"
+)
+
+func TestDnsGet(t *testing.T) {
+	var conn net.Conn
+	var err error
+
+	// Check that we actually have an inertnet connection, if not there is not
+	// point running this test
+	conn, err = net.Dial("tcp", "one.one.one.one:443")
+	conn.Close()
+
+	if err != nil {
+		t.Skip("No internet connection detected")
+	}
+
+	src := DNSSource{}
+
+	t.Run("working request", func(t *testing.T) {
+		_, err := src.Get(context.Background(), "global", "one.one.one.one")
+
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("bad dns entry", func(t *testing.T) {
+		_, err := src.Get(context.Background(), "global", "something.does.not.exist.please.testing")
+
+		if err == nil {
+			t.Error("expected error but got nil")
+		}
+
+		if sdpErr, ok := err.(*sdp.ItemRequestError); ok {
+			if sdpErr.ErrorType != sdp.ItemRequestError_NOTFOUND {
+				t.Errorf("Expected error type to be NOTFOUND, got %v", sdpErr.ErrorType)
+			}
+		} else {
+			t.Errorf("expected error type to be *sdp.ItemRequestError, got %T", err)
+		}
+	})
+
+	t.Run("bad context", func(t *testing.T) {
+		_, err := src.Get(context.Background(), "something.local.test", "something.does.not.exist.please.testing")
+
+		if err == nil {
+			t.Error("expected error but got nil")
+		}
+
+		if sdpErr, ok := err.(*sdp.ItemRequestError); ok {
+			if sdpErr.ErrorType != sdp.ItemRequestError_NOCONTEXT {
+				t.Errorf("Expected error type to be NOCONTEXT, got %v", sdpErr.ErrorType)
+			}
+		} else {
+			t.Errorf("expected error type to be *sdp.ItemRequestError, got %t", err)
+		}
+	})
+}
