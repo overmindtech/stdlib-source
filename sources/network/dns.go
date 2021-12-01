@@ -34,8 +34,7 @@ func (s *DNSSource) Contexts() []string {
 	}
 }
 
-// Get calls back to the GetFunction to get a single item. This expects a DNS
-// name
+// Gets a single item. This expects a DNS name
 func (bc *DNSSource) Get(ctx context.Context, itemContext string, query string) (*sdp.Item, error) {
 	if itemContext != "global" {
 		return nil, &sdp.ItemRequestError{
