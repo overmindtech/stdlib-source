@@ -39,6 +39,9 @@ func (s *IPSource) Contexts() []string {
 // "::ffff:192.0.2.1". It returns some useful information about that IP but this
 // is all just infmation that is inherent in the IP itself, it doesn't look
 // anything up externally
+//
+// The purpose of this is mainly to provide a node in the graph that many things
+// can be linked to, rather than being particularly useful on its own
 func (bc *IPSource) Get(ctx context.Context, itemContext string, query string) (*sdp.Item, error) {
 	if itemContext != "global" {
 		return nil, &sdp.ItemRequestError{
