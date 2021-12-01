@@ -79,6 +79,7 @@ Edit this once you have created your source
 			&network.CertificateSource{},
 			&network.DNSSource{},
 			&network.HTTPSource{},
+			&network.IPSource{},
 		}
 
 		e.AddSources(sources...)

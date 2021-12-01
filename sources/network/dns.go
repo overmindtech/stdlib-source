@@ -18,7 +18,7 @@ func (bc *DNSSource) Type() string {
 
 // Name Returns the name of the backend
 func (bc *DNSSource) Name() string {
-	return "network"
+	return "stdlib-dns"
 }
 
 // Weighting of duplicate sources
