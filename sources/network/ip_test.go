@@ -12,15 +12,15 @@ func TestIPGet(t *testing.T) {
 	src := IPSource{}
 
 	t.Run("with ipv4 address", func(t *testing.T) {
-		item, err := src.Get(context.Background(), "global", "192.168.1.27")
+		item, err := src.Get(context.Background(), "global", "213.21.3.187")
 
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		if private, err := item.Attributes.Get("private"); err == nil {
-			if private != true {
-				t.Error("Expected itemattributes.private to be true")
+			if private != false {
+				t.Error("Expected itemattributes.private to be false")
 			}
 		} else {
 			t.Error("could not find 'private' attribute")
@@ -57,5 +57,203 @@ func TestIPGet(t *testing.T) {
 				t.Errorf("expected error to contain 'this is not valid', got: %v", err)
 			}
 		}
+	})
+
+	t.Run("with ipv4 link-local address", func(t *testing.T) {
+		t.Run("in the global context", func(t *testing.T) {
+			// Link-local addresses are not guaranteed to be unique beyond their
+			// network segment, therefore routers do not forward packets with
+			// link-local source or destination addresses. This means that it
+			// doesn't make sense to have a "global" link-local address as it's
+			// not truly global
+			_, err := src.Get(context.Background(), "global", "169.254.1.25")
+
+			if err == nil {
+				t.Error("expected error but got nil")
+			}
+		})
+
+		t.Run("in another context", func(t *testing.T) {
+			item, err := src.Get(context.Background(), "some.computer", "169.254.1.25")
+
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if item.Context != "some.computer" {
+				t.Errorf("expected context to be some.computer, got %v", item.Context)
+			}
+
+			if llu, err := item.Attributes.Get("linkLocalUnicast"); err != nil || llu == false {
+				t.Errorf("expected linkLocalUnicast to be false, got %v", llu)
+			}
+
+			discovery.TestValidateItem(t, item)
+		})
+	})
+
+	t.Run("with ipv4 private address", func(t *testing.T) {
+		t.Run("in the global context", func(t *testing.T) {
+			// Link-local addresses are not guaranteed to be unique beyond their
+			// network segment, therefore routers do not forward packets with
+			// link-local source or destination addresses. This means that it
+			// doesn't make sense to have a "global" link-local address as it's
+			// not truly global
+			_, err := src.Get(context.Background(), "global", "10.0.4.5")
+
+			if err == nil {
+				t.Error("expected error but got nil")
+			}
+		})
+
+		t.Run("in another context", func(t *testing.T) {
+			item, err := src.Get(context.Background(), "some.computer", "10.0.4.5")
+
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if item.Context != "some.computer" {
+				t.Errorf("expected context to be some.computer, got %v", item.Context)
+			}
+
+			if p, err := item.Attributes.Get("private"); err != nil || p == false {
+				t.Errorf("expected p to be false, got %v", p)
+			}
+
+			discovery.TestValidateItem(t, item)
+		})
+	})
+
+	t.Run("with ipv4 loopback address", func(t *testing.T) {
+		t.Run("in the global context", func(t *testing.T) {
+			// Link-local addresses are not guaranteed to be unique beyond their
+			// network segment, therefore routers do not forward packets with
+			// link-local source or destination addresses. This means that it
+			// doesn't make sense to have a "global" link-local address as it's
+			// not truly global
+			_, err := src.Get(context.Background(), "global", "127.0.0.1")
+
+			if err == nil {
+				t.Error("expected error but got nil")
+			}
+		})
+
+		t.Run("in another context", func(t *testing.T) {
+			item, err := src.Get(context.Background(), "some.computer", "127.0.0.1")
+
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if item.Context != "some.computer" {
+				t.Errorf("expected context to be some.computer, got %v", item.Context)
+			}
+
+			if loopback, err := item.Attributes.Get("loopback"); err != nil || loopback == false {
+				t.Errorf("expected loopback to be false, got %v", loopback)
+			}
+
+			discovery.TestValidateItem(t, item)
+		})
+	})
+
+	t.Run("with ipv6 link-local address", func(t *testing.T) {
+		t.Run("in the global context", func(t *testing.T) {
+			// Link-local addresses are not guaranteed to be unique beyond their
+			// network segment, therefore routers do not forward packets with
+			// link-local source or destination addresses. This means that it
+			// doesn't make sense to have a "global" link-local address as it's
+			// not truly global
+			_, err := src.Get(context.Background(), "global", "fe80::a70f:3a:338b:4801")
+
+			if err == nil {
+				t.Error("expected error but got nil")
+			}
+		})
+
+		t.Run("in another context", func(t *testing.T) {
+			item, err := src.Get(context.Background(), "some.computer", "fe80::a70f:3a:338b:4801")
+
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if item.Context != "some.computer" {
+				t.Errorf("expected context to be some.computer, got %v", item.Context)
+			}
+
+			if llu, err := item.Attributes.Get("linkLocalUnicast"); err != nil || llu == false {
+				t.Errorf("expected linkLocalUnicast top be false, got %v", llu)
+			}
+
+			discovery.TestValidateItem(t, item)
+		})
+	})
+
+	t.Run("with ipv6 private address", func(t *testing.T) {
+		t.Run("in the global context", func(t *testing.T) {
+			// Link-local addresses are not guaranteed to be unique beyond their
+			// network segment, therefore routers do not forward packets with
+			// link-local source or destination addresses. This means that it
+			// doesn't make sense to have a "global" link-local address as it's
+			// not truly global
+			_, err := src.Get(context.Background(), "global", "fd12:3456:789a:1::1")
+
+			if err == nil {
+				t.Error("expected error but got nil")
+			}
+		})
+
+		t.Run("in another context", func(t *testing.T) {
+			item, err := src.Get(context.Background(), "some.computer", "fd12:3456:789a:1::1")
+
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if item.Context != "some.computer" {
+				t.Errorf("expected context to be some.computer, got %v", item.Context)
+			}
+
+			if p, err := item.Attributes.Get("private"); err != nil || p == false {
+				t.Errorf("expected p to be false, got %v", p)
+			}
+
+			discovery.TestValidateItem(t, item)
+		})
+	})
+
+	t.Run("with ipv6 loopback address", func(t *testing.T) {
+		t.Run("in the global context", func(t *testing.T) {
+			// Link-local addresses are not guaranteed to be unique beyond their
+			// network segment, therefore routers do not forward packets with
+			// link-local source or destination addresses. This means that it
+			// doesn't make sense to have a "global" link-local address as it's
+			// not truly global
+			_, err := src.Get(context.Background(), "global", "::1")
+
+			if err == nil {
+				t.Error("expected error but got nil")
+			}
+		})
+
+		t.Run("in another context", func(t *testing.T) {
+			item, err := src.Get(context.Background(), "some.computer", "::1")
+
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			if item.Context != "some.computer" {
+				t.Errorf("expected context to be some.computer, got %v", item.Context)
+			}
+
+			if loopback, err := item.Attributes.Get("loopback"); err != nil || loopback == false {
+				t.Errorf("expected loopback to be false, got %v", loopback)
+			}
+
+			discovery.TestValidateItem(t, item)
+		})
 	})
 }

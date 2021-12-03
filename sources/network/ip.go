@@ -29,8 +29,18 @@ func (s *IPSource) Weight() int {
 // List of contexts that this source is capable of find items for
 func (s *IPSource) Contexts() []string {
 	return []string{
-		// DNS entries *should* be globally unique
-		"global",
+		// This supports all contexts since there might be local IPs that need
+		// to have a different context. E.g. 127.0.0.1 is a different logical
+		// address per computer since it referrs to "itself" This means we
+		// definitely don't want all thing that reference 127.0.0.1 linked
+		// together, only those in the same context
+		//
+		// TODO: Make a recommendation for what the context should be when
+		// looking up an IP in the local range. It's possible that an org could
+		// have the address (10.2.56.1) assigned to many devices (hopefully not,
+		// but I have seen it happen) and we would therefore want those IPs to
+		// have different contexts as they don't refer to the same thing
+		sdp.WILDCARD,
 	}
 }
 
@@ -43,14 +53,6 @@ func (s *IPSource) Contexts() []string {
 // The purpose of this is mainly to provide a node in the graph that many things
 // can be linked to, rather than being particularly useful on its own
 func (bc *IPSource) Get(ctx context.Context, itemContext string, query string) (*sdp.Item, error) {
-	if itemContext != "global" {
-		return nil, &sdp.ItemRequestError{
-			ErrorType:   sdp.ItemRequestError_NOCONTEXT,
-			ErrorString: "IP queries only supported in global context",
-			Context:     itemContext,
-		}
-	}
-
 	var ip net.IP
 	var err error
 	var attributes *sdp.ItemAttributes
@@ -62,6 +64,39 @@ func (bc *IPSource) Get(ctx context.Context, itemContext string, query string) (
 			ErrorType:   sdp.ItemRequestError_OTHER,
 			ErrorString: fmt.Sprintf("%v is not a valid IP", query),
 			Context:     itemContext,
+		}
+	}
+
+	if itemContext == "global" {
+		// If the context is global, make sure we return an error if it's an IP
+		// that isn't globally unique
+		var errorString string
+
+		if ip.IsLinkLocalMulticast() || ip.IsLinkLocalUnicast() || ip.IsInterfaceLocalMulticast() {
+			errorString = fmt.Sprintf("%v is a link-local address and is therefore not globally unique. It must have a context that is not global", query)
+		}
+		if ip.IsPrivate() {
+			errorString = fmt.Sprintf("%v is a private address and is therefore not globally unique. It must have a context that is not global", query)
+		}
+		if ip.IsLoopback() {
+			errorString = fmt.Sprintf("%v is a loopback address and is therefore not globally unique. It must have a context that is not global", query)
+		}
+
+		if errorString != "" {
+			return nil, &sdp.ItemRequestError{
+				ErrorType:   sdp.ItemRequestError_NOTFOUND,
+				ErrorString: errorString,
+				Context:     itemContext,
+			}
+		}
+	} else {
+		// If the context is non-global, ensure that the IP is not globally unique unique
+		if !ip.IsLoopback() && !ip.IsPrivate() && !ip.IsInterfaceLocalMulticast() && !ip.IsLinkLocalMulticast() && !ip.IsLinkLocalUnicast() {
+			return nil, &sdp.ItemRequestError{
+				ErrorType:   sdp.ItemRequestError_NOTFOUND,
+				ErrorString: fmt.Sprintf("%v is a globally-unique IP and therefore only exists in the global context", query),
+				Context:     itemContext,
+			}
 		}
 	}
 
