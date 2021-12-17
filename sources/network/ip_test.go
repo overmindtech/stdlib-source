@@ -94,34 +94,25 @@ func TestIPGet(t *testing.T) {
 
 	t.Run("with ipv4 private address", func(t *testing.T) {
 		t.Run("in the global context", func(t *testing.T) {
-			// Link-local addresses are not guaranteed to be unique beyond their
-			// network segment, therefore routers do not forward packets with
-			// link-local source or destination addresses. This means that it
-			// doesn't make sense to have a "global" link-local address as it's
-			// not truly global
-			_, err := src.Get(context.Background(), "global", "10.0.4.5")
-
-			if err == nil {
-				t.Error("expected error but got nil")
-			}
-		})
-
-		t.Run("in another context", func(t *testing.T) {
-			item, err := src.Get(context.Background(), "some.computer", "10.0.4.5")
+			item, err := src.Get(context.Background(), "global", "10.0.4.5")
 
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if item.Context != "some.computer" {
-				t.Errorf("expected context to be some.computer, got %v", item.Context)
-			}
-
 			if p, err := item.Attributes.Get("private"); err != nil || p == false {
-				t.Errorf("expected p to be false, got %v", p)
+				t.Errorf("expected p to be true, got %v", p)
 			}
 
 			discovery.TestValidateItem(t, item)
+		})
+
+		t.Run("in another context", func(t *testing.T) {
+			_, err := src.Get(context.Background(), "some.computer", "10.0.4.5")
+
+			if err == nil {
+				t.Error("expected error but got nil")
+			}
 		})
 	})
 
@@ -193,34 +184,26 @@ func TestIPGet(t *testing.T) {
 
 	t.Run("with ipv6 private address", func(t *testing.T) {
 		t.Run("in the global context", func(t *testing.T) {
-			// Link-local addresses are not guaranteed to be unique beyond their
-			// network segment, therefore routers do not forward packets with
-			// link-local source or destination addresses. This means that it
-			// doesn't make sense to have a "global" link-local address as it's
-			// not truly global
-			_, err := src.Get(context.Background(), "global", "fd12:3456:789a:1::1")
-
-			if err == nil {
-				t.Error("expected error but got nil")
-			}
-		})
-
-		t.Run("in another context", func(t *testing.T) {
-			item, err := src.Get(context.Background(), "some.computer", "fd12:3456:789a:1::1")
+			item, err := src.Get(context.Background(), "global", "fd12:3456:789a:1::1")
 
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if item.Context != "some.computer" {
-				t.Errorf("expected context to be some.computer, got %v", item.Context)
-			}
-
 			if p, err := item.Attributes.Get("private"); err != nil || p == false {
-				t.Errorf("expected p to be false, got %v", p)
+				t.Errorf("expected p to be true, got %v", p)
 			}
 
 			discovery.TestValidateItem(t, item)
+
+		})
+
+		t.Run("in another context", func(t *testing.T) {
+			_, err := src.Get(context.Background(), "some.computer", "fd12:3456:789a:1::1")
+
+			if err == nil {
+				t.Error("expected error but got nil")
+			}
 		})
 	})
 
