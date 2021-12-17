@@ -65,7 +65,7 @@ func TestHTTPGet(t *testing.T) {
 	t.Run("With a timeout", func(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
 		defer cancel()
-		item, err := src.Get(ctx, "global", "http://httpstat.us/404?sleep=10000")
+		item, err := src.Get(ctx, "global", "http://www.google.com:81/")
 
 		if err == nil {
 			t.Errorf("Expected timeout but got %v", item.String())
