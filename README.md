@@ -2,25 +2,27 @@
 
 The source includes a standard library of item types that should always be present. Many of these item types exist in the `global` context and serve to link together items in other contexts (e.g. ip addresses)
 
-
 <!-- @import "[TOC]" {cmd="toc" depthFrom=2 depthTo=6 orderedList=false} -->
 
 <!-- code_chunk_output -->
 
 - [Sources](#sources)
-  - [Certificate](#certificate)
+  - [Networksocket](#networksocket)
     - [`Get`](#get)
     - [`Find`](#find)
-    - [`Search`](#search)
-  - [DNS](#dns)
+  - [Certificate](#certificate)
     - [`Get`](#get-1)
     - [`Find`](#find-1)
-  - [HTTP](#http)
+    - [`Search`](#search)
+  - [DNS](#dns)
     - [`Get`](#get-2)
     - [`Find`](#find-2)
-  - [IP](#ip)
+  - [HTTP](#http)
     - [`Get`](#get-3)
     - [`Find`](#find-3)
+  - [IP](#ip)
+    - [`Get`](#get-4)
+    - [`Find`](#find-4)
 - [Config](#config)
   - [`srcman` config](#srcman-config)
   - [Health Check](#health-check)
@@ -32,6 +34,46 @@ The source includes a standard library of item types that should always be prese
 <!-- /code_chunk_output -->
 
 ## Sources
+
+### Networksocket
+
+This returns information about network sockets. A network socket is a combination of a host (IP or DNS name) and a port. Note that this doesn't enrich the data at all and is mostly for the purpose of linking.
+
+Example item:
+
+```json
+{
+    "type": "networksocket",
+    "uniqueAttribute": "socket",
+    "attributes": {
+        "attrStruct": {
+            "host": "www.google.com",
+            "port": "443",
+            "socket": "www.google.com:443"
+        }
+    },
+    "context": "global",
+    "linkedItemRequests": [
+        {
+            "type": "dns",
+            "query": "www.google.com",
+            "context": "global"
+        }
+    ]
+}
+```
+
+**Note:** I'm aware that a DNS name might not map to a single IP and therefore isn't technically a network socket. For example a DNS name might return multiple A records and therefore could refer to many different sockets. From a logical perspective though it's usually safe to think about it as being a single socket, and the value that it provides as a link probably outweights any confusion caused. If you disagree or can think of a better approach, please raise an issue.
+
+#### `Get`
+
+Returns socket information for a given host:port combo
+
+**Query format:** A host and port in the format `host:port`. Host can be an IP or a DNS name
+
+#### `Find`
+
+This method is not implemented. Use `Get` instead
 
 ### Certificate
 

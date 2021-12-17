@@ -2,6 +2,8 @@ package network
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"testing"
 
 	"github.com/overmindtech/discovery"
@@ -48,5 +50,8 @@ func TestSocketGet(t *testing.T) {
 		}
 
 		discovery.TestValidateItem(t, item)
+
+		b, _ := json.Marshal(item)
+		fmt.Println(string(b))
 	})
 }
