@@ -68,33 +68,19 @@ func (bc *IPSource) Get(ctx context.Context, itemContext string, query string) (
 	}
 
 	if itemContext == "global" {
-		// If the context is global, make sure we return an error if it's an IP
-		// that isn't globally unique
-		var errorString string
-
-		if ip.IsLinkLocalMulticast() || ip.IsLinkLocalUnicast() || ip.IsInterfaceLocalMulticast() {
-			errorString = fmt.Sprintf("%v is a link-local address and is therefore not globally unique. It must have a context that is not global", query)
-		}
-		if ip.IsPrivate() {
-			errorString = fmt.Sprintf("%v is a private address and is therefore not globally unique. It must have a context that is not global", query)
-		}
-		if ip.IsLoopback() {
-			errorString = fmt.Sprintf("%v is a loopback address and is therefore not globally unique. It must have a context that is not global", query)
-		}
-
-		if errorString != "" {
+		if !IsGlobalContextIP(ip) {
 			return nil, &sdp.ItemRequestError{
 				ErrorType:   sdp.ItemRequestError_NOTFOUND,
-				ErrorString: errorString,
+				ErrorString: fmt.Sprintf("%v is not a valid ip withing the global context. It must be request with some other context", query),
 				Context:     itemContext,
 			}
 		}
 	} else {
 		// If the context is non-global, ensure that the IP is not globally unique unique
-		if !ip.IsLoopback() && !ip.IsPrivate() && !ip.IsInterfaceLocalMulticast() && !ip.IsLinkLocalMulticast() && !ip.IsLinkLocalUnicast() {
+		if IsGlobalContextIP(ip) {
 			return nil, &sdp.ItemRequestError{
 				ErrorType:   sdp.ItemRequestError_NOTFOUND,
-				ErrorString: fmt.Sprintf("%v is a globally-unique IP and therefore only exists in the global context", query),
+				ErrorString: fmt.Sprintf("%v is a globally-unique IP and therefore only exists in the global context. Note that private IP ranges are also considered 'global' for convenience", query),
 				Context:     itemContext,
 			}
 		}
@@ -139,4 +125,23 @@ func (bc *IPSource) Find(ctx context.Context, itemContext string) ([]*sdp.Item, 
 	}
 
 	return make([]*sdp.Item, 0), nil
+}
+
+// IsGlobalContextIP Returns whether or not the IP should be considered valid
+// withing the global context according to the following logic:
+//
+// Non-Global:
+//
+// * LinkLocalMulticast
+// * LinkLocalUnicast
+// * InterfaceLocalMulticast
+// * Loopback
+//
+// Global:
+//
+// * Private
+// * Other (All non-reserved addresses)
+//
+func IsGlobalContextIP(ip net.IP) bool {
+	return !(ip.IsLinkLocalMulticast() || ip.IsLinkLocalUnicast() || ip.IsInterfaceLocalMulticast() || ip.IsLoopback())
 }

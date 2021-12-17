@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"encoding/pem"
 	"fmt"
+	"net"
 	"net/http"
 	"runtime"
 	"strings"
@@ -49,7 +50,7 @@ func (s *HTTPSource) Get(ctx context.Context, itemContext string, query string) 
 	if itemContext != "global" {
 		return nil, &sdp.ItemRequestError{
 			ErrorType:   sdp.ItemRequestError_NOCONTEXT,
-			ErrorString: "http is are only supported in the 'global' context",
+			ErrorString: "http is only supported in the 'global' context",
 			Context:     itemContext,
 		}
 	}
@@ -128,6 +129,13 @@ func (s *HTTPSource) Get(ctx context.Context, itemContext string, query string) 
 		Attributes:      attributes,
 		Context:         "global",
 	}
+
+	item.LinkedItemRequests = append(item.LinkedItemRequests, &sdp.ItemRequest{
+		Type:    "networksocket",
+		Method:  sdp.RequestMethod_GET,
+		Query:   net.JoinHostPort(req.Host, req.URL.Port()),
+		Context: "global",
+	})
 
 	if tlsState := res.TLS; tlsState != nil {
 		var version string
