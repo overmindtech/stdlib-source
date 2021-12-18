@@ -80,6 +80,7 @@ Edit this once you have created your source
 			&network.DNSSource{},
 			&network.HTTPSource{},
 			&network.IPSource{},
+			&network.SocketSource{},
 		}
 
 		e.AddSources(sources...)
