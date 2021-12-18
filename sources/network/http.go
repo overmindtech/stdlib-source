@@ -188,9 +188,10 @@ func (s *HTTPSource) Get(ctx context.Context, itemContext string, query string) 
 			}
 
 			item.LinkedItemRequests = append(item.LinkedItemRequests, &sdp.ItemRequest{
-				Type:   "certificate",
-				Method: sdp.RequestMethod_SEARCH,
-				Query:  strings.Join(certs, "\n"),
+				Type:    "certificate",
+				Method:  sdp.RequestMethod_SEARCH,
+				Query:   strings.Join(certs, "\n"),
+				Context: itemContext,
 			})
 		}
 	}

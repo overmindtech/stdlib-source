@@ -229,9 +229,10 @@ func (s *CertificateSource) Search(ctx context.Context, itemContext string, quer
 			// included in the bundle since the cache will correctly return the
 			// Get() request when it is run
 			item.LinkedItemRequests = append(item.LinkedItemRequests, &sdp.ItemRequest{
-				Type:   "certificate",
-				Method: sdp.RequestMethod_GET,
-				Query:  cert.Issuer.String(),
+				Type:    "certificate",
+				Method:  sdp.RequestMethod_GET,
+				Query:   cert.Issuer.String(),
+				Context: itemContext,
 			})
 		}
 	}
