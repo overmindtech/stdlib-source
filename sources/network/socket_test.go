@@ -2,8 +2,6 @@ package network
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
 	"testing"
 
 	"github.com/overmindtech/discovery"
@@ -29,8 +27,8 @@ func TestSocketGet(t *testing.T) {
 
 		discovery.TestValidateItem(t, item)
 
-		if x, err := item.Attributes.Get("host"); err != nil || x != "173.56.64.34" {
-			t.Errorf("expected host to be 173.56.64.34, got %v%v", err, x)
+		if x, err := item.Attributes.Get("ip"); err != nil || x != "173.56.64.34" {
+			t.Errorf("expected ip to be 173.56.64.34, got %v%v", err, x)
 		}
 
 		if x, err := item.Attributes.Get("port"); err != nil || x != "5432" {
@@ -43,15 +41,78 @@ func TestSocketGet(t *testing.T) {
 	})
 
 	t.Run("with a DNS name and port", func(t *testing.T) {
-		item, err := src.Get(context.Background(), "global", "www.google.com:443")
+		_, err := src.Get(context.Background(), "global", "www.google.com:443")
+
+		if err == nil {
+			t.Error("expected error but got <nil>")
+		}
+	})
+
+	t.Run("with a loopback address", func(t *testing.T) {
+		_, err := src.Get(context.Background(), "global", "127.0.0.1:443")
+
+		if err == nil {
+			t.Error("expected error but got <nil>")
+		}
+	})
+}
+
+func TestSocketSearch(t *testing.T) {
+	src := SocketSource{}
+
+	t.Run("with an IP", func(t *testing.T) {
+		items, err := src.Search(context.Background(), "global", "192.168.1.2:443")
 
 		if err != nil {
-			t.Fatal(err)
+			t.Error(err)
 		}
 
-		discovery.TestValidateItem(t, item)
+		discovery.TestValidateItems(t, items)
+	})
 
-		b, _ := json.Marshal(item)
-		fmt.Println(string(b))
+	t.Run("with a DNS name", func(t *testing.T) {
+		items, err := src.Search(context.Background(), "global", "one.one.one.one:53")
+
+		if err != nil {
+			t.Error(err)
+		}
+
+		discovery.TestValidateItems(t, items)
+
+		if len(items) < 2 {
+			t.Fatalf("expected <= 2 items, got %v", len(items))
+		}
+
+		firstItem := items[0]
+
+		if len(firstItem.LinkedItemRequests) < 2 {
+			t.Fatalf("expected >= 2 linked items requests, got %v", len(firstItem.LinkedItemRequests))
+		}
+	})
+
+	t.Run("with a bad query", func(t *testing.T) {
+		_, err := src.Search(context.Background(), "global", "one.one.one.one")
+
+		if err == nil {
+			t.Error("expected error but got <nil>")
+		}
+	})
+
+	t.Run("with an IPv6 loopback address", func(t *testing.T) {
+		_, err := src.Search(context.Background(), "global", "[::1]:443")
+
+		if err == nil {
+			t.Error("expected error but got <nil>")
+		}
+	})
+
+	t.Run("with an IPv6 normal address", func(t *testing.T) {
+		items, err := src.Search(context.Background(), "global", "[2a01:4b00:8602:b600::e36d]:443")
+
+		if err != nil {
+			t.Error(err)
+		}
+
+		discovery.TestValidateItems(t, items)
 	})
 }
