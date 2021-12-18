@@ -67,13 +67,20 @@ Example item:
 
 #### `Get`
 
-Returns socket information for a given host:port combo
+Returns socket information for a given ip:port combo
 
-**Query format:** A host and port in the format `host:port`. Host can be an IP or a DNS name
+**Query format:** An IP and port in the format `ip:port`.
 
 #### `Find`
 
-This method is not implemented. Use `Get` instead
+This method is not implemented. Use `Get` or `Search` instead
+
+#### `Search`
+
+Returns socket information for a given host:port combo, resolving any DNS queries as required to get a list of `networksockets`
+
+**Query format:** A host and port in the format `host:port`. Host can be an IP or a DNS name, DNS names will be resolved and may result in many sockets being returned (like in the case of a DNS query resolving to many A records)
+
 
 ### Certificate
 

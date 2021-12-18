@@ -143,7 +143,7 @@ func (s *HTTPSource) Get(ctx context.Context, itemContext string, query string) 
 
 	item.LinkedItemRequests = append(item.LinkedItemRequests, &sdp.ItemRequest{
 		Type:    "networksocket",
-		Method:  sdp.RequestMethod_GET,
+		Method:  sdp.RequestMethod_SEARCH,
 		Query:   net.JoinHostPort(req.Host, portString),
 		Context: "global",
 	})
