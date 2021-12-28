@@ -17,4 +17,4 @@ jobs:
           package_name: stdlib-source
           org: overmindtech
           debug: true
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.CR_PAT }}
