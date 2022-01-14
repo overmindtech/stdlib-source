@@ -24,10 +24,9 @@ var cfgFile string
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "source-template",
-	Short: "Remote primary source for kubernetes",
-	Long: `A template for building sources.
-
-Edit this once you have created your source
+	Short: "Standard library of remotely accessible items",
+	Long: `Gets details of items that are globally scoped
+(usually) and able to be queried without authentication.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		// Get srcman supplied config
@@ -61,7 +60,7 @@ Edit this once you have created your source
 		}).Info("Got config")
 
 		e := discovery.Engine{
-			Name: "kubernetes-source",
+			Name: "stdlib-source",
 			NATSOptions: &discovery.NATSOptions{
 				URLs:           natsServers,
 				ConnectionName: fmt.Sprintf("%v.%v", natsNamePrefix, hostname),
