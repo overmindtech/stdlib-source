@@ -65,7 +65,7 @@ func (s *HTTPSource) Get(ctx context.Context, itemContext string, query string) 
 	}
 	client := &http.Client{
 		Transport: tr,
-		// Don't follow redirects, just return teh status code directly
+		// Don't follow redirects, just return the status code directly
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
 		},
@@ -147,6 +147,24 @@ func (s *HTTPSource) Get(ctx context.Context, itemContext string, query string) 
 		Query:   net.JoinHostPort(req.Host, portString),
 		Context: "global",
 	})
+
+	if ip := net.ParseIP(req.URL.Hostname()); ip != nil {
+		// If the host is an IP, add a linked item to that IP address
+		item.LinkedItemRequests = append(item.LinkedItemRequests, &sdp.ItemRequest{
+			Type:    "ip",
+			Method:  sdp.RequestMethod_GET,
+			Query:   ip.String(),
+			Context: "global",
+		})
+	} else {
+		// If the host is not an ip, try to resolve via DNS
+		item.LinkedItemRequests = append(item.LinkedItemRequests, &sdp.ItemRequest{
+			Type:    "dns",
+			Method:  sdp.RequestMethod_GET,
+			Query:   req.URL.Hostname(),
+			Context: "global",
+		})
+	}
 
 	if tlsState := res.TLS; tlsState != nil {
 		var version string
