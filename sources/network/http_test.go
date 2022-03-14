@@ -40,6 +40,82 @@ func TestHTTPGet(t *testing.T) {
 		discovery.TestValidateItem(t, item)
 	})
 
+	t.Run("With a specified port", func(t *testing.T) {
+		item, err := src.Get(context.Background(), "global", "https://www.google.com:443")
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		var socketFound bool
+		var dnsFound bool
+
+		for _, link := range item.LinkedItemRequests {
+			switch link.Type {
+			case "networksocket":
+				socketFound = true
+
+				if link.Query != "www.google.com:443" {
+					t.Errorf("expected network socket query to be www.google.com:443, got %v", link.Query)
+				}
+			case "dns":
+				dnsFound = true
+
+				if link.Query != "www.google.com" {
+					t.Errorf("expected dns query to be www.google.com, got %v", link.Query)
+				}
+			}
+		}
+
+		if !socketFound {
+			t.Error("link to networksocket not found")
+		}
+
+		if !dnsFound {
+			t.Error("link to dns not found")
+		}
+
+		discovery.TestValidateItem(t, item)
+	})
+
+	t.Run("With an IP", func(t *testing.T) {
+		item, err := src.Get(context.Background(), "global", "https://1.1.1.1:443")
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		var socketFound bool
+		var ipFound bool
+
+		for _, link := range item.LinkedItemRequests {
+			switch link.Type {
+			case "networksocket":
+				socketFound = true
+
+				if link.Query != "1.1.1.1:443" {
+					t.Errorf("expected network socket query to be 1.1.1.1:443, got %v", link.Query)
+				}
+			case "ip":
+				ipFound = true
+
+				if link.Query != "1.1.1.1" {
+					t.Errorf("expected dns query to be 1.1.1.1, got %v", link.Query)
+				}
+			}
+		}
+
+		if !socketFound {
+			t.Error("link to networksocket not found")
+		}
+
+		if !ipFound {
+			t.Error("link to ip not found")
+		}
+
+		discovery.TestValidateItem(t, item)
+	})
+
 	t.Run("With a 404", func(t *testing.T) {
 		item, err := src.Get(context.Background(), "global", "https://httpstat.us/404")
 

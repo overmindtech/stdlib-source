@@ -130,21 +130,28 @@ func (s *HTTPSource) Get(ctx context.Context, itemContext string, query string) 
 		Context:         "global",
 	}
 
-	portString := req.URL.Port()
+	var socketQuery string
 
-	if portString == "" {
+	// Append the port
+	if portString := req.URL.Port(); portString == "" {
 		switch req.URL.Scheme {
 		case "http":
 			portString = "80"
 		case "https":
 			portString = "443"
 		}
+
+		socketQuery = net.JoinHostPort(req.Host, portString)
+	} else {
+		// If the port is returned, we know that the host is in the format
+		// host:port already, so we don't need to do anything
+		socketQuery = req.URL.Host
 	}
 
 	item.LinkedItemRequests = append(item.LinkedItemRequests, &sdp.ItemRequest{
 		Type:    "networksocket",
 		Method:  sdp.RequestMethod_SEARCH,
-		Query:   net.JoinHostPort(req.Host, portString),
+		Query:   socketQuery,
 		Context: "global",
 	})
 
