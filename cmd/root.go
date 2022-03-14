@@ -62,13 +62,15 @@ var rootCmd = &cobra.Command{
 		e := discovery.Engine{
 			Name: "stdlib-source",
 			NATSOptions: &discovery.NATSOptions{
-				URLs:           natsServers,
-				ConnectionName: fmt.Sprintf("%v.%v", natsNamePrefix, hostname),
-				ConnectTimeout: (10 * time.Second), // TODO: Make configurable
-				NumRetries:     999,                // We are in a container so wait forever
-				CAFile:         natsCAFile,
-				NkeyFile:       natsNKeyFile,
-				JWTFile:        natsJWTFile,
+				URLs:            natsServers,
+				ConnectionName:  fmt.Sprintf("%v.%v", natsNamePrefix, hostname),
+				ConnectTimeout:  (10 * time.Second), // TODO: Make configurable
+				MaxReconnect:    -1,
+				ReconnectWait:   1 * time.Second,
+				ReconnectJitter: 1 * time.Second,
+				CAFile:          natsCAFile,
+				NkeyFile:        natsNKeyFile,
+				JWTFile:         natsJWTFile,
 			},
 			MaxParallelExecutions: maxParallel,
 		}
@@ -109,16 +111,6 @@ var rootCmd = &cobra.Command{
 			log.WithFields(log.Fields{
 				"error": err,
 			}).Error("Could not start HTTP server for /healthz health checks")
-
-			os.Exit(1)
-		}
-
-		err = e.Connect()
-
-		if err != nil {
-			log.WithFields(log.Fields{
-				"error": err,
-			}).Error("Could not connect to NATS")
 
 			os.Exit(1)
 		}
