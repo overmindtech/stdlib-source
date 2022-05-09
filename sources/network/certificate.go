@@ -31,14 +31,19 @@ func CertToName(cert *x509.Certificate) string {
 // toHex converts bytes to their uppercase hex representation, separated by
 // colons
 func toHex(b []byte) string {
+	if b == nil || len(b) == 0 {
+		return ""
+	}
+
 	buf := make([]byte, 0, 3*len(b))
 	x := buf[1*len(b) : 3*len(b)]
 	hex.Encode(x, b)
 	for i := 0; i < len(x); i += 2 {
 		buf = append(buf, x[i], x[i+1], ':')
 	}
+	s := strings.TrimSuffix(string(buf), ":")
 
-	return strings.ToUpper(string(buf[:len(buf)-1]))
+	return strings.ToUpper(s)
 }
 
 // CertificateSource This source only responds to Search() requests. See the
