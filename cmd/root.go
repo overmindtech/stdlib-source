@@ -192,7 +192,7 @@ func init() {
 	rootCmd.PersistentFlags().String("nats-name-prefix", "", "A name label prefix. Sources should append a dot and their hostname .{hostname} to this, then set this is the NATS connection name which will be sent to the server on CONNECT to identify the client")
 	rootCmd.PersistentFlags().String("nats-jwt", "", "The JWT token that should be used to authenticate to NATS, provided in raw format e.g. eyJ0eXAiOiJKV1Q...")
 	rootCmd.PersistentFlags().String("nats-nkey-seed", "", "The NKey seed which corresponds to the NATS JWT e.g. SUAFK6QUC...")
-	rootCmd.PersistentFlags().Int("max-parallel", (runtime.NumCPU() * 2), "Max number of requests to run in parallel")
+	rootCmd.PersistentFlags().Int("max-parallel", (runtime.NumCPU() * 10), "Max number of requests to run in parallel")
 
 	// ⚠️ Add your own custom config options below, the example "your-custom-flag"
 	// should be replaced with your own config or deleted
