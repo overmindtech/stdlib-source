@@ -5,8 +5,8 @@ go 1.17
 // Direct dependencies
 require (
 	github.com/nats-io/jwt/v2 v2.2.1-0.20220330180145-442af02fd36a
-	github.com/overmindtech/discovery v0.12.3
-	github.com/overmindtech/sdp-go v0.8.3
+	github.com/overmindtech/discovery v0.12.4
+	github.com/overmindtech/sdp-go v0.8.5
 	github.com/sirupsen/logrus v1.8.1
 	github.com/spf13/cobra v1.4.0
 	github.com/spf13/pflag v1.0.5
