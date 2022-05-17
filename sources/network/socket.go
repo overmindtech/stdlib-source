@@ -135,7 +135,7 @@ func (s *SocketSource) Search(ctx context.Context, itemContext string, query str
 
 	if ip := net.ParseIP(host); ip == nil {
 		// If not an IP, try to convert to an IP (or a list of IPs)
-		ips, err = net.LookupIP(host)
+		ips, err = net.DefaultResolver.LookupIP(ctx, "ip", host)
 
 		if err != nil {
 			return []*sdp.Item{}, &sdp.ItemRequestError{
