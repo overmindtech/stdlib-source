@@ -96,6 +96,9 @@ func (s *HTTPSource) Get(ctx context.Context, itemContext string, query string) 
 		}
 	}
 
+	// Clean up connections once we're done
+	defer client.CloseIdleConnections()
+
 	// Convert headers from map[string][]string to map[string]string. This means
 	// that headers that were returned many times will end up with their values
 	// comma-separated
