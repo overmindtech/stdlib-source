@@ -57,7 +57,7 @@ func (bc *DNSSource) Get(ctx context.Context, itemContext string, query string) 
 	var ips []string
 	var ipsInterface []interface{}
 
-	ips, err = net.LookupHost(query)
+	ips, err = net.DefaultResolver.LookupHost(ctx, query)
 
 	for _, ip := range ips {
 		// Link this to a "global" IP object
