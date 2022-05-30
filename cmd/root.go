@@ -14,6 +14,7 @@ import (
 	"github.com/nats-io/jwt/v2"
 	"github.com/nats-io/nkeys"
 	"github.com/overmindtech/discovery"
+	"github.com/overmindtech/multiconn"
 	"github.com/overmindtech/stdlib-source/sources/network"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -49,7 +50,7 @@ var rootCmd = &cobra.Command{
 		}
 
 		var natsNKeySeedLog string
-		var tokenClient discovery.TokenClient
+		var tokenClient multiconn.TokenClient
 
 		if natsNKeySeed != "" {
 			natsNKeySeedLog = "[REDACTED]"
@@ -79,14 +80,18 @@ var rootCmd = &cobra.Command{
 
 		e := discovery.Engine{
 			Name: "stdlib-source",
-			NATSOptions: &discovery.NATSOptions{
-				URLs:            natsServers,
-				ConnectionName:  fmt.Sprintf("%v.%v", natsNamePrefix, hostname),
-				ConnectTimeout:  (10 * time.Second), // TODO: Make configurable
-				MaxReconnect:    -1,
-				ReconnectWait:   1 * time.Second,
-				ReconnectJitter: 1 * time.Second,
-				TokenClient:     tokenClient,
+			NATSOptions: &multiconn.NATSConnectionOptions{
+				CommonOptions: multiconn.CommonOptions{
+					NumRetries: -1,
+					RetryDelay: 5 * time.Second,
+				},
+				Servers:           natsServers,
+				ConnectionName:    fmt.Sprintf("%v.%v", natsNamePrefix, hostname),
+				ConnectionTimeout: (10 * time.Second), // TODO: Make configurable
+				MaxReconnects:     -1,
+				ReconnectWait:     1 * time.Second,
+				ReconnectJitter:   1 * time.Second,
+				TokenClient:       tokenClient,
 			},
 			MaxParallelExecutions: maxParallel,
 		}
@@ -236,7 +241,7 @@ func initConfig() {
 
 // createTokenClient Creates a basic token client that will authenticate to NATS
 // using the given values
-func createTokenClient(natsJWT string, natsNKeySeed string) (discovery.TokenClient, error) {
+func createTokenClient(natsJWT string, natsNKeySeed string) (multiconn.TokenClient, error) {
 	var kp nkeys.KeyPair
 	var err error
 
@@ -256,5 +261,5 @@ func createTokenClient(natsJWT string, natsNKeySeed string) (discovery.TokenClie
 		return nil, fmt.Errorf("could not parse nats-nkey-seed: %v", err)
 	}
 
-	return discovery.NewBasicTokenClient(natsJWT, kp), nil
+	return multiconn.NewBasicTokenClient(natsJWT, kp), nil
 }
