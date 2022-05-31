@@ -17,4 +17,4 @@ jobs:
           package_name: stdlib-source
           org: overmindtech
           debug: true
-          token: ${{ secrets.CR_PAT }}
+          token: ${{ secrets.GHCR_PUSH }}
