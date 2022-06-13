@@ -16,5 +16,4 @@ jobs:
           # which you won't have permission to do, and it'll fail
           package_name: stdlib-source
           org: overmindtech
-          debug: true
           token: ${{ secrets.GHCR_PUSH }}
