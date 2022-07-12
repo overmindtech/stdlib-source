@@ -56,6 +56,7 @@ func (bc *IPSource) Get(ctx context.Context, itemContext string, query string) (
 	var ip net.IP
 	var err error
 	var attributes *sdp.ItemAttributes
+	var isGlobalIP bool
 
 	ip = net.ParseIP(query)
 
@@ -64,6 +65,23 @@ func (bc *IPSource) Get(ctx context.Context, itemContext string, query string) (
 			ErrorType:   sdp.ItemRequestError_OTHER,
 			ErrorString: fmt.Sprintf("%v is not a valid IP", query),
 			Context:     itemContext,
+		}
+	}
+
+	isGlobalIP = IsGlobalContextIP(ip)
+
+	// If the query was executed with a wildcard, and the context is global, we
+	// might was well set it. If it's not then we have no way to determine the
+	// context so we need to return an error
+	if itemContext == sdp.WILDCARD {
+		if isGlobalIP {
+			itemContext = "global"
+		} else {
+			return nil, &sdp.ItemRequestError{
+				ErrorType:   sdp.ItemRequestError_NOTFOUND,
+				ErrorString: fmt.Sprintf("%v is not a globally-unique IP and therefore could exist in every context. Query with a wildcard does not work for non-global IPs", query),
+				Context:     itemContext,
+			}
 		}
 	}
 

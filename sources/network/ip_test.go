@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/overmindtech/discovery"
+	"github.com/overmindtech/sdp-go"
 )
 
 func TestIPGet(t *testing.T) {
@@ -238,5 +239,23 @@ func TestIPGet(t *testing.T) {
 
 			discovery.TestValidateItem(t, item)
 		})
+	})
+
+	t.Run("with a wildcard context", func(t *testing.T) {
+		item, err := src.Get(context.Background(), sdp.WILDCARD, "213.21.3.187")
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if private, err := item.Attributes.Get("private"); err == nil {
+			if private != false {
+				t.Error("Expected itemattributes.private to be false")
+			}
+		} else {
+			t.Error("could not find 'private' attribute")
+		}
+
+		discovery.TestValidateItem(t, item)
 	})
 }
