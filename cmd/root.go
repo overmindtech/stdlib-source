@@ -199,10 +199,6 @@ func init() {
 	rootCmd.PersistentFlags().String("nats-nkey-seed", "", "The NKey seed which corresponds to the NATS JWT e.g. SUAFK6QUC...")
 	rootCmd.PersistentFlags().Int("max-parallel", (runtime.NumCPU() * 10), "Max number of requests to run in parallel")
 
-	// ⚠️ Add your own custom config options below, the example "your-custom-flag"
-	// should be replaced with your own config or deleted
-	rootCmd.PersistentFlags().String("your-custom-flag", "someDefaultValue.conf", "Description of what your option is meant to do")
-
 	// Bind these to viper
 	viper.BindPFlags(rootCmd.PersistentFlags())
 
