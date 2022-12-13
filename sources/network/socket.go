@@ -20,10 +20,10 @@ func (s *SocketSource) Name() string {
 	return "stdlib-socket"
 }
 
-// List of contexts that this source is capable of find items for. If the
-// source supports all contexts the special value `AllContexts` ("*")
+// List of scopes that this source is capable of find items for. If the
+// source supports all scopes the special value `AllScopes` ("*")
 // should be used
-func (s *SocketSource) Contexts() []string {
+func (s *SocketSource) Scopes() []string {
 	return []string{
 		sdp.WILDCARD,
 	}
@@ -31,9 +31,9 @@ func (s *SocketSource) Contexts() []string {
 
 // Get Returns a single socket. Note that the query must be in the format
 // ip:port. Also in order for the source to return a networksocket in the
-// "global" context, the IP must not be a link-local address i.e. a provate or
+// "global" scope, the IP must not be a link-local address i.e. a provate or
 // public IP range and not something like 127.0.0.1
-func (s *SocketSource) Get(ctx context.Context, itemContext string, query string) (*sdp.Item, error) {
+func (s *SocketSource) Get(ctx context.Context, scope string, query string) (*sdp.Item, error) {
 	var host string
 	var port string
 	var err error
@@ -47,7 +47,7 @@ func (s *SocketSource) Get(ctx context.Context, itemContext string, query string
 		return nil, &sdp.ItemRequestError{
 			ErrorType:   sdp.ItemRequestError_OTHER,
 			ErrorString: err.Error(),
-			Context:     itemContext,
+			Scope:       scope,
 		}
 	}
 
@@ -55,7 +55,7 @@ func (s *SocketSource) Get(ctx context.Context, itemContext string, query string
 		Type:            "networksocket",
 		UniqueAttribute: "socket",
 		Attributes:      attributes,
-		Context:         itemContext,
+		Scope:           scope,
 	}
 
 	host, port, err = net.SplitHostPort(query)
@@ -63,12 +63,12 @@ func (s *SocketSource) Get(ctx context.Context, itemContext string, query string
 	if err == nil {
 		// Make sure we have been passed a valid IP
 		if ip := net.ParseIP(host); ip != nil {
-			// Make sure that the IP is valid within this context
-			if itemContext == "global" && !IsGlobalContextIP(ip) {
+			// Make sure that the IP is valid within this scope
+			if scope == "global" && !IsGlobalScopeIP(ip) {
 				return nil, &sdp.ItemRequestError{
 					ErrorType:   sdp.ItemRequestError_NOTFOUND,
-					ErrorString: fmt.Sprintf("%v is not a globally scoped IP. It must be requested with a context other than global", ip.String()),
-					Context:     itemContext,
+					ErrorString: fmt.Sprintf("%v is not a globally scoped IP. It must be requested with a scope other than global", ip.String()),
+					Scope:       scope,
 				}
 			}
 
@@ -76,32 +76,32 @@ func (s *SocketSource) Get(ctx context.Context, itemContext string, query string
 			item.Attributes.Set("port", port)
 
 			item.LinkedItemRequests = append(item.LinkedItemRequests, &sdp.ItemRequest{
-				Type:    "ip",
-				Method:  sdp.RequestMethod_GET,
-				Query:   host,
-				Context: itemContext,
+				Type:   "ip",
+				Method: sdp.RequestMethod_GET,
+				Query:  host,
+				Scope:  scope,
 			})
 		} else {
 			return nil, &sdp.ItemRequestError{
 				ErrorType:   sdp.ItemRequestError_OTHER,
 				ErrorString: fmt.Sprintf("%v could not be parsed as an IP address", host),
-				Context:     itemContext,
+				Scope:       scope,
 			}
 		}
 	} else {
 		return nil, &sdp.ItemRequestError{
 			ErrorType:   sdp.ItemRequestError_OTHER,
 			ErrorString: err.Error(),
-			Context:     itemContext,
+			Scope:       scope,
 		}
 	}
 
 	return &item, nil
 }
 
-// Find Is not implemented for HTTP as this would require scanning many
+// List Is not implemented for HTTP as this would require scanning many
 // endpoints or something, doesn't really make sense
-func (s *SocketSource) Find(ctx context.Context, itemContext string) ([]*sdp.Item, error) {
+func (s *SocketSource) List(ctx context.Context, scope string) ([]*sdp.Item, error) {
 	items := make([]*sdp.Item, 0)
 
 	return items, nil
@@ -114,7 +114,7 @@ func (s *SocketSource) Find(ctx context.Context, itemContext string) ([]*sdp.Ite
 //
 // If a DNS name is supplied, that name will be resolved to an IP (or multiple)
 // before being returned
-func (s *SocketSource) Search(ctx context.Context, itemContext string, query string) ([]*sdp.Item, error) {
+func (s *SocketSource) Search(ctx context.Context, scope string, query string) ([]*sdp.Item, error) {
 	var host string
 	var port string
 	var err error
@@ -129,7 +129,7 @@ func (s *SocketSource) Search(ctx context.Context, itemContext string, query str
 		return []*sdp.Item{}, &sdp.ItemRequestError{
 			ErrorType:   sdp.ItemRequestError_OTHER,
 			ErrorString: err.Error(),
-			Context:     itemContext,
+			Scope:       scope,
 		}
 	}
 
@@ -141,15 +141,15 @@ func (s *SocketSource) Search(ctx context.Context, itemContext string, query str
 			return []*sdp.Item{}, &sdp.ItemRequestError{
 				ErrorType:   sdp.ItemRequestError_NOTFOUND,
 				ErrorString: err.Error(),
-				Context:     itemContext,
+				Scope:       scope,
 			}
 		}
 
 		linkedItemRequests = append(linkedItemRequests, &sdp.ItemRequest{
-			Type:    "dns",
-			Method:  sdp.RequestMethod_GET,
-			Query:   host,
-			Context: "global",
+			Type:   "dns",
+			Method: sdp.RequestMethod_GET,
+			Query:  host,
+			Scope:  "global",
 		})
 	} else {
 		// If it's already an IP just add it our slice
@@ -158,7 +158,7 @@ func (s *SocketSource) Search(ctx context.Context, itemContext string, query str
 
 	// Convert each to a networksocket
 	for _, ip := range ips {
-		item, err := s.Get(ctx, itemContext, net.JoinHostPort(ip.String(), port))
+		item, err := s.Get(ctx, scope, net.JoinHostPort(ip.String(), port))
 
 		if err != nil {
 			return items, err

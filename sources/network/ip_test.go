@@ -61,7 +61,7 @@ func TestIPGet(t *testing.T) {
 	})
 
 	t.Run("with ipv4 link-local address", func(t *testing.T) {
-		t.Run("in the global context", func(t *testing.T) {
+		t.Run("in the global scope", func(t *testing.T) {
 			// Link-local addresses are not guaranteed to be unique beyond their
 			// network segment, therefore routers do not forward packets with
 			// link-local source or destination addresses. This means that it
@@ -74,15 +74,15 @@ func TestIPGet(t *testing.T) {
 			}
 		})
 
-		t.Run("in another context", func(t *testing.T) {
+		t.Run("in another scope", func(t *testing.T) {
 			item, err := src.Get(context.Background(), "some.computer", "169.254.1.25")
 
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if item.Context != "some.computer" {
-				t.Errorf("expected context to be some.computer, got %v", item.Context)
+			if item.Scope != "some.computer" {
+				t.Errorf("expected scope to be some.computer, got %v", item.Scope)
 			}
 
 			if llu, err := item.Attributes.Get("linkLocalUnicast"); err != nil || llu == false {
@@ -94,7 +94,7 @@ func TestIPGet(t *testing.T) {
 	})
 
 	t.Run("with ipv4 private address", func(t *testing.T) {
-		t.Run("in the global context", func(t *testing.T) {
+		t.Run("in the global scope", func(t *testing.T) {
 			item, err := src.Get(context.Background(), "global", "10.0.4.5")
 
 			if err != nil {
@@ -108,7 +108,7 @@ func TestIPGet(t *testing.T) {
 			discovery.TestValidateItem(t, item)
 		})
 
-		t.Run("in another context", func(t *testing.T) {
+		t.Run("in another scope", func(t *testing.T) {
 			_, err := src.Get(context.Background(), "some.computer", "10.0.4.5")
 
 			if err == nil {
@@ -118,7 +118,7 @@ func TestIPGet(t *testing.T) {
 	})
 
 	t.Run("with ipv4 loopback address", func(t *testing.T) {
-		t.Run("in the global context", func(t *testing.T) {
+		t.Run("in the global scope", func(t *testing.T) {
 			// Link-local addresses are not guaranteed to be unique beyond their
 			// network segment, therefore routers do not forward packets with
 			// link-local source or destination addresses. This means that it
@@ -131,15 +131,15 @@ func TestIPGet(t *testing.T) {
 			}
 		})
 
-		t.Run("in another context", func(t *testing.T) {
+		t.Run("in another scope", func(t *testing.T) {
 			item, err := src.Get(context.Background(), "some.computer", "127.0.0.1")
 
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if item.Context != "some.computer" {
-				t.Errorf("expected context to be some.computer, got %v", item.Context)
+			if item.Scope != "some.computer" {
+				t.Errorf("expected scope to be some.computer, got %v", item.Scope)
 			}
 
 			if loopback, err := item.Attributes.Get("loopback"); err != nil || loopback == false {
@@ -151,7 +151,7 @@ func TestIPGet(t *testing.T) {
 	})
 
 	t.Run("with ipv6 link-local address", func(t *testing.T) {
-		t.Run("in the global context", func(t *testing.T) {
+		t.Run("in the global scope", func(t *testing.T) {
 			// Link-local addresses are not guaranteed to be unique beyond their
 			// network segment, therefore routers do not forward packets with
 			// link-local source or destination addresses. This means that it
@@ -164,15 +164,15 @@ func TestIPGet(t *testing.T) {
 			}
 		})
 
-		t.Run("in another context", func(t *testing.T) {
+		t.Run("in another scope", func(t *testing.T) {
 			item, err := src.Get(context.Background(), "some.computer", "fe80::a70f:3a:338b:4801")
 
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if item.Context != "some.computer" {
-				t.Errorf("expected context to be some.computer, got %v", item.Context)
+			if item.Scope != "some.computer" {
+				t.Errorf("expected scope to be some.computer, got %v", item.Scope)
 			}
 
 			if llu, err := item.Attributes.Get("linkLocalUnicast"); err != nil || llu == false {
@@ -184,7 +184,7 @@ func TestIPGet(t *testing.T) {
 	})
 
 	t.Run("with ipv6 private address", func(t *testing.T) {
-		t.Run("in the global context", func(t *testing.T) {
+		t.Run("in the global scope", func(t *testing.T) {
 			item, err := src.Get(context.Background(), "global", "fd12:3456:789a:1::1")
 
 			if err != nil {
@@ -199,7 +199,7 @@ func TestIPGet(t *testing.T) {
 
 		})
 
-		t.Run("in another context", func(t *testing.T) {
+		t.Run("in another scope", func(t *testing.T) {
 			_, err := src.Get(context.Background(), "some.computer", "fd12:3456:789a:1::1")
 
 			if err == nil {
@@ -209,7 +209,7 @@ func TestIPGet(t *testing.T) {
 	})
 
 	t.Run("with ipv6 loopback address", func(t *testing.T) {
-		t.Run("in the global context", func(t *testing.T) {
+		t.Run("in the global scope", func(t *testing.T) {
 			// Link-local addresses are not guaranteed to be unique beyond their
 			// network segment, therefore routers do not forward packets with
 			// link-local source or destination addresses. This means that it
@@ -222,15 +222,15 @@ func TestIPGet(t *testing.T) {
 			}
 		})
 
-		t.Run("in another context", func(t *testing.T) {
+		t.Run("in another scope", func(t *testing.T) {
 			item, err := src.Get(context.Background(), "some.computer", "::1")
 
 			if err != nil {
 				t.Fatal(err)
 			}
 
-			if item.Context != "some.computer" {
-				t.Errorf("expected context to be some.computer, got %v", item.Context)
+			if item.Scope != "some.computer" {
+				t.Errorf("expected scope to be some.computer, got %v", item.Scope)
 			}
 
 			if loopback, err := item.Attributes.Get("loopback"); err != nil || loopback == false {
@@ -241,7 +241,7 @@ func TestIPGet(t *testing.T) {
 		})
 	})
 
-	t.Run("with a wildcard context", func(t *testing.T) {
+	t.Run("with a wildcard scope", func(t *testing.T) {
 		item, err := src.Get(context.Background(), sdp.WILDCARD, "213.21.3.187")
 
 		if err != nil {

@@ -1,6 +1,6 @@
 # stdlib
 
-The source includes a standard library of item types that should always be present. Many of these item types exist in the `global` context and serve to link together items in other contexts (e.g. ip addresses)
+The source includes a standard library of item types that should always be present. Many of these item types exist in the `global` scope and serve to link together items in other scopes (e.g. ip addresses)
 
 <!-- @import "[TOC]" {cmd="toc" depthFrom=2 depthTo=6 orderedList=false} -->
 
@@ -9,20 +9,20 @@ The source includes a standard library of item types that should always be prese
 - [Sources](#sources)
   - [Networksocket](#networksocket)
     - [`Get`](#get)
-    - [`Find`](#find)
+    - [`List`](#find)
   - [Certificate](#certificate)
     - [`Get`](#get-1)
-    - [`Find`](#find-1)
+    - [`List`](#find-1)
     - [`Search`](#search)
   - [DNS](#dns)
     - [`Get`](#get-2)
-    - [`Find`](#find-2)
+    - [`List`](#find-2)
   - [HTTP](#http)
     - [`Get`](#get-3)
-    - [`Find`](#find-3)
+    - [`List`](#find-3)
   - [IP](#ip)
     - [`Get`](#get-4)
-    - [`Find`](#find-4)
+    - [`List`](#find-4)
 - [Config](#config)
   - [`srcman` config](#srcman-config)
   - [Health Check](#health-check)
@@ -52,12 +52,12 @@ Example item:
             "socket": "www.google.com:443"
         }
     },
-    "context": "global",
+    "scope": "global",
     "linkedItemRequests": [
         {
             "type": "dns",
             "query": "www.google.com",
-            "context": "global"
+            "scope": "global"
         }
     ]
 }
@@ -71,7 +71,7 @@ Returns socket information for a given ip:port combo
 
 **Query format:** An IP and port in the format `ip:port`.
 
-#### `Find`
+#### `List`
 
 This method is not implemented. Use `Get` or `Search` instead
 
@@ -153,7 +153,7 @@ Example item:
             "version": 3
         }
     },
-    "context": "global",
+    "scope": "global",
     "linkedItemRequests": [
         {
             "type": "certificate",
@@ -167,7 +167,7 @@ Example item:
 
 This method is not implemented. Use `Search` instead
 
-#### `Find`
+#### `List`
 
 This method is not implemented. Use `Search` instead
 
@@ -224,27 +224,27 @@ Example item:
             "name": "one.one.one.one"
         }
     },
-    "context": "global",
+    "scope": "global",
     "linkedItemRequests": [
         {
             "type": "ip",
             "query": "2606:4700:4700::1001",
-            "context": "global"
+            "scope": "global"
         },
         {
             "type": "ip",
             "query": "2606:4700:4700::1111",
-            "context": "global"
+            "scope": "global"
         },
         {
             "type": "ip",
             "query": "1.0.0.1",
-            "context": "global"
+            "scope": "global"
         },
         {
             "type": "ip",
             "query": "1.1.1.1",
-            "context": "global"
+            "scope": "global"
         }
     ]
 }
@@ -256,7 +256,7 @@ Looks up the given host in DNS, returing the details if found.
 
 **Query format:** A hostname e.g. `www.google.com`
 
-#### `Find`
+#### `List`
 
 This method is not implemented.
 
@@ -296,7 +296,7 @@ Example item for a 200 response:
             "transferEncoding": []
         }
     },
-    "context": "global",
+    "scope": "global",
     "linkedItemRequests": [
         {
             "type": "certificate",
@@ -348,7 +348,7 @@ Example item for an error:
             "transferEncoding": []
         }
     },
-    "context": "global",
+    "scope": "global",
     "linkedItemRequests": [
         {
             "type": "certificate",
@@ -365,7 +365,7 @@ Runs a `HEAD` request agains the given URL
 
 **Query format:** A URL e.g. `https://www.google.com`
 
-#### `Find`
+#### `List`
 
 This method is not implemented.
 
@@ -391,7 +391,7 @@ Example item:
             "unspecified": false
         }
     },
-    "context": "global"
+    "scope": "global"
 }
 ```
 
@@ -402,7 +402,7 @@ Returns IP information for a given IPv4 or IPv6 address.
 
 **Query format:** An IP in a format that can be parsed by net.ParseIP() such as `192.0.2.1` or `2001:db8::68`
 
-#### `Find`
+#### `List`
 
 This method is not implemented.
 
