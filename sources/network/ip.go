@@ -26,20 +26,20 @@ func (s *IPSource) Weight() int {
 	return 100
 }
 
-// List of contexts that this source is capable of find items for
-func (s *IPSource) Contexts() []string {
+// List of scopes that this source is capable of find items for
+func (s *IPSource) Scopes() []string {
 	return []string{
-		// This supports all contexts since there might be local IPs that need
-		// to have a different context. E.g. 127.0.0.1 is a different logical
+		// This supports all scopes since there might be local IPs that need
+		// to have a different scope. E.g. 127.0.0.1 is a different logical
 		// address per computer since it referrs to "itself" This means we
 		// definitely don't want all thing that reference 127.0.0.1 linked
-		// together, only those in the same context
+		// together, only those in the same scope
 		//
-		// TODO: Make a recommendation for what the context should be when
+		// TODO: Make a recommendation for what the scope should be when
 		// looking up an IP in the local range. It's possible that an org could
 		// have the address (10.2.56.1) assigned to many devices (hopefully not,
 		// but I have seen it happen) and we would therefore want those IPs to
-		// have different contexts as they don't refer to the same thing
+		// have different scopes as they don't refer to the same thing
 		sdp.WILDCARD,
 	}
 }
@@ -52,7 +52,7 @@ func (s *IPSource) Contexts() []string {
 //
 // The purpose of this is mainly to provide a node in the graph that many things
 // can be linked to, rather than being particularly useful on its own
-func (bc *IPSource) Get(ctx context.Context, itemContext string, query string) (*sdp.Item, error) {
+func (bc *IPSource) Get(ctx context.Context, scope string, query string) (*sdp.Item, error) {
 	var ip net.IP
 	var err error
 	var attributes *sdp.ItemAttributes
@@ -64,42 +64,42 @@ func (bc *IPSource) Get(ctx context.Context, itemContext string, query string) (
 		return nil, &sdp.ItemRequestError{
 			ErrorType:   sdp.ItemRequestError_OTHER,
 			ErrorString: fmt.Sprintf("%v is not a valid IP", query),
-			Context:     itemContext,
+			Scope:       scope,
 		}
 	}
 
-	isGlobalIP = IsGlobalContextIP(ip)
+	isGlobalIP = IsGlobalScopeIP(ip)
 
-	// If the query was executed with a wildcard, and the context is global, we
+	// If the query was executed with a wildcard, and the scope is global, we
 	// might was well set it. If it's not then we have no way to determine the
-	// context so we need to return an error
-	if itemContext == sdp.WILDCARD {
+	// scope so we need to return an error
+	if scope == sdp.WILDCARD {
 		if isGlobalIP {
-			itemContext = "global"
+			scope = "global"
 		} else {
 			return nil, &sdp.ItemRequestError{
 				ErrorType:   sdp.ItemRequestError_NOTFOUND,
-				ErrorString: fmt.Sprintf("%v is not a globally-unique IP and therefore could exist in every context. Query with a wildcard does not work for non-global IPs", query),
-				Context:     itemContext,
+				ErrorString: fmt.Sprintf("%v is not a globally-unique IP and therefore could exist in every scope. Query with a wildcard does not work for non-global IPs", query),
+				Scope:       scope,
 			}
 		}
 	}
 
-	if itemContext == "global" {
-		if !IsGlobalContextIP(ip) {
+	if scope == "global" {
+		if !IsGlobalScopeIP(ip) {
 			return nil, &sdp.ItemRequestError{
 				ErrorType:   sdp.ItemRequestError_NOTFOUND,
-				ErrorString: fmt.Sprintf("%v is not a valid ip withing the global context. It must be request with some other context", query),
-				Context:     itemContext,
+				ErrorString: fmt.Sprintf("%v is not a valid ip withing the global scope. It must be request with some other scope", query),
+				Scope:       scope,
 			}
 		}
 	} else {
-		// If the context is non-global, ensure that the IP is not globally unique unique
-		if IsGlobalContextIP(ip) {
+		// If the scope is non-global, ensure that the IP is not globally unique unique
+		if IsGlobalScopeIP(ip) {
 			return nil, &sdp.ItemRequestError{
 				ErrorType:   sdp.ItemRequestError_NOTFOUND,
-				ErrorString: fmt.Sprintf("%v is a globally-unique IP and therefore only exists in the global context. Note that private IP ranges are also considered 'global' for convenience", query),
-				Context:     itemContext,
+				ErrorString: fmt.Sprintf("%v is a globally-unique IP and therefore only exists in the global scope. Note that private IP ranges are also considered 'global' for convenience", query),
+				Scope:       scope,
 			}
 		}
 	}
@@ -119,7 +119,7 @@ func (bc *IPSource) Get(ctx context.Context, itemContext string, query string) (
 		return nil, &sdp.ItemRequestError{
 			ErrorType:   sdp.ItemRequestError_OTHER,
 			ErrorString: err.Error(),
-			Context:     itemContext,
+			Scope:       scope,
 		}
 	}
 
@@ -127,26 +127,26 @@ func (bc *IPSource) Get(ctx context.Context, itemContext string, query string) (
 		Type:            "ip",
 		UniqueAttribute: "ip",
 		Attributes:      attributes,
-		Context:         itemContext,
+		Scope:           scope,
 	}, nil
 }
 
-// Find Returns an empty list as returning all possible IP addresses would be
+// List Returns an empty list as returning all possible IP addresses would be
 // unproductive
-func (bc *IPSource) Find(ctx context.Context, itemContext string) ([]*sdp.Item, error) {
-	if itemContext != "global" {
+func (bc *IPSource) List(ctx context.Context, scope string) ([]*sdp.Item, error) {
+	if scope != "global" {
 		return nil, &sdp.ItemRequestError{
-			ErrorType:   sdp.ItemRequestError_NOCONTEXT,
-			ErrorString: "IP queries only supported in global context",
-			Context:     itemContext,
+			ErrorType:   sdp.ItemRequestError_NOSCOPE,
+			ErrorString: "IP queries only supported in global scope",
+			Scope:       scope,
 		}
 	}
 
 	return make([]*sdp.Item, 0), nil
 }
 
-// IsGlobalContextIP Returns whether or not the IP should be considered valid
-// withing the global context according to the following logic:
+// IsGlobalScopeIP Returns whether or not the IP should be considered valid
+// withing the global scope according to the following logic:
 //
 // Non-Global:
 //
@@ -159,7 +159,6 @@ func (bc *IPSource) Find(ctx context.Context, itemContext string) ([]*sdp.Item, 
 //
 // * Private
 // * Other (All non-reserved addresses)
-//
-func IsGlobalContextIP(ip net.IP) bool {
+func IsGlobalScopeIP(ip net.IP) bool {
 	return !(ip.IsLinkLocalMulticast() || ip.IsLinkLocalUnicast() || ip.IsInterfaceLocalMulticast() || ip.IsLoopback())
 }

@@ -82,10 +82,10 @@ func TestCertificateGet(t *testing.T) {
 	}
 }
 
-func TestCertificateFind(t *testing.T) {
+func TestCertificateList(t *testing.T) {
 	src := CertificateSource{}
 
-	items, err := src.Find(context.Background(), "global")
+	items, err := src.List(context.Background(), "global")
 
 	if err != nil {
 		t.Error(err)

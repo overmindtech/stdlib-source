@@ -31,7 +31,7 @@ func CertToName(cert *x509.Certificate) string {
 // toHex converts bytes to their uppercase hex representation, separated by
 // colons
 func toHex(b []byte) string {
-	if b == nil || len(b) == 0 {
+	if len(b) == 0 {
 		return ""
 	}
 
@@ -60,10 +60,10 @@ func (s *CertificateSource) Name() string {
 	return "stdlib-certificate"
 }
 
-// List of contexts that this source is capable of find items for. If the
-// source supports all contexts the special value `AllContexts` ("*")
+// List of scopes that this source is capable of find items for. If the
+// source supports all scopes the special value `AllScopes` ("*")
 // should be used
-func (s *CertificateSource) Contexts() []string {
+func (s *CertificateSource) Scopes() []string {
 	return []string{
 		"global", // This is a reserved word meaning that the items should be considered globally unique
 	}
@@ -75,17 +75,17 @@ func (s *CertificateSource) Contexts() []string {
 // Rather than implement a source that knows how to make each of these
 // connections, instead we have created this source which takes the cert itself
 // as an input to Search() and parses it and returns the info
-func (s *CertificateSource) Get(ctx context.Context, itemContext string, query string) (*sdp.Item, error) {
+func (s *CertificateSource) Get(ctx context.Context, scope string, query string) (*sdp.Item, error) {
 	return nil, &sdp.ItemRequestError{
 		ErrorType:   sdp.ItemRequestError_NOTFOUND,
 		ErrorString: "certificate only responds to Search() requests. Consult the documentation",
-		Context:     itemContext,
+		Scope:       scope,
 	}
 }
 
-// Find Is not implemented for HTTP as this would require scanning many
+// List Is not implemented for HTTP as this would require scanning many
 // endpoints or something, doesn't really make sense
-func (s *CertificateSource) Find(ctx context.Context, itemContext string) ([]*sdp.Item, error) {
+func (s *CertificateSource) List(ctx context.Context, scope string) ([]*sdp.Item, error) {
 	items := make([]*sdp.Item, 0)
 
 	return items, nil
@@ -94,7 +94,7 @@ func (s *CertificateSource) Find(ctx context.Context, itemContext string) ([]*sd
 // Search This method takes a full certificate, or certificate bundle as input
 // (in PEM encoded format), parses them, and returns a items, one for each
 // certificate that was found
-func (s *CertificateSource) Search(ctx context.Context, itemContext string, query string) ([]*sdp.Item, error) {
+func (s *CertificateSource) Search(ctx context.Context, scope string, query string) ([]*sdp.Item, error) {
 	var errors []error
 	var items []*sdp.Item
 
@@ -104,7 +104,7 @@ func (s *CertificateSource) Search(ctx context.Context, itemContext string, quer
 		return nil, &sdp.ItemRequestError{
 			ErrorType:   sdp.ItemRequestError_OTHER,
 			ErrorString: err.Error(),
-			Context:     itemContext,
+			Scope:       scope,
 		}
 	}
 
@@ -148,7 +148,7 @@ func (s *CertificateSource) Search(ctx context.Context, itemContext string, quer
 			return nil, &sdp.ItemRequestError{
 				ErrorType:   sdp.ItemRequestError_OTHER,
 				ErrorString: err.Error(),
-				Context:     itemContext,
+				Scope:       scope,
 			}
 		}
 
@@ -222,7 +222,7 @@ func (s *CertificateSource) Search(ctx context.Context, itemContext string, quer
 			Type:            "certificate",
 			UniqueAttribute: "subject",
 			Attributes:      attributes,
-			Context:         itemContext,
+			Scope:           scope,
 		}
 
 		items = append(items, &item)
@@ -234,10 +234,10 @@ func (s *CertificateSource) Search(ctx context.Context, itemContext string, quer
 			// included in the bundle since the cache will correctly return the
 			// Get() request when it is run
 			item.LinkedItemRequests = append(item.LinkedItemRequests, &sdp.ItemRequest{
-				Type:    "certificate",
-				Method:  sdp.RequestMethod_GET,
-				Query:   cert.Issuer.String(),
-				Context: itemContext,
+				Type:   "certificate",
+				Method: sdp.RequestMethod_GET,
+				Query:  cert.Issuer.String(),
+				Scope:  scope,
 			})
 		}
 	}
@@ -247,7 +247,7 @@ func (s *CertificateSource) Search(ctx context.Context, itemContext string, quer
 		return items, &sdp.ItemRequestError{
 			ErrorType:   sdp.ItemRequestError_OTHER,
 			ErrorString: fmt.Sprintf("parsing all certs failed, errors: %v", errors),
-			Context:     itemContext,
+			Scope:       scope,
 		}
 	}
 

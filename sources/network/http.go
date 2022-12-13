@@ -32,26 +32,26 @@ func (s *HTTPSource) Name() string {
 	return "stdlib-http"
 }
 
-// List of contexts that this source is capable of find items for. If the
-// source supports all contexts the special value `AllContexts` ("*")
+// List of scopes that this source is capable of find items for. If the
+// source supports all scopes the special value `AllScopes` ("*")
 // should be used
-func (s *HTTPSource) Contexts() []string {
+func (s *HTTPSource) Scopes() []string {
 	return []string{
 		"global", // This is a reserved word meaning that the items should be considered globally unique
 	}
 }
 
-// Get Get a single item with a given context and query. The item returned
+// Get Get a single item with a given scope and query. The item returned
 // should have a UniqueAttributeValue that matches the `query` parameter. The
-// ctx parameter contains a golang context object which should be used to allow
+// ctx parameter contains a golang Context object which should be used to allow
 // this source to timeout or be cancelled when executing potentially
 // long-running actions
-func (s *HTTPSource) Get(ctx context.Context, itemContext string, query string) (*sdp.Item, error) {
-	if itemContext != "global" {
+func (s *HTTPSource) Get(ctx context.Context, scope string, query string) (*sdp.Item, error) {
+	if scope != "global" {
 		return nil, &sdp.ItemRequestError{
-			ErrorType:   sdp.ItemRequestError_NOCONTEXT,
-			ErrorString: "http is only supported in the 'global' context",
-			Context:     itemContext,
+			ErrorType:   sdp.ItemRequestError_NOSCOPE,
+			ErrorString: "http is only supported in the 'global' scope",
+			Scope:       scope,
 		}
 	}
 
@@ -77,7 +77,7 @@ func (s *HTTPSource) Get(ctx context.Context, itemContext string, query string) 
 		return nil, &sdp.ItemRequestError{
 			ErrorType:   sdp.ItemRequestError_OTHER,
 			ErrorString: err.Error(),
-			Context:     itemContext,
+			Scope:       scope,
 		}
 	}
 
@@ -92,7 +92,7 @@ func (s *HTTPSource) Get(ctx context.Context, itemContext string, query string) 
 		return nil, &sdp.ItemRequestError{
 			ErrorType:   sdp.ItemRequestError_OTHER,
 			ErrorString: err.Error(),
-			Context:     itemContext,
+			Scope:       scope,
 		}
 	}
 
@@ -122,7 +122,7 @@ func (s *HTTPSource) Get(ctx context.Context, itemContext string, query string) 
 		return nil, &sdp.ItemRequestError{
 			ErrorType:   sdp.ItemRequestError_OTHER,
 			ErrorString: err.Error(),
-			Context:     itemContext,
+			Scope:       scope,
 		}
 	}
 
@@ -130,7 +130,7 @@ func (s *HTTPSource) Get(ctx context.Context, itemContext string, query string) 
 		Type:            "http",
 		UniqueAttribute: "name",
 		Attributes:      attributes,
-		Context:         "global",
+		Scope:           "global",
 	}
 
 	var socketQuery string
@@ -152,27 +152,27 @@ func (s *HTTPSource) Get(ctx context.Context, itemContext string, query string) 
 	}
 
 	item.LinkedItemRequests = append(item.LinkedItemRequests, &sdp.ItemRequest{
-		Type:    "networksocket",
-		Method:  sdp.RequestMethod_SEARCH,
-		Query:   socketQuery,
-		Context: "global",
+		Type:   "networksocket",
+		Method: sdp.RequestMethod_SEARCH,
+		Query:  socketQuery,
+		Scope:  "global",
 	})
 
 	if ip := net.ParseIP(req.URL.Hostname()); ip != nil {
 		// If the host is an IP, add a linked item to that IP address
 		item.LinkedItemRequests = append(item.LinkedItemRequests, &sdp.ItemRequest{
-			Type:    "ip",
-			Method:  sdp.RequestMethod_GET,
-			Query:   ip.String(),
-			Context: "global",
+			Type:   "ip",
+			Method: sdp.RequestMethod_GET,
+			Query:  ip.String(),
+			Scope:  "global",
 		})
 	} else {
 		// If the host is not an ip, try to resolve via DNS
 		item.LinkedItemRequests = append(item.LinkedItemRequests, &sdp.ItemRequest{
-			Type:    "dns",
-			Method:  sdp.RequestMethod_GET,
-			Query:   req.URL.Hostname(),
-			Context: "global",
+			Type:   "dns",
+			Method: sdp.RequestMethod_GET,
+			Query:  req.URL.Hostname(),
+			Scope:  "global",
 		})
 	}
 
@@ -216,10 +216,10 @@ func (s *HTTPSource) Get(ctx context.Context, itemContext string, query string) 
 			}
 
 			item.LinkedItemRequests = append(item.LinkedItemRequests, &sdp.ItemRequest{
-				Type:    "certificate",
-				Method:  sdp.RequestMethod_SEARCH,
-				Query:   strings.Join(certs, "\n"),
-				Context: itemContext,
+				Type:   "certificate",
+				Method: sdp.RequestMethod_SEARCH,
+				Query:  strings.Join(certs, "\n"),
+				Scope:  scope,
 			})
 		}
 	}
@@ -227,10 +227,10 @@ func (s *HTTPSource) Get(ctx context.Context, itemContext string, query string) 
 	if res.StatusCode >= 300 && res.StatusCode < 400 {
 		if loc := res.Header.Get("Location"); loc != "" {
 			item.LinkedItemRequests = append(item.LinkedItemRequests, &sdp.ItemRequest{
-				Type:    "http",
-				Method:  sdp.RequestMethod_GET,
-				Query:   loc,
-				Context: itemContext,
+				Type:   "http",
+				Method: sdp.RequestMethod_GET,
+				Query:  loc,
+				Scope:  scope,
 			})
 		}
 	}
@@ -238,9 +238,9 @@ func (s *HTTPSource) Get(ctx context.Context, itemContext string, query string) 
 	return &item, nil
 }
 
-// Find Is not implemented for HTTP as this would require scanning many
+// List Is not implemented for HTTP as this would require scanning many
 // endpoints or something, doesn't really make sense
-func (s *HTTPSource) Find(ctx context.Context, itemContext string) ([]*sdp.Item, error) {
+func (s *HTTPSource) List(ctx context.Context, scope string) ([]*sdp.Item, error) {
 	items := make([]*sdp.Item, 0)
 
 	return items, nil

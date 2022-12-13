@@ -50,7 +50,7 @@ func TestDnsGet(t *testing.T) {
 		}
 	})
 
-	t.Run("bad context", func(t *testing.T) {
+	t.Run("bad scope", func(t *testing.T) {
 		_, err := src.Get(context.Background(), "something.local.test", "something.does.not.exist.please.testing")
 
 		if err == nil {
@@ -58,8 +58,8 @@ func TestDnsGet(t *testing.T) {
 		}
 
 		if sdpErr, ok := err.(*sdp.ItemRequestError); ok {
-			if sdpErr.ErrorType != sdp.ItemRequestError_NOCONTEXT {
-				t.Errorf("Expected error type to be NOCONTEXT, got %v", sdpErr.ErrorType)
+			if sdpErr.ErrorType != sdp.ItemRequestError_NOSCOPE {
+				t.Errorf("Expected error type to be NOSCOPE, got %v", sdpErr.ErrorType)
 			}
 		} else {
 			t.Errorf("expected error type to be *sdp.ItemRequestError, got %t", err)

@@ -26,8 +26,8 @@ func (s *DNSSource) Weight() int {
 	return 100
 }
 
-// List of contexts that this source is capable of find items for
-func (s *DNSSource) Contexts() []string {
+// List of scopes that this source is capable of find items for
+func (s *DNSSource) Scopes() []string {
 	return []string{
 		// DNS entries *should* be globally unique
 		"global",
@@ -35,12 +35,12 @@ func (s *DNSSource) Contexts() []string {
 }
 
 // Gets a single item. This expects a DNS name
-func (bc *DNSSource) Get(ctx context.Context, itemContext string, query string) (*sdp.Item, error) {
-	if itemContext != "global" {
+func (bc *DNSSource) Get(ctx context.Context, scope string, query string) (*sdp.Item, error) {
+	if scope != "global" {
 		return nil, &sdp.ItemRequestError{
-			ErrorType:   sdp.ItemRequestError_NOCONTEXT,
-			ErrorString: "DNS queries only supported in global context",
-			Context:     itemContext,
+			ErrorType:   sdp.ItemRequestError_NOSCOPE,
+			ErrorString: "DNS queries only supported in global scope",
+			Scope:       scope,
 		}
 	}
 
@@ -62,10 +62,10 @@ func (bc *DNSSource) Get(ctx context.Context, itemContext string, query string) 
 	for _, ip := range ips {
 		// Link this to a "global" IP object
 		i.LinkedItemRequests = append(i.LinkedItemRequests, &sdp.ItemRequest{
-			Context: "global",
-			Method:  sdp.RequestMethod_GET,
-			Query:   ip,
-			Type:    "ip",
+			Scope:  "global",
+			Method: sdp.RequestMethod_GET,
+			Query:  ip,
+			Type:   "ip",
 		})
 
 		// Convert IPs to a slice of interfaces since this is what protobuf needs in
@@ -81,7 +81,7 @@ func (bc *DNSSource) Get(ctx context.Context, itemContext string, query string) 
 				return &i, &sdp.ItemRequestError{
 					ErrorType:   sdp.ItemRequestError_NOTFOUND,
 					ErrorString: err.Error(),
-					Context:     itemContext,
+					Scope:       scope,
 				}
 			}
 		}
@@ -91,7 +91,7 @@ func (bc *DNSSource) Get(ctx context.Context, itemContext string, query string) 
 
 	i.Type = "dns"
 	i.UniqueAttribute = "name"
-	i.Context = "global"
+	i.Scope = "global"
 	i.Attributes, err = sdp.ToAttributes(map[string]interface{}{
 		"name": query,
 		"ips":  ipsInterface,
@@ -100,13 +100,13 @@ func (bc *DNSSource) Get(ctx context.Context, itemContext string, query string) 
 	return &i, err
 }
 
-// Find calls back to the FindFunction to find all items
-func (bc *DNSSource) Find(ctx context.Context, itemContext string) ([]*sdp.Item, error) {
-	if itemContext != "global" {
+// List calls back to the ListFunction to find all items
+func (bc *DNSSource) List(ctx context.Context, scope string) ([]*sdp.Item, error) {
+	if scope != "global" {
 		return nil, &sdp.ItemRequestError{
-			ErrorType:   sdp.ItemRequestError_NOCONTEXT,
-			ErrorString: "DNS queries only supported in global context",
-			Context:     itemContext,
+			ErrorType:   sdp.ItemRequestError_NOSCOPE,
+			ErrorString: "DNS queries only supported in global scope",
+			Scope:       scope,
 		}
 	}
 
