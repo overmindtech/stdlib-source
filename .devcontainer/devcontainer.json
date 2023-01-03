@@ -1,34 +1,27 @@
-// For format details, see https://aka.ms/devcontainer.json. For config options, see the README at:
-// https://github.com/microsoft/vscode-dev-containers/tree/v0.245.0/containers/go
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/go
 {
-	"name": "Go",
-	"build": {
-		"dockerfile": "Dockerfile",
-		"args": {
-			// Update the VARIANT arg to pick a version of Go: 1, 1.19, 1.18
-			// Append -bullseye or -buster to pin to an OS version.
-			// Use -bullseye variants on local arm64/Apple Silicon.
-			"VARIANT": "1.19",
-			// Options
-			"NODE_VERSION": "none"
-		}
-	},
-	"runArgs": [ "--cap-add=SYS_PTRACE", "--security-opt", "seccomp=unconfined" ],
+	"name": "stdlib-source",
+	"dockerComposeFile": "docker-compose.yml",
+	"service": "devcontainer",
+	"workspaceFolder": "/workspace/stdlib-source",
 
 	// Configure tool-specific properties.
 	"customizations": {
 		// Configure properties specific to VS Code.
 		"vscode": {
 			// Set *default* container specific settings.json values on container create.
-			"settings": { 
+			"settings": {
 				"go.toolsManagement.checkForUpdates": "local",
 				"go.useLanguageServer": true,
 				"go.gopath": "/go"
 			},
-			
 			// Add the IDs of extensions you want installed when the container is created.
 			"extensions": [
-				"golang.Go"
+				"github.vscode-pull-request-github",
+				"golang.go",
+				"gruntfuggly.todo-tree",
+				"streetsidesoftware.code-spell-checker"
 			]
 		}
 	},
@@ -37,8 +30,15 @@
 	// "forwardPorts": [],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "go version",
+	"postCreateCommand": ["./.devcontainer/setup.sh"],
 
-	// Comment out to connect as root instead. More info: https://aka.ms/vscode-remote/containers/non-root.
-	"remoteUser": "vscode"
+	"features": {
+		"ghcr.io/devcontainers/features/github-cli:1": {}
+	},
+
+	// Set up environment variables in the remote container. These will need to
+	// be set locally first using:
+	// https://github.com/overmindtech/auth0-test-data
+	"remoteEnv": {
+	}
 }
