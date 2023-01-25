@@ -1,4 +1,4 @@
-name: Tests
+name: Test & Build
 on: push
 jobs:
   test:
@@ -73,3 +73,13 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           platforms: linux/amd64,linux/arm64
+
+      - name: Prepare Deployment
+        run: |
+          echo "ghcr.io/overmindtech/stdlib-source@${{ steps.push.outputs.digest }}" | tee stdlib-source.imageref
+
+      - name: Upload Deployment File
+        uses: actions/upload-artifact@v3
+        with:
+          name: stdlib-source.imageref
+          path: stdlib-source.imageref
