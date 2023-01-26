@@ -35,7 +35,15 @@ var rootCmd = &cobra.Command{
 (usually) and able to be queried without authentication.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
-		defer sentry.Recover()
+		defer func() {
+			err := recover()
+
+			if err != nil {
+				sentry.CurrentHub().Recover(err)
+				defer sentry.Flush(time.Second * 5)
+				panic(err)
+			}
+		}()
 
 		// Get srcman supplied config
 		natsServers := viper.GetStringSlice("nats-servers")
