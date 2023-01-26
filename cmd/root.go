@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/getsentry/sentry-go"
 	"github.com/nats-io/jwt/v2"
 	"github.com/nats-io/nkeys"
 	"github.com/overmindtech/connect"
@@ -18,6 +19,7 @@ import (
 	"github.com/overmindtech/stdlib-source/sources/network"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -33,6 +35,8 @@ var rootCmd = &cobra.Command{
 (usually) and able to be queried without authentication.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
+		defer sentry.Recover()
+
 		// Get srcman supplied config
 		natsServers := viper.GetStringSlice("nats-servers")
 		natsNamePrefix := viper.GetString("nats-name-prefix")
@@ -123,6 +127,7 @@ var rootCmd = &cobra.Command{
 		}).Debug("Starting healthcheck server")
 
 		go func() {
+			defer sentry.Recover()
 			log.Fatal(http.ListenAndServe(":8080", nil))
 		}()
 
@@ -197,6 +202,11 @@ func init() {
 	rootCmd.PersistentFlags().String("nats-nkey-seed", "", "The NKey seed which corresponds to the NATS JWT e.g. SUAFK6QUC...")
 	rootCmd.PersistentFlags().Int("max-parallel", (runtime.NumCPU() * 10), "Max number of requests to run in parallel")
 
+	// tracing
+	rootCmd.PersistentFlags().String("honeycomb-api-key", "", "If specified, configures opentelemetry libraries to submit traces to honeycomb")
+	rootCmd.PersistentFlags().String("sentry-dsn", "", "If specified, configures sentry libraries to capture errors")
+	rootCmd.PersistentFlags().String("run-mode", "release", "Set the run mode for this service, 'release', 'debug' or 'test'. Defaults to 'release'.")
+
 	// Bind these to viper
 	viper.BindPFlags(rootCmd.PersistentFlags())
 
@@ -206,6 +216,9 @@ func init() {
 			log.SetLevel(lvl)
 		} else {
 			log.SetLevel(log.InfoLevel)
+			log.WithFields(log.Fields{
+				"error": err,
+			}).Error("Could not parse log level")
 		}
 
 		// Bind flags that haven't been set to the values from viper of we have them
@@ -215,6 +228,22 @@ func init() {
 				viper.BindPFlag(f.Name, f)
 			}
 		})
+
+		honeycomb_api_key := viper.GetString("honeycomb-api-key")
+		tracingOpts := make([]otlptracehttp.Option, 0)
+		if honeycomb_api_key != "" {
+			tracingOpts = []otlptracehttp.Option{
+				otlptracehttp.WithEndpoint("api.honeycomb.io"),
+				otlptracehttp.WithHeaders(map[string]string{"x-honeycomb-team": honeycomb_api_key}),
+			}
+		}
+		if err := initTracing(tracingOpts...); err != nil {
+			log.Fatal(err)
+		}
+	}
+	// shut down tracing at the end of the process
+	rootCmd.PersistentPostRun = func(cmd *cobra.Command, args []string) {
+		shutdownTracing()
 	}
 }
 
