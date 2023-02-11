@@ -229,6 +229,8 @@ func init() {
 			}).Error("Could not parse log level")
 		}
 
+		log.AddHook(TerminationLogHook{})
+
 		// Bind flags that haven't been set to the values from viper of we have them
 		cmd.PersistentFlags().VisitAll(func(f *pflag.Flag) {
 			// Bind the flag to viper only if it has a non-empty default
@@ -293,4 +295,31 @@ func createTokenClient(natsJWT string, natsNKeySeed string) (connect.TokenClient
 	}
 
 	return connect.NewBasicTokenClient(natsJWT, kp), nil
+}
+
+// TerminationLogHook A hook that logs fatal errors to the termination log
+type TerminationLogHook struct{}
+
+func (t TerminationLogHook) Levels() []log.Level {
+	return []log.Level{log.FatalLevel}
+}
+
+func (t TerminationLogHook) Fire(e *log.Entry) error {
+	tLog, err := os.OpenFile("/dev/termination-log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+
+	if err != nil {
+		return err
+	}
+
+	var message string
+
+	message = e.Message
+
+	for k, v := range e.Data {
+		message = fmt.Sprintf("%v %v=%v", message, k, v)
+	}
+
+	_, err = tLog.WriteString(message)
+
+	return err
 }
