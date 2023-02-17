@@ -90,21 +90,20 @@ var rootCmd = &cobra.Command{
 			}
 		}
 
-		e := discovery.Engine{
-			Name: "stdlib-source",
-			NATSOptions: &connect.NATSOptions{
-				NumRetries:        -1,
-				RetryDelay:        5 * time.Second,
-				Servers:           natsServers,
-				ConnectionName:    fmt.Sprintf("%v.%v", natsNamePrefix, hostname),
-				ConnectionTimeout: (10 * time.Second), // TODO: Make configurable
-				MaxReconnects:     -1,
-				ReconnectWait:     1 * time.Second,
-				ReconnectJitter:   1 * time.Second,
-				TokenClient:       tokenClient,
-			},
-			MaxParallelExecutions: maxParallel,
+		e := discovery.NewEngine()
+		e.Name = "stdlib-source"
+		e.NATSOptions = &connect.NATSOptions{
+			NumRetries:        -1,
+			RetryDelay:        5 * time.Second,
+			Servers:           natsServers,
+			ConnectionName:    fmt.Sprintf("%v.%v", natsNamePrefix, hostname),
+			ConnectionTimeout: (10 * time.Second), // TODO: Make configurable
+			MaxReconnects:     -1,
+			ReconnectWait:     1 * time.Second,
+			ReconnectJitter:   1 * time.Second,
+			TokenClient:       tokenClient,
 		}
+		e.MaxParallelExecutions = maxParallel
 
 		// ⚠️ Here is where you add your sources
 		sources := []discovery.Source{
