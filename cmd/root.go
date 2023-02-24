@@ -90,7 +90,12 @@ var rootCmd = &cobra.Command{
 			}
 		}
 
-		e := discovery.NewEngine()
+		e, err := discovery.NewEngine()
+		if err != nil {
+			log.WithFields(log.Fields{
+				"error": err.Error(),
+			}).Fatal("Error initializing Engine")
+		}
 		e.Name = "stdlib-source"
 		e.NATSOptions = &connect.NATSOptions{
 			NumRetries:        -1,
