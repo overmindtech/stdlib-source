@@ -10,6 +10,14 @@ import (
 
 type SocketSource struct{}
 
+//go:generate docgen ../../doc
+// +overmind:type networksocket
+// +overmind:get Query must be in the format ip:port
+// +overmind:list **Not supported**
+
+// +overmind:description Similar to IP, but containing port details. This source
+// is of dubious value and my be removed
+
 // Type The type of items that this source is capable of finding
 func (s *SocketSource) Type() string {
 	return "networksocket"

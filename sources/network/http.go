@@ -15,12 +15,17 @@ import (
 
 const USER_AGENT_VERSION = "0.1"
 
-type HTTPSource struct {
-	// If you were writing a source that needed to store some state or config,
-	// you would store that config in here. Since this is just static and
-	// doesn't connect to any other systems that might warrant configuration,
-	// we'll leave this blank
-}
+//go:generate docgen ../../doc
+// +overmind:type http
+// +overmind:get A HTTP endpoint to run a `HEAD` request against
+// +overmind:list **Not supported**
+
+// +overmind:description The HTTP search gathers information about HTTP (or
+// HTTPS) endpoints by running a HEAD request against them. This means that we
+// get the headers, certificate, code etc. without needing to download the
+// entire page
+
+type HTTPSource struct{}
 
 // Type The type of items that this source is capable of finding
 func (s *HTTPSource) Type() string {

@@ -8,6 +8,14 @@ import (
 	"github.com/overmindtech/sdp-go"
 )
 
+//go:generate docgen ../../doc
+// +overmind:type dns
+// +overmind:get A DNS entry to look up
+// +overmind:list **Not supported**
+
+// +overmind:description Queries DNS records, currently this resolves directly
+// to IP addresses rather than CNAMEs etc.
+
 // DNSSource struct on which all methods are registered
 type DNSSource struct{}
 
