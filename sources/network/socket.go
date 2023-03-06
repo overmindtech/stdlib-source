@@ -44,8 +44,8 @@ func (s *SocketSource) Get(ctx context.Context, scope string, query string) (*sd
 	})
 
 	if err != nil {
-		return nil, &sdp.ItemRequestError{
-			ErrorType:   sdp.ItemRequestError_OTHER,
+		return nil, &sdp.QueryError{
+			ErrorType:   sdp.QueryError_OTHER,
 			ErrorString: err.Error(),
 			Scope:       scope,
 		}
@@ -65,8 +65,8 @@ func (s *SocketSource) Get(ctx context.Context, scope string, query string) (*sd
 		if ip := net.ParseIP(host); ip != nil {
 			// Make sure that the IP is valid within this scope
 			if scope == "global" && !IsGlobalScopeIP(ip) {
-				return nil, &sdp.ItemRequestError{
-					ErrorType:   sdp.ItemRequestError_NOTFOUND,
+				return nil, &sdp.QueryError{
+					ErrorType:   sdp.QueryError_NOTFOUND,
 					ErrorString: fmt.Sprintf("%v is not a globally scoped IP. It must be requested with a scope other than global", ip.String()),
 					Scope:       scope,
 				}
@@ -75,22 +75,22 @@ func (s *SocketSource) Get(ctx context.Context, scope string, query string) (*sd
 			item.Attributes.Set("ip", host)
 			item.Attributes.Set("port", port)
 
-			item.LinkedItemRequests = append(item.LinkedItemRequests, &sdp.ItemRequest{
+			item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.Query{
 				Type:   "ip",
 				Method: sdp.RequestMethod_GET,
 				Query:  host,
 				Scope:  scope,
 			})
 		} else {
-			return nil, &sdp.ItemRequestError{
-				ErrorType:   sdp.ItemRequestError_OTHER,
+			return nil, &sdp.QueryError{
+				ErrorType:   sdp.QueryError_OTHER,
 				ErrorString: fmt.Sprintf("%v could not be parsed as an IP address", host),
 				Scope:       scope,
 			}
 		}
 	} else {
-		return nil, &sdp.ItemRequestError{
-			ErrorType:   sdp.ItemRequestError_OTHER,
+		return nil, &sdp.QueryError{
+			ErrorType:   sdp.QueryError_OTHER,
 			ErrorString: err.Error(),
 			Scope:       scope,
 		}
@@ -121,13 +121,13 @@ func (s *SocketSource) Search(ctx context.Context, scope string, query string) (
 	var ips []net.IP
 	var items []*sdp.Item
 
-	linkedItemRequests := make([]*sdp.ItemRequest, 0)
+	linkedItemQueries := make([]*sdp.Query, 0)
 
 	host, port, err = net.SplitHostPort(query)
 
 	if err != nil {
-		return []*sdp.Item{}, &sdp.ItemRequestError{
-			ErrorType:   sdp.ItemRequestError_OTHER,
+		return []*sdp.Item{}, &sdp.QueryError{
+			ErrorType:   sdp.QueryError_OTHER,
 			ErrorString: err.Error(),
 			Scope:       scope,
 		}
@@ -138,14 +138,14 @@ func (s *SocketSource) Search(ctx context.Context, scope string, query string) (
 		ips, err = net.DefaultResolver.LookupIP(ctx, "ip", host)
 
 		if err != nil {
-			return []*sdp.Item{}, &sdp.ItemRequestError{
-				ErrorType:   sdp.ItemRequestError_NOTFOUND,
+			return []*sdp.Item{}, &sdp.QueryError{
+				ErrorType:   sdp.QueryError_NOTFOUND,
 				ErrorString: err.Error(),
 				Scope:       scope,
 			}
 		}
 
-		linkedItemRequests = append(linkedItemRequests, &sdp.ItemRequest{
+		linkedItemQueries = append(linkedItemQueries, &sdp.Query{
 			Type:   "dns",
 			Method: sdp.RequestMethod_GET,
 			Query:  host,
@@ -165,7 +165,7 @@ func (s *SocketSource) Search(ctx context.Context, scope string, query string) (
 		}
 
 		// Append DNS query if required
-		item.LinkedItemRequests = append(item.LinkedItemRequests, linkedItemRequests...)
+		item.LinkedItemQueries = append(item.LinkedItemQueries, linkedItemQueries...)
 
 		items = append(items, item)
 	}

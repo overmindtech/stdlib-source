@@ -50,7 +50,7 @@ func TestHTTPGet(t *testing.T) {
 		var socketFound bool
 		var dnsFound bool
 
-		for _, link := range item.LinkedItemRequests {
+		for _, link := range item.LinkedItemQueries {
 			switch link.Type {
 			case "networksocket":
 				socketFound = true
@@ -88,7 +88,7 @@ func TestHTTPGet(t *testing.T) {
 		var socketFound bool
 		var ipFound bool
 
-		for _, link := range item.LinkedItemRequests {
+		for _, link := range item.LinkedItemQueries {
 			switch link.Type {
 			case "networksocket":
 				socketFound = true
@@ -189,7 +189,7 @@ func TestHTTPGet(t *testing.T) {
 			t.Errorf("expected status to be 301, got: %v", status)
 		}
 
-		if len(item.LinkedItemRequests) == 0 {
+		if len(item.LinkedItemQueries) == 0 {
 			t.Error("expected a linked item to redirected location, got none")
 		}
 

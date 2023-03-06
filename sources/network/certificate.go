@@ -76,8 +76,8 @@ func (s *CertificateSource) Scopes() []string {
 // connections, instead we have created this source which takes the cert itself
 // as an input to Search() and parses it and returns the info
 func (s *CertificateSource) Get(ctx context.Context, scope string, query string) (*sdp.Item, error) {
-	return nil, &sdp.ItemRequestError{
-		ErrorType:   sdp.ItemRequestError_NOTFOUND,
+	return nil, &sdp.QueryError{
+		ErrorType:   sdp.QueryError_NOTFOUND,
 		ErrorString: "certificate only responds to Search() requests. Consult the documentation",
 		Scope:       scope,
 	}
@@ -101,8 +101,8 @@ func (s *CertificateSource) Search(ctx context.Context, scope string, query stri
 	bundle, err := decodePem(query)
 
 	if err != nil {
-		return nil, &sdp.ItemRequestError{
-			ErrorType:   sdp.ItemRequestError_OTHER,
+		return nil, &sdp.QueryError{
+			ErrorType:   sdp.QueryError_OTHER,
 			ErrorString: err.Error(),
 			Scope:       scope,
 		}
@@ -145,8 +145,8 @@ func (s *CertificateSource) Search(ctx context.Context, scope string, query stri
 		})
 
 		if err != nil {
-			return nil, &sdp.ItemRequestError{
-				ErrorType:   sdp.ItemRequestError_OTHER,
+			return nil, &sdp.QueryError{
+				ErrorType:   sdp.QueryError_OTHER,
 				ErrorString: err.Error(),
 				Scope:       scope,
 			}
@@ -233,7 +233,7 @@ func (s *CertificateSource) Search(ctx context.Context, scope string, query stri
 			// still work for linking as long as the referenced cert has been
 			// included in the bundle since the cache will correctly return the
 			// Get() request when it is run
-			item.LinkedItemRequests = append(item.LinkedItemRequests, &sdp.ItemRequest{
+			item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.Query{
 				Type:   "certificate",
 				Method: sdp.RequestMethod_GET,
 				Query:  cert.Issuer.String(),
@@ -244,8 +244,8 @@ func (s *CertificateSource) Search(ctx context.Context, scope string, query stri
 
 	// If all failed return an error
 	if len(errors) == len(bundle.Certificate) {
-		return items, &sdp.ItemRequestError{
-			ErrorType:   sdp.ItemRequestError_OTHER,
+		return items, &sdp.QueryError{
+			ErrorType:   sdp.QueryError_OTHER,
 			ErrorString: fmt.Sprintf("parsing all certs failed, errors: %v", errors),
 			Scope:       scope,
 		}

@@ -35,8 +35,8 @@ func TestSocketGet(t *testing.T) {
 			t.Errorf("expected port to be 5432, got %v%v", err, x)
 		}
 
-		if len(item.LinkedItemRequests) != 1 {
-			t.Errorf("expected 1 linked item request, got %v", len(item.LinkedItemRequests))
+		if len(item.LinkedItemQueries) != 1 {
+			t.Errorf("expected 1 linked item request, got %v", len(item.LinkedItemQueries))
 		}
 	})
 
@@ -85,8 +85,8 @@ func TestSocketSearch(t *testing.T) {
 
 		firstItem := items[0]
 
-		if len(firstItem.LinkedItemRequests) < 2 {
-			t.Fatalf("expected >= 2 linked items requests, got %v", len(firstItem.LinkedItemRequests))
+		if len(firstItem.LinkedItemQueries) < 2 {
+			t.Fatalf("expected >= 2 linked items requests, got %v", len(firstItem.LinkedItemQueries))
 		}
 	})
 

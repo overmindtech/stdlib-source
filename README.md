@@ -53,7 +53,7 @@ Example item:
         }
     },
     "scope": "global",
-    "linkedItemRequests": [
+    "linkedItemQueries": [
         {
             "type": "dns",
             "query": "www.google.com",
@@ -100,7 +100,7 @@ for _, cert := range tlsState.PeerCertificates {
 }
 
 // Create a linked item request with the PEM bundle
-request := sdp.ItemRequest{
+request := sdp.Query{
   Type:   "certificate",
   Method: sdp.RequestMethod_SEARCH,
   Query:  strings.Join(certs, "\n"),
@@ -154,7 +154,7 @@ Example item:
         }
     },
     "scope": "global",
-    "linkedItemRequests": [
+    "linkedItemQueries": [
         {
             "type": "certificate",
             "query": "CN=DigiCert High Assurance EV Root CA,OU=www.digicert.com,O=DigiCert Inc,C=US"
@@ -225,7 +225,7 @@ Example item:
         }
     },
     "scope": "global",
-    "linkedItemRequests": [
+    "linkedItemQueries": [
         {
             "type": "ip",
             "query": "2606:4700:4700::1001",
@@ -297,7 +297,7 @@ Example item for a 200 response:
         }
     },
     "scope": "global",
-    "linkedItemRequests": [
+    "linkedItemQueries": [
         {
             "type": "certificate",
             "method": 2,
@@ -349,7 +349,7 @@ Example item for an error:
         }
     },
     "scope": "global",
-    "linkedItemRequests": [
+    "linkedItemQueries": [
         {
             "type": "certificate",
             "method": 2,

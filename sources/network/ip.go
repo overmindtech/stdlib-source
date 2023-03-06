@@ -61,8 +61,8 @@ func (bc *IPSource) Get(ctx context.Context, scope string, query string) (*sdp.I
 	ip = net.ParseIP(query)
 
 	if ip == nil {
-		return nil, &sdp.ItemRequestError{
-			ErrorType:   sdp.ItemRequestError_OTHER,
+		return nil, &sdp.QueryError{
+			ErrorType:   sdp.QueryError_OTHER,
 			ErrorString: fmt.Sprintf("%v is not a valid IP", query),
 			Scope:       scope,
 		}
@@ -77,8 +77,8 @@ func (bc *IPSource) Get(ctx context.Context, scope string, query string) (*sdp.I
 		if isGlobalIP {
 			scope = "global"
 		} else {
-			return nil, &sdp.ItemRequestError{
-				ErrorType:   sdp.ItemRequestError_NOTFOUND,
+			return nil, &sdp.QueryError{
+				ErrorType:   sdp.QueryError_NOTFOUND,
 				ErrorString: fmt.Sprintf("%v is not a globally-unique IP and therefore could exist in every scope. Query with a wildcard does not work for non-global IPs", query),
 				Scope:       scope,
 			}
@@ -87,8 +87,8 @@ func (bc *IPSource) Get(ctx context.Context, scope string, query string) (*sdp.I
 
 	if scope == "global" {
 		if !IsGlobalScopeIP(ip) {
-			return nil, &sdp.ItemRequestError{
-				ErrorType:   sdp.ItemRequestError_NOTFOUND,
+			return nil, &sdp.QueryError{
+				ErrorType:   sdp.QueryError_NOTFOUND,
 				ErrorString: fmt.Sprintf("%v is not a valid ip withing the global scope. It must be request with some other scope", query),
 				Scope:       scope,
 			}
@@ -96,8 +96,8 @@ func (bc *IPSource) Get(ctx context.Context, scope string, query string) (*sdp.I
 	} else {
 		// If the scope is non-global, ensure that the IP is not globally unique unique
 		if IsGlobalScopeIP(ip) {
-			return nil, &sdp.ItemRequestError{
-				ErrorType:   sdp.ItemRequestError_NOTFOUND,
+			return nil, &sdp.QueryError{
+				ErrorType:   sdp.QueryError_NOTFOUND,
 				ErrorString: fmt.Sprintf("%v is a globally-unique IP and therefore only exists in the global scope. Note that private IP ranges are also considered 'global' for convenience", query),
 				Scope:       scope,
 			}
@@ -116,8 +116,8 @@ func (bc *IPSource) Get(ctx context.Context, scope string, query string) (*sdp.I
 	})
 
 	if err != nil {
-		return nil, &sdp.ItemRequestError{
-			ErrorType:   sdp.ItemRequestError_OTHER,
+		return nil, &sdp.QueryError{
+			ErrorType:   sdp.QueryError_OTHER,
 			ErrorString: err.Error(),
 			Scope:       scope,
 		}
@@ -135,8 +135,8 @@ func (bc *IPSource) Get(ctx context.Context, scope string, query string) (*sdp.I
 // unproductive
 func (bc *IPSource) List(ctx context.Context, scope string) ([]*sdp.Item, error) {
 	if scope != "global" {
-		return nil, &sdp.ItemRequestError{
-			ErrorType:   sdp.ItemRequestError_NOSCOPE,
+		return nil, &sdp.QueryError{
+			ErrorType:   sdp.QueryError_NOSCOPE,
 			ErrorString: "IP queries only supported in global scope",
 			Scope:       scope,
 		}

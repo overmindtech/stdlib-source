@@ -48,8 +48,8 @@ func (s *HTTPSource) Scopes() []string {
 // long-running actions
 func (s *HTTPSource) Get(ctx context.Context, scope string, query string) (*sdp.Item, error) {
 	if scope != "global" {
-		return nil, &sdp.ItemRequestError{
-			ErrorType:   sdp.ItemRequestError_NOSCOPE,
+		return nil, &sdp.QueryError{
+			ErrorType:   sdp.QueryError_NOSCOPE,
 			ErrorString: "http is only supported in the 'global' scope",
 			Scope:       scope,
 		}
@@ -74,8 +74,8 @@ func (s *HTTPSource) Get(ctx context.Context, scope string, query string) (*sdp.
 	req, err := http.NewRequestWithContext(ctx, "HEAD", query, http.NoBody)
 
 	if err != nil {
-		return nil, &sdp.ItemRequestError{
-			ErrorType:   sdp.ItemRequestError_OTHER,
+		return nil, &sdp.QueryError{
+			ErrorType:   sdp.QueryError_OTHER,
 			ErrorString: err.Error(),
 			Scope:       scope,
 		}
@@ -89,8 +89,8 @@ func (s *HTTPSource) Get(ctx context.Context, scope string, query string) (*sdp.
 	res, err = client.Do(req)
 
 	if err != nil {
-		return nil, &sdp.ItemRequestError{
-			ErrorType:   sdp.ItemRequestError_OTHER,
+		return nil, &sdp.QueryError{
+			ErrorType:   sdp.QueryError_OTHER,
 			ErrorString: err.Error(),
 			Scope:       scope,
 		}
@@ -119,8 +119,8 @@ func (s *HTTPSource) Get(ctx context.Context, scope string, query string) (*sdp.
 	})
 
 	if err != nil {
-		return nil, &sdp.ItemRequestError{
-			ErrorType:   sdp.ItemRequestError_OTHER,
+		return nil, &sdp.QueryError{
+			ErrorType:   sdp.QueryError_OTHER,
 			ErrorString: err.Error(),
 			Scope:       scope,
 		}
@@ -151,7 +151,7 @@ func (s *HTTPSource) Get(ctx context.Context, scope string, query string) (*sdp.
 		socketQuery = req.URL.Host
 	}
 
-	item.LinkedItemRequests = append(item.LinkedItemRequests, &sdp.ItemRequest{
+	item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.Query{
 		Type:   "networksocket",
 		Method: sdp.RequestMethod_SEARCH,
 		Query:  socketQuery,
@@ -160,7 +160,7 @@ func (s *HTTPSource) Get(ctx context.Context, scope string, query string) (*sdp.
 
 	if ip := net.ParseIP(req.URL.Hostname()); ip != nil {
 		// If the host is an IP, add a linked item to that IP address
-		item.LinkedItemRequests = append(item.LinkedItemRequests, &sdp.ItemRequest{
+		item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.Query{
 			Type:   "ip",
 			Method: sdp.RequestMethod_GET,
 			Query:  ip.String(),
@@ -168,7 +168,7 @@ func (s *HTTPSource) Get(ctx context.Context, scope string, query string) (*sdp.
 		})
 	} else {
 		// If the host is not an ip, try to resolve via DNS
-		item.LinkedItemRequests = append(item.LinkedItemRequests, &sdp.ItemRequest{
+		item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.Query{
 			Type:   "dns",
 			Method: sdp.RequestMethod_GET,
 			Query:  req.URL.Hostname(),
@@ -215,7 +215,7 @@ func (s *HTTPSource) Get(ctx context.Context, scope string, query string) (*sdp.
 				certs = append(certs, string(pem.EncodeToMemory(&block)))
 			}
 
-			item.LinkedItemRequests = append(item.LinkedItemRequests, &sdp.ItemRequest{
+			item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.Query{
 				Type:   "certificate",
 				Method: sdp.RequestMethod_SEARCH,
 				Query:  strings.Join(certs, "\n"),
@@ -226,7 +226,7 @@ func (s *HTTPSource) Get(ctx context.Context, scope string, query string) (*sdp.
 	// Detect redirect and add a linked item for the redirect target
 	if res.StatusCode >= 300 && res.StatusCode < 400 {
 		if loc := res.Header.Get("Location"); loc != "" {
-			item.LinkedItemRequests = append(item.LinkedItemRequests, &sdp.ItemRequest{
+			item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.Query{
 				Type:   "http",
 				Method: sdp.RequestMethod_GET,
 				Query:  loc,

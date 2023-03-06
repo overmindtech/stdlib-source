@@ -37,8 +37,8 @@ func (s *DNSSource) Scopes() []string {
 // Gets a single item. This expects a DNS name
 func (bc *DNSSource) Get(ctx context.Context, scope string, query string) (*sdp.Item, error) {
 	if scope != "global" {
-		return nil, &sdp.ItemRequestError{
-			ErrorType:   sdp.ItemRequestError_NOSCOPE,
+		return nil, &sdp.QueryError{
+			ErrorType:   sdp.QueryError_NOSCOPE,
 			ErrorString: "DNS queries only supported in global scope",
 			Scope:       scope,
 		}
@@ -46,8 +46,8 @@ func (bc *DNSSource) Get(ctx context.Context, scope string, query string) (*sdp.
 
 	// Check for IP addresses and do nothing
 	if net.ParseIP(query) != nil {
-		return &sdp.Item{}, &sdp.ItemRequestError{
-			ErrorType:   sdp.ItemRequestError_NOTFOUND,
+		return &sdp.Item{}, &sdp.QueryError{
+			ErrorType:   sdp.QueryError_NOTFOUND,
 			ErrorString: fmt.Sprintf("%v is already an IP address, no DNS entry will be found", query),
 		}
 	}
@@ -61,7 +61,7 @@ func (bc *DNSSource) Get(ctx context.Context, scope string, query string) (*sdp.
 
 	for _, ip := range ips {
 		// Link this to a "global" IP object
-		i.LinkedItemRequests = append(i.LinkedItemRequests, &sdp.ItemRequest{
+		i.LinkedItemQueries = append(i.LinkedItemQueries, &sdp.Query{
 			Scope:  "global",
 			Method: sdp.RequestMethod_GET,
 			Query:  ip,
@@ -78,8 +78,8 @@ func (bc *DNSSource) Get(ctx context.Context, scope string, query string) (*sdp.
 		// to return a nice "Not Found" error
 		if netErr, ok := err.(*net.DNSError); ok {
 			if netErr.IsNotFound {
-				return &i, &sdp.ItemRequestError{
-					ErrorType:   sdp.ItemRequestError_NOTFOUND,
+				return &i, &sdp.QueryError{
+					ErrorType:   sdp.QueryError_NOTFOUND,
 					ErrorString: err.Error(),
 					Scope:       scope,
 				}
@@ -103,8 +103,8 @@ func (bc *DNSSource) Get(ctx context.Context, scope string, query string) (*sdp.
 // List calls back to the ListFunction to find all items
 func (bc *DNSSource) List(ctx context.Context, scope string) ([]*sdp.Item, error) {
 	if scope != "global" {
-		return nil, &sdp.ItemRequestError{
-			ErrorType:   sdp.ItemRequestError_NOSCOPE,
+		return nil, &sdp.QueryError{
+			ErrorType:   sdp.QueryError_NOSCOPE,
 			ErrorString: "DNS queries only supported in global scope",
 			Scope:       scope,
 		}

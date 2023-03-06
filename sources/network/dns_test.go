@@ -41,12 +41,12 @@ func TestDnsGet(t *testing.T) {
 			t.Error("expected error but got nil")
 		}
 
-		if sdpErr, ok := err.(*sdp.ItemRequestError); ok {
-			if sdpErr.ErrorType != sdp.ItemRequestError_NOTFOUND {
+		if sdpErr, ok := err.(*sdp.QueryError); ok {
+			if sdpErr.ErrorType != sdp.QueryError_NOTFOUND {
 				t.Errorf("Expected error type to be NOTFOUND, got %v", sdpErr.ErrorType)
 			}
 		} else {
-			t.Errorf("expected error type to be *sdp.ItemRequestError, got %T", err)
+			t.Errorf("expected error type to be *sdp.QueryError, got %T", err)
 		}
 	})
 
@@ -57,12 +57,12 @@ func TestDnsGet(t *testing.T) {
 			t.Error("expected error but got nil")
 		}
 
-		if sdpErr, ok := err.(*sdp.ItemRequestError); ok {
-			if sdpErr.ErrorType != sdp.ItemRequestError_NOSCOPE {
+		if sdpErr, ok := err.(*sdp.QueryError); ok {
+			if sdpErr.ErrorType != sdp.QueryError_NOSCOPE {
 				t.Errorf("Expected error type to be NOSCOPE, got %v", sdpErr.ErrorType)
 			}
 		} else {
-			t.Errorf("expected error type to be *sdp.ItemRequestError, got %t", err)
+			t.Errorf("expected error type to be *sdp.QueryError, got %t", err)
 		}
 	})
 }
