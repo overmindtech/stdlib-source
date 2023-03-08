@@ -3,6 +3,8 @@ package network
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"regexp"
 	"testing"
 	"time"
@@ -12,7 +14,41 @@ import (
 
 const TestHTTPTimeout = 3 * time.Second
 
-// TODO: better tests in a controlled environment
+type TestHTTPServer struct {
+	Server                  *httptest.Server
+	NotFoundPage            string
+	InternalServerErrorPage string
+	RedirectPage            string
+}
+
+func NewTestServer() (*TestHTTPServer, error) {
+	sm := http.NewServeMux()
+
+	sm.Handle("/404", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(404)
+		w.Write([]byte("not found innit"))
+	}))
+
+	sm.Handle("/500", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(500)
+		w.Write([]byte("yeah nah innit"))
+	}))
+
+	sm.Handle("/301", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Location", "https://www.google.com")
+		w.WriteHeader(301)
+	}))
+
+	server := httptest.NewServer(sm)
+
+	return &TestHTTPServer{
+		Server:                  server,
+		NotFoundPage:            fmt.Sprintf("%v/404", server.URL),
+		InternalServerErrorPage: fmt.Sprintf("%v/500", server.URL),
+		RedirectPage:            fmt.Sprintf("%v/301", server.URL),
+	}, nil
+}
+
 func TestHTTPGet(t *testing.T) {
 	src := HTTPSource{}
 
@@ -117,7 +153,15 @@ func TestHTTPGet(t *testing.T) {
 	})
 
 	t.Run("With a 404", func(t *testing.T) {
-		item, err := src.Get(context.Background(), "global", "https://httpstat.us/404")
+		s, err := NewTestServer()
+
+		if err != nil {
+			t.Error(err)
+		}
+
+		defer s.Server.Close()
+
+		item, err := src.Get(context.Background(), "global", s.NotFoundPage)
 
 		if err != nil {
 			t.Fatal(err)
@@ -149,7 +193,15 @@ func TestHTTPGet(t *testing.T) {
 	})
 
 	t.Run("With a 500 error", func(t *testing.T) {
-		item, err := src.Get(context.Background(), "global", "https://httpstat.us/500")
+		s, err := NewTestServer()
+
+		if err != nil {
+			t.Error(err)
+		}
+
+		defer s.Server.Close()
+
+		item, err := src.Get(context.Background(), "global", s.InternalServerErrorPage)
 
 		if err != nil {
 			t.Fatal(err)
@@ -171,7 +223,15 @@ func TestHTTPGet(t *testing.T) {
 	})
 
 	t.Run("With a 301 redirect", func(t *testing.T) {
-		item, err := src.Get(context.Background(), "global", "http://httpstat.us/301")
+		s, err := NewTestServer()
+
+		if err != nil {
+			t.Error(err)
+		}
+
+		defer s.Server.Close()
+
+		item, err := src.Get(context.Background(), "global", s.RedirectPage)
 
 		if err != nil {
 			t.Fatal(err)
@@ -197,7 +257,7 @@ func TestHTTPGet(t *testing.T) {
 	})
 
 	t.Run("With no TLS", func(t *testing.T) {
-		item, err := src.Get(context.Background(), "global", "http://httpstat.us/200")
+		item, err := src.Get(context.Background(), "global", "http://neverssl.com")
 
 		if err != nil {
 			t.Fatal(err)
