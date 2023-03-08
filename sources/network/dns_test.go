@@ -59,6 +59,37 @@ func TestSearch(t *testing.T) {
 
 		discovery.TestValidateItems(t, items)
 	})
+
+	t.Run("with an IP and therefore reverse DNS", func(t *testing.T) {
+		items, err := s.Search(context.Background(), "global", "1.1.1.1")
+
+		if err != nil {
+			t.Error(err)
+		}
+
+		// Make sure 1.1.1.1 is in there
+		var foundV4 bool
+		var foundV6 bool
+		for _, item := range items {
+			for _, q := range item.LinkedItemQueries {
+				if q.Query == "1.1.1.1" {
+					foundV4 = true
+				}
+				if q.Query == "2606:4700:4700::1111" {
+					foundV6 = true
+				}
+			}
+		}
+
+		if !foundV4 {
+			t.Error("could not find 1.1.1.1 in linked item queries")
+		}
+		if !foundV6 {
+			t.Error("could not find 2606:4700:4700::1111 in linked item queries")
+		}
+
+		discovery.TestValidateItems(t, items)
+	})
 }
 
 func TestDnsGet(t *testing.T) {

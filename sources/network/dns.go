@@ -93,13 +93,15 @@ func (d *DNSSource) Get(ctx context.Context, scope string, query string) (*sdp.I
 
 	// Check for IP addresses and do nothing
 	if net.ParseIP(query) != nil {
-		// TODO: Reverse DNS
 		return &sdp.Item{}, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOTFOUND,
 			ErrorString: fmt.Sprintf("%v is already an IP address, no DNS entry will be found", query),
 		}
 	}
 
+	// This won't work for CNAMEs since the linked query logic needs to be
+	// different and we're only querying for A and AAAA. Realistically people
+	// should be using Search() now anyway
 	items, err := d.MakeQuery(ctx, query, false)
 
 	if err != nil {
@@ -144,10 +146,67 @@ func (d *DNSSource) Search(ctx context.Context, scope string, query string) ([]*
 		}
 	}
 
+	if net.ParseIP(query) != nil {
+		// If it's an IP then we want to run a reverse lookup
+		return d.MakeReverseQuery(ctx, query)
+	}
+
 	return d.MakeQuery(ctx, query, true)
 }
 
-// MakeQuery Actually mae
+// MakeReverseQuery Makes a reverse DNS query, then forward DNS queries for all results
+func (d *DNSSource) MakeReverseQuery(ctx context.Context, query string) ([]*sdp.Item, error) {
+	arpa, err := dns.ReverseAddr(query)
+
+	if err != nil {
+		return nil, err
+	}
+
+	server, err := d.getActiveServer(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Create the query
+	msg := dns.Msg{
+		Question: []dns.Question{
+			{
+				Name:   arpa,
+				Qclass: dns.ClassINET,
+				Qtype:  dns.TypePTR,
+			},
+		},
+		MsgHdr: dns.MsgHdr{
+			Opcode:           dns.OpcodeQuery,
+			RecursionDesired: true,
+		},
+	}
+
+	r, _, err := d.client.ExchangeContext(ctx, &msg, server)
+
+	if err != nil {
+		return nil, err
+	}
+
+	items := make([]*sdp.Item, 0)
+
+	for _, rr := range r.Answer {
+		if ptr, ok := rr.(*dns.PTR); ok {
+			newItems, err := d.MakeQuery(ctx, ptr.Ptr, true)
+
+			if err != nil {
+				return nil, err
+			}
+
+			items = append(items, newItems...)
+		}
+	}
+
+	return items, nil
+}
+
+// MakeQuery Actually makes A and AAAA queries for a given DNS entry
 func (d *DNSSource) MakeQuery(ctx context.Context, query string, recurse bool) ([]*sdp.Item, error) {
 	server, err := d.getActiveServer(ctx)
 
