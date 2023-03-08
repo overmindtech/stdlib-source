@@ -175,7 +175,7 @@ func (s *HTTPSource) Get(ctx context.Context, scope string, query string) (*sdp.
 		// If the host is not an ip, try to resolve via DNS
 		item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.Query{
 			Type:   "dns",
-			Method: sdp.RequestMethod_GET,
+			Method: sdp.RequestMethod_SEARCH,
 			Query:  req.URL.Hostname(),
 			Scope:  "global",
 		})

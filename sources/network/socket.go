@@ -155,7 +155,7 @@ func (s *SocketSource) Search(ctx context.Context, scope string, query string) (
 
 		linkedItemQueries = append(linkedItemQueries, &sdp.Query{
 			Type:   "dns",
-			Method: sdp.RequestMethod_GET,
+			Method: sdp.RequestMethod_SEARCH,
 			Query:  host,
 			Scope:  "global",
 		})
