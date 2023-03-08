@@ -2,9 +2,11 @@ package network
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 
+	"github.com/miekg/dns"
 	"github.com/overmindtech/sdp-go"
 )
 
@@ -17,25 +19,62 @@ import (
 // to IP addresses rather than CNAMEs etc.
 
 // DNSSource struct on which all methods are registered
-type DNSSource struct{}
+type DNSSource struct {
+	// List of DNS server to use in order ot preference. They should be in the
+	// format "ip:port"
+	Servers []string
+
+	client dns.Client
+}
+
+var DefaultServers = []string{
+	"1.1.1.1:53",
+	"8.8.8.8:53",
+	"8.8.4.4:53",
+}
+
+const ItemType = "dns"
+const UniqueAttribute = "name"
+
+var ErrNoServersAvailable = errors.New("no dns servers available")
+
+// getActiveServer
+func (d *DNSSource) getActiveServer(ctx context.Context) (string, error) {
+	if len(d.Servers) == 0 {
+		d.Servers = DefaultServers
+	}
+
+	for _, server := range d.Servers {
+		conn, err := d.client.DialContext(ctx, server)
+
+		if err != nil {
+			continue
+		}
+
+		defer conn.Close()
+		return server, nil
+	}
+
+	return "", ErrNoServersAvailable
+}
 
 // Type is the type of items that this returns
-func (bc *DNSSource) Type() string {
+func (d *DNSSource) Type() string {
 	return "dns"
 }
 
 // Name Returns the name of the backend
-func (bc *DNSSource) Name() string {
+func (d *DNSSource) Name() string {
 	return "stdlib-dns"
 }
 
 // Weighting of duplicate sources
-func (s *DNSSource) Weight() int {
+func (d *DNSSource) Weight() int {
 	return 100
 }
 
 // List of scopes that this source is capable of find items for
-func (s *DNSSource) Scopes() []string {
+func (d *DNSSource) Scopes() []string {
 	return []string{
 		// DNS entries *should* be globally unique
 		"global",
@@ -43,7 +82,7 @@ func (s *DNSSource) Scopes() []string {
 }
 
 // Gets a single item. This expects a DNS name
-func (bc *DNSSource) Get(ctx context.Context, scope string, query string) (*sdp.Item, error) {
+func (d *DNSSource) Get(ctx context.Context, scope string, query string) (*sdp.Item, error) {
 	if scope != "global" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
@@ -54,62 +93,31 @@ func (bc *DNSSource) Get(ctx context.Context, scope string, query string) (*sdp.
 
 	// Check for IP addresses and do nothing
 	if net.ParseIP(query) != nil {
+		// TODO: Reverse DNS
 		return &sdp.Item{}, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOTFOUND,
 			ErrorString: fmt.Sprintf("%v is already an IP address, no DNS entry will be found", query),
 		}
 	}
 
-	var err error
-	var i sdp.Item
-	var ips []string
-	var ipsInterface []interface{}
-
-	ips, err = net.DefaultResolver.LookupHost(ctx, query)
-
-	for _, ip := range ips {
-		// Link this to a "global" IP object
-		i.LinkedItemQueries = append(i.LinkedItemQueries, &sdp.Query{
-			Scope:  "global",
-			Method: sdp.RequestMethod_GET,
-			Query:  ip,
-			Type:   "ip",
-		})
-
-		// Convert IPs to a slice of interfaces since this is what protobuf needs in
-		// order to be able to convert correctly
-		ipsInterface = append(ipsInterface, ip)
-	}
+	items, err := d.MakeQuery(ctx, query, false)
 
 	if err != nil {
-		// Check if this was a no such host error, if this is the case we want
-		// to return a nice "Not Found" error
-		if netErr, ok := err.(*net.DNSError); ok {
-			if netErr.IsNotFound {
-				return &i, &sdp.QueryError{
-					ErrorType:   sdp.QueryError_NOTFOUND,
-					ErrorString: err.Error(),
-					Scope:       scope,
-				}
-			}
-		}
-
-		return &i, err
+		return nil, err
 	}
 
-	i.Type = "dns"
-	i.UniqueAttribute = "name"
-	i.Scope = "global"
-	i.Attributes, err = sdp.ToAttributes(map[string]interface{}{
-		"name": query,
-		"ips":  ipsInterface,
-	})
+	if len(items) == 0 {
+		return nil, &sdp.QueryError{
+			ErrorType: sdp.QueryError_NOTFOUND,
+			Scope:     "global",
+		}
+	}
 
-	return &i, err
+	return items[0], nil
 }
 
 // List calls back to the ListFunction to find all items
-func (bc *DNSSource) List(ctx context.Context, scope string) ([]*sdp.Item, error) {
+func (d *DNSSource) List(ctx context.Context, scope string) ([]*sdp.Item, error) {
 	if scope != "global" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
@@ -119,4 +127,213 @@ func (bc *DNSSource) List(ctx context.Context, scope string) ([]*sdp.Item, error
 	}
 
 	return make([]*sdp.Item, 0), nil
+}
+
+type DNSRecord struct {
+	Name   string
+	Target string
+	Type   string
+}
+
+func (d *DNSSource) Search(ctx context.Context, scope string, query string) ([]*sdp.Item, error) {
+	if scope != "global" {
+		return nil, &sdp.QueryError{
+			ErrorType:   sdp.QueryError_NOSCOPE,
+			ErrorString: "DNS queries only supported in global scope",
+			Scope:       scope,
+		}
+	}
+
+	return d.MakeQuery(ctx, query, true)
+}
+
+// MakeQuery Actually mae
+func (d *DNSSource) MakeQuery(ctx context.Context, query string, recurse bool) ([]*sdp.Item, error) {
+	server, err := d.getActiveServer(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Create the query
+	msg := dns.Msg{
+		Question: []dns.Question{
+			{
+				Name:   dns.Fqdn(query),
+				Qclass: dns.ClassINET,
+				Qtype:  dns.TypeA,
+			},
+		},
+		MsgHdr: dns.MsgHdr{
+			Opcode:           dns.OpcodeQuery,
+			RecursionDesired: recurse,
+		},
+	}
+
+	r, _, err := d.client.ExchangeContext(ctx, &msg, server)
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Also query for AAAA
+	msg.Question[0].Qtype = dns.TypeAAAA
+	r2, _, err := d.client.ExchangeContext(ctx, &msg, server)
+
+	if err != nil {
+		return nil, err
+	}
+
+	answers := make([]dns.RR, 0)
+	answers = append(answers, r.Answer...)
+	answers = append(answers, r2.Answer...)
+
+	if len(answers) == 0 {
+		// This means nothing was found
+		return nil, &sdp.QueryError{
+			ErrorType: sdp.QueryError_NOTFOUND,
+			Scope:     "global",
+		}
+	}
+
+	ag := GroupAnswers(answers)
+
+	items := make([]*sdp.Item, 0)
+
+	var item sdp.Item
+	var attrs *sdp.ItemAttributes
+
+	// Iterate over the groups and convert
+	for _, r := range ag.CNAME {
+		if cname, ok := r.(*dns.CNAME); ok {
+			attrs, err = sdp.ToAttributes(map[string]interface{}{
+				"name":   cname.Hdr.Name,
+				"type":   "CNAME",
+				"ttl":    cname.Hdr.Ttl,
+				"target": cname.Target,
+			})
+
+			if err != nil {
+				return nil, err
+			}
+
+			item = sdp.Item{
+				Type:            ItemType,
+				UniqueAttribute: UniqueAttribute,
+				Scope:           "global",
+				Attributes:      attrs,
+				LinkedItems: []*sdp.Reference{
+					{
+						Type:                 ItemType,
+						UniqueAttributeValue: cname.Target,
+						Scope:                "global",
+					},
+				},
+			}
+
+			items = append(items, &item)
+		}
+	}
+
+	// Convert A & AAAA records by group
+	for name, rs := range ag.Address {
+		item, err := AToItem(name, rs)
+
+		if err != nil {
+			return nil, err
+		}
+
+		items = append(items, item)
+	}
+
+	return items, nil
+}
+
+type AnswerGroup struct {
+	CNAME   []dns.RR
+	Address map[string][]dns.RR
+}
+
+// GroupAnswers Groups the DNS answers so they they can be turned into
+// individual items. This is required because some types (such as A records) can
+// return man records for the same name and these need to be grouped to avoid
+// duplicate items
+func GroupAnswers(answers []dns.RR) *AnswerGroup {
+	ag := AnswerGroup{
+		CNAME:   make([]dns.RR, 0),
+		Address: make(map[string][]dns.RR),
+	}
+
+	for _, answer := range answers {
+		if hdr := answer.Header(); hdr != nil {
+			switch hdr.Rrtype {
+			case dns.TypeCNAME:
+				ag.CNAME = append(ag.CNAME, answer)
+			case dns.TypeA, dns.TypeAAAA:
+				// Create the map entry if required
+				if _, ok := ag.Address[hdr.Name]; !ok {
+					ag.Address[hdr.Name] = make([]dns.RR, 0)
+				}
+
+				ag.Address[hdr.Name] = append(ag.Address[hdr.Name], answer)
+			}
+		}
+	}
+
+	return &ag
+}
+
+// AToItem Converts a set of A or AAAA records to an item
+func AToItem(name string, records []dns.RR) (*sdp.Item, error) {
+	recordAttrs := make([]map[string]interface{}, 0)
+	liq := make([]*sdp.Query, 0)
+
+	for _, r := range records {
+		if hdr := r.Header(); hdr != nil {
+			var ip net.IP
+			var typ string
+
+			if a, ok := r.(*dns.A); ok {
+				typ = "A"
+				ip = a.A
+			} else if aaaa, ok := r.(*dns.AAAA); ok {
+				typ = "AAAA"
+				ip = aaaa.AAAA
+			}
+
+			recordAttrs = append(recordAttrs, map[string]interface{}{
+				"ttl":  hdr.Ttl,
+				"type": typ,
+				"ip":   ip.String(),
+			})
+
+			liq = append(liq, &sdp.Query{
+				Type:   "ip",
+				Method: sdp.RequestMethod_GET,
+				Query:  ip.String(),
+				Scope:  "global",
+			})
+		}
+
+	}
+
+	attrs, err := sdp.ToAttributes(map[string]interface{}{
+		"name":    name,
+		"type":    "address",
+		"records": recordAttrs,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	item := sdp.Item{
+		Type:              ItemType,
+		UniqueAttribute:   UniqueAttribute,
+		Scope:             "global",
+		Attributes:        attrs,
+		LinkedItemQueries: liq,
+	}
+
+	return &item, nil
 }
