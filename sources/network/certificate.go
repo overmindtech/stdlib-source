@@ -46,6 +46,15 @@ func toHex(b []byte) string {
 	return strings.ToUpper(s)
 }
 
+//go:generate docgen ../../doc
+// +overmind:type certificate
+// +overmind:get **Not supported**
+// +overmind:list **Not supported**
+// +overmind:search Takes a full certificate, or certificate bundle as input in PEM encoded format
+
+// +overmind:description This source parses certificates passed in PEM format
+// and returns the details of that cert (or the bundle)
+
 // CertificateSource This source only responds to Search() requests. See the
 // docs for the Search() method for more info
 type CertificateSource struct{}
