@@ -116,7 +116,6 @@ var rootCmd = &cobra.Command{
 			&network.DNSSource{},
 			&network.HTTPSource{},
 			&network.IPSource{},
-			&network.SocketSource{},
 		}
 
 		e.AddSources(sources...)

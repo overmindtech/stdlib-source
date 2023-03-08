@@ -260,7 +260,7 @@ func (d *DNSSource) MakeQuery(ctx context.Context, query string, recurse bool) (
 
 	items := make([]*sdp.Item, 0)
 
-	var item sdp.Item
+	var item *sdp.Item
 	var attrs *sdp.ItemAttributes
 
 	// Iterate over the groups and convert
@@ -277,7 +277,7 @@ func (d *DNSSource) MakeQuery(ctx context.Context, query string, recurse bool) (
 				return nil, err
 			}
 
-			item = sdp.Item{
+			item = &sdp.Item{
 				Type:            ItemType,
 				UniqueAttribute: UniqueAttribute,
 				Scope:           "global",
@@ -291,7 +291,7 @@ func (d *DNSSource) MakeQuery(ctx context.Context, query string, recurse bool) (
 				},
 			}
 
-			items = append(items, &item)
+			items = append(items, item)
 		}
 	}
 
@@ -310,7 +310,7 @@ func (d *DNSSource) MakeQuery(ctx context.Context, query string, recurse bool) (
 }
 
 type AnswerGroup struct {
-	CNAME   []dns.RR
+	CNAME   map[string]dns.RR
 	Address map[string][]dns.RR
 }
 
@@ -320,7 +320,7 @@ type AnswerGroup struct {
 // duplicate items
 func GroupAnswers(answers []dns.RR) *AnswerGroup {
 	ag := AnswerGroup{
-		CNAME:   make([]dns.RR, 0),
+		CNAME:   make(map[string]dns.RR),
 		Address: make(map[string][]dns.RR),
 	}
 
@@ -328,7 +328,10 @@ func GroupAnswers(answers []dns.RR) *AnswerGroup {
 		if hdr := answer.Header(); hdr != nil {
 			switch hdr.Rrtype {
 			case dns.TypeCNAME:
-				ag.CNAME = append(ag.CNAME, answer)
+				// We should only get one CNAME per request, but since we have
+				// done A and AAAA requests we could have duplicates, use a map
+				// to avoid this
+				ag.CNAME[hdr.Name] = answer
 			case dns.TypeA, dns.TypeAAAA:
 				// Create the map entry if required
 				if _, ok := ag.Address[hdr.Name]; !ok {
