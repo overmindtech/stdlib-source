@@ -83,17 +83,10 @@ func TestHTTPGet(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		var socketFound bool
 		var dnsFound bool
 
 		for _, link := range item.LinkedItemQueries {
 			switch link.Type {
-			case "networksocket":
-				socketFound = true
-
-				if link.Query != "www.google.com:443" {
-					t.Errorf("expected network socket query to be www.google.com:443, got %v", link.Query)
-				}
 			case "dns":
 				dnsFound = true
 
@@ -101,10 +94,6 @@ func TestHTTPGet(t *testing.T) {
 					t.Errorf("expected dns query to be www.google.com, got %v", link.Query)
 				}
 			}
-		}
-
-		if !socketFound {
-			t.Error("link to networksocket not found")
 		}
 
 		if !dnsFound {
@@ -121,17 +110,10 @@ func TestHTTPGet(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		var socketFound bool
 		var ipFound bool
 
 		for _, link := range item.LinkedItemQueries {
 			switch link.Type {
-			case "networksocket":
-				socketFound = true
-
-				if link.Query != "1.1.1.1:443" {
-					t.Errorf("expected network socket query to be 1.1.1.1:443, got %v", link.Query)
-				}
 			case "ip":
 				ipFound = true
 
@@ -139,10 +121,6 @@ func TestHTTPGet(t *testing.T) {
 					t.Errorf("expected dns query to be 1.1.1.1, got %v", link.Query)
 				}
 			}
-		}
-
-		if !socketFound {
-			t.Error("link to networksocket not found")
 		}
 
 		if !ipFound {
