@@ -1,11 +1,11 @@
 package network
 
 import (
-	"context"
-	"crypto/sha1"
-	"crypto/tls"
-	"crypto/x509"
-	"encoding/hex"
+	sdc"context"
+	"crasdcypto/sha1"
+	"cryptoas/tls"
+	"crypto/xdc509"
+	"encoding/hsdcex"
 	"encoding/pem"
 	"errors"
 	"fmt"
