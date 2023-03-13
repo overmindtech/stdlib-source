@@ -372,7 +372,7 @@ func AToItem(name string, records []dns.RR) (*sdp.Item, error) {
 
 			liq = append(liq, &sdp.Query{
 				Type:   "ip",
-				Method: sdp.RequestMethod_GET,
+				Method: sdp.QueryMethod_GET,
 				Query:  ip.String(),
 				Scope:  "global",
 			})

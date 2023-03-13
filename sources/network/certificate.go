@@ -244,7 +244,7 @@ func (s *CertificateSource) Search(ctx context.Context, scope string, query stri
 			// Get() request when it is run
 			item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.Query{
 				Type:   "certificate",
-				Method: sdp.RequestMethod_GET,
+				Method: sdp.QueryMethod_GET,
 				Query:  cert.Issuer.String(),
 				Scope:  scope,
 			})
