@@ -142,7 +142,7 @@ func (bc *IPSource) Get(ctx context.Context, scope string, query string) (*sdp.I
 			// Reverse DNS
 			{
 				Type:   "dns",
-				Method: sdp.RequestMethod_SEARCH,
+				Method: sdp.QueryMethod_SEARCH,
 				Query:  ip.String(),
 				Scope:  "global",
 			},

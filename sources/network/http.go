@@ -142,7 +142,7 @@ func (s *HTTPSource) Get(ctx context.Context, scope string, query string) (*sdp.
 		// If the host is an IP, add a linked item to that IP address
 		item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.Query{
 			Type:   "ip",
-			Method: sdp.RequestMethod_GET,
+			Method: sdp.QueryMethod_GET,
 			Query:  ip.String(),
 			Scope:  "global",
 		})
@@ -150,7 +150,7 @@ func (s *HTTPSource) Get(ctx context.Context, scope string, query string) (*sdp.
 		// If the host is not an ip, try to resolve via DNS
 		item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.Query{
 			Type:   "dns",
-			Method: sdp.RequestMethod_SEARCH,
+			Method: sdp.QueryMethod_SEARCH,
 			Query:  req.URL.Hostname(),
 			Scope:  "global",
 		})
@@ -197,7 +197,7 @@ func (s *HTTPSource) Get(ctx context.Context, scope string, query string) (*sdp.
 
 			item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.Query{
 				Type:   "certificate",
-				Method: sdp.RequestMethod_SEARCH,
+				Method: sdp.QueryMethod_SEARCH,
 				Query:  strings.Join(certs, "\n"),
 				Scope:  scope,
 			})
@@ -208,7 +208,7 @@ func (s *HTTPSource) Get(ctx context.Context, scope string, query string) (*sdp.
 		if loc := res.Header.Get("Location"); loc != "" {
 			item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.Query{
 				Type:   "http",
-				Method: sdp.RequestMethod_GET,
+				Method: sdp.QueryMethod_GET,
 				Query:  loc,
 				Scope:  scope,
 			})
