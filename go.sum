@@ -40,8 +40,8 @@ github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/antihax/optional v1.0.0/go.mod h1:uupD/76wgC+ih3iEmQUL+0Ugr19nfwCT1kdvxnR2qWY=
-github.com/aws/aws-sdk-go v1.44.219 h1:YOFxTUQZvdRzgwb6XqLFRwNHxoUdKBuunITC7IFhvbc=
-github.com/aws/aws-sdk-go v1.44.219/go.mod h1:aVsgQcEevwlmQ7qHE9I3h+dtQgpqhFB+i8Phjh7fkwI=
+github.com/aws/aws-sdk-go v1.44.221 h1:yndn4uvLolKXPoXIwKHhO5XtwlTnJfXLBKXs84C5+hQ=
+github.com/aws/aws-sdk-go v1.44.221/go.mod h1:aVsgQcEevwlmQ7qHE9I3h+dtQgpqhFB+i8Phjh7fkwI=
 github.com/cenkalti/backoff/v4 v4.2.0 h1:HN5dHm3WBOgndBH6E8V0q2jIYIR3s9yglV8k/+MN3u4=
 github.com/cenkalti/backoff/v4 v4.2.0/go.mod h1:Y3VNntkOUPxTVeUxJ/G5vcM//AlwfmyYozVcomhLiZE=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
@@ -209,8 +209,8 @@ github.com/overmindtech/connect v0.8.5 h1:ns4+Q28pwUukrUv6nxX1cjGB1VyohFSj4wUP8L
 github.com/overmindtech/connect v0.8.5/go.mod h1:LWBArHjw274XfEfJqAuYpZ89QpDslDodmPbTJLYFobI=
 github.com/overmindtech/discovery v0.18.2 h1:7q7CVF22Y93v4/AwcHMBCg5kqnQEc8O49IY0I7+unzs=
 github.com/overmindtech/discovery v0.18.2/go.mod h1:F1mUc0jkoyYA7EhtsYYNAB+K7Ar2xtVqwd1iuiejMK0=
-github.com/overmindtech/sdp-go v0.18.4 h1:kI8m3Ot2fThFJNLGY+hdXK01gxfJN5I0qPet03cOQJg=
-github.com/overmindtech/sdp-go v0.18.4/go.mod h1:mnS1WY+JWDyRbDvGb758i1vnUXaFEL5fafT1kRSkWvs=
+github.com/overmindtech/sdp-go v0.19.0 h1:+2NdJHwelXW1CkfcjUk1DKIzJqHYdJPxOh26ldHjcZA=
+github.com/overmindtech/sdp-go v0.19.0/go.mod h1:mnS1WY+JWDyRbDvGb758i1vnUXaFEL5fafT1kRSkWvs=
 github.com/overmindtech/sdpcache v1.2.3 h1:By8OdD61XKSn8D3L8BMUZaKE5TNm7oN/FO7ew1LSANs=
 github.com/overmindtech/sdpcache v1.2.3/go.mod h1:gsF2Gu3NcrxP7SaSBr7hk/fHuIiTwa5aViDUhQF+zxI=
 github.com/pelletier/go-toml/v2 v2.0.7 h1:muncTPStnKRos5dpVKULv2FVd4bMOhNePj9CjgDb8Us=
@@ -619,8 +619,8 @@ google.golang.org/protobuf v1.25.0/go.mod h1:9JNX74DMeImyA3h4bdi1ymwjUzf21/xIlba
 google.golang.org/protobuf v1.26.0-rc.1/go.mod h1:jlhhOSvTdKEhbULTjvd4ARK9grFBp09yW+WbY/TyQbw=
 google.golang.org/protobuf v1.26.0/go.mod h1:9q0QmTI4eRPtz6boOQmLYwt+qCgq0jsYwAQnmE0givc=
 google.golang.org/protobuf v1.27.1/go.mod h1:9q0QmTI4eRPtz6boOQmLYwt+qCgq0jsYwAQnmE0givc=
-google.golang.org/protobuf v1.29.0 h1:44S3JjaKmLEE4YIkjzexaP+NzZsudE3Zin5Njn/pYX0=
-google.golang.org/protobuf v1.29.0/go.mod h1:HV8QOd/L58Z+nl8r43ehVNZIU/HEI6OcFqwMG9pJV4I=
+google.golang.org/protobuf v1.29.1 h1:7QBf+IK2gx70Ap/hDsOmam3GE0v9HicjfEdAxE62UoM=
+google.golang.org/protobuf v1.29.1/go.mod h1:HV8QOd/L58Z+nl8r43ehVNZIU/HEI6OcFqwMG9pJV4I=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
 gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c h1:Hei/4ADfdWqJk1ZMxUNpqntNwaWcugrBjAiHlqqRiVk=
