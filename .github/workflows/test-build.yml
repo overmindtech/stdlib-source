@@ -29,6 +29,7 @@ jobs:
     permissions:
       contents: read # required for checkout
       id-token: write # mint AWS credentials through OIDC
+      packages: write
 
     strategy:
       fail-fast: false
@@ -68,7 +69,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_PUSH }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Docker Buildx
         id: setup-builder
