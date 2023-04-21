@@ -10,7 +10,7 @@ require (
 	github.com/nats-io/nkeys v0.4.4
 	github.com/overmindtech/connect v0.9.0
 	github.com/overmindtech/discovery v0.19.0
-	github.com/overmindtech/sdp-go v0.26.0
+	github.com/overmindtech/sdp-go v0.26.3
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
@@ -74,6 +74,7 @@ require (
 
 require (
 	github.com/auth0/go-jwt-middleware/v2 v2.1.0 // indirect
+	github.com/bufbuild/connect-go v1.7.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 )
