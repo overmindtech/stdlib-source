@@ -86,11 +86,11 @@ func TestHTTPGet(t *testing.T) {
 		var dnsFound bool
 
 		for _, link := range item.LinkedItemQueries {
-			switch link.Type {
+			switch link.Query.Type {
 			case "dns":
 				dnsFound = true
 
-				if link.Query != "www.google.com" {
+				if link.Query.Query != "www.google.com" {
 					t.Errorf("expected dns query to be www.google.com, got %v", link.Query)
 				}
 			}
@@ -113,11 +113,11 @@ func TestHTTPGet(t *testing.T) {
 		var ipFound bool
 
 		for _, link := range item.LinkedItemQueries {
-			switch link.Type {
+			switch link.Query.Type {
 			case "ip":
 				ipFound = true
 
-				if link.Query != "1.1.1.1" {
+				if link.Query.Query != "1.1.1.1" {
 					t.Errorf("expected dns query to be 1.1.1.1, got %v", link.Query)
 				}
 			}

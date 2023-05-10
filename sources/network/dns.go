@@ -282,11 +282,13 @@ func (d *DNSSource) MakeQuery(ctx context.Context, query string, recurse bool) (
 				UniqueAttribute: UniqueAttribute,
 				Scope:           "global",
 				Attributes:      attrs,
-				LinkedItems: []*sdp.Reference{
+				LinkedItems: []*sdp.LinkedItem{
 					{
-						Type:                 ItemType,
-						UniqueAttributeValue: cname.Target,
-						Scope:                "global",
+						Item: &sdp.Reference{
+							Type:                 ItemType,
+							UniqueAttributeValue: cname.Target,
+							Scope:                "global",
+						},
 					},
 				},
 			}
@@ -349,7 +351,7 @@ func GroupAnswers(answers []dns.RR) *AnswerGroup {
 // AToItem Converts a set of A or AAAA records to an item
 func AToItem(name string, records []dns.RR) (*sdp.Item, error) {
 	recordAttrs := make([]map[string]interface{}, 0)
-	liq := make([]*sdp.Query, 0)
+	liq := make([]*sdp.LinkedItemQuery, 0)
 
 	for _, r := range records {
 		if hdr := r.Header(); hdr != nil {
@@ -370,12 +372,12 @@ func AToItem(name string, records []dns.RR) (*sdp.Item, error) {
 				"ip":   ip.String(),
 			})
 
-			liq = append(liq, &sdp.Query{
+			liq = append(liq, &sdp.LinkedItemQuery{Query: &sdp.Query{
 				Type:   "ip",
 				Method: sdp.QueryMethod_GET,
 				Query:  ip.String(),
 				Scope:  "global",
-			})
+			}})
 		}
 
 	}

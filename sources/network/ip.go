@@ -138,13 +138,15 @@ func (bc *IPSource) Get(ctx context.Context, scope string, query string) (*sdp.I
 		UniqueAttribute: "ip",
 		Attributes:      attributes,
 		Scope:           scope,
-		LinkedItemQueries: []*sdp.Query{
+		LinkedItemQueries: []*sdp.LinkedItemQuery{
 			// Reverse DNS
 			{
-				Type:   "dns",
-				Method: sdp.QueryMethod_SEARCH,
-				Query:  ip.String(),
-				Scope:  "global",
+				Query: &sdp.Query{
+					Type:   "dns",
+					Method: sdp.QueryMethod_SEARCH,
+					Query:  ip.String(),
+					Scope:  "global",
+				},
 			},
 		},
 	}, nil
