@@ -41,10 +41,10 @@ func TestSearch(t *testing.T) {
 		var foundV6 bool
 		for _, item := range items {
 			for _, q := range item.LinkedItemQueries {
-				if q.Query == "1.1.1.1" {
+				if q.Query.Query == "1.1.1.1" {
 					foundV4 = true
 				}
-				if q.Query == "2606:4700:4700::1111" {
+				if q.Query.Query == "2606:4700:4700::1111" {
 					foundV6 = true
 				}
 			}
@@ -72,10 +72,10 @@ func TestSearch(t *testing.T) {
 		var foundV6 bool
 		for _, item := range items {
 			for _, q := range item.LinkedItemQueries {
-				if q.Query == "1.1.1.1" {
+				if q.Query.Query == "1.1.1.1" {
 					foundV4 = true
 				}
-				if q.Query == "2606:4700:4700::1111" {
+				if q.Query.Query == "2606:4700:4700::1111" {
 					foundV6 = true
 				}
 			}
