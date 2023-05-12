@@ -72,7 +72,7 @@ func (bc *IPSource) Get(ctx context.Context, scope string, query string) (*sdp.I
 
 	if ip == nil {
 		return nil, &sdp.QueryError{
-			ErrorType:   sdp.QueryError_OTHER,
+			ErrorType:   sdp.QueryError_NOTFOUND,
 			ErrorString: fmt.Sprintf("%v is not a valid IP", query),
 			Scope:       scope,
 		}
