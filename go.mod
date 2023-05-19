@@ -11,7 +11,7 @@ require (
 	github.com/overmindtech/connect v0.10.0
 	github.com/overmindtech/discovery v0.20.1
 	github.com/overmindtech/sdp-go v0.30.0
-	github.com/sirupsen/logrus v1.9.0
+	github.com/sirupsen/logrus v1.9.2
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.15.0
