@@ -41,7 +41,7 @@ func (s *IPSource) Scopes() []string {
 	return []string{
 		// This supports all scopes since there might be local IPs that need
 		// to have a different scope. E.g. 127.0.0.1 is a different logical
-		// address per computer since it referrs to "itself" This means we
+		// address per computer since it refers to "itself" This means we
 		// definitely don't want all thing that reference 127.0.0.1 linked
 		// together, only those in the same scope
 		//
@@ -57,7 +57,7 @@ func (s *IPSource) Scopes() []string {
 // Get gets information about a single IP This expects an IP in a format that
 // can be parsed by net.ParseIP() such as "192.0.2.1", "2001:db8::68" or
 // "::ffff:192.0.2.1". It returns some useful information about that IP but this
-// is all just infmation that is inherent in the IP itself, it doesn't look
+// is all just information that is inherent in the IP itself, it doesn't look
 // anything up externally
 //
 // The purpose of this is mainly to provide a node in the graph that many things
