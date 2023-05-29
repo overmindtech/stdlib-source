@@ -17,6 +17,7 @@ import (
 	"github.com/overmindtech/connect"
 	"github.com/overmindtech/discovery"
 	"github.com/overmindtech/stdlib-source/sources/network"
+	"github.com/overmindtech/stdlib-source/sources/test"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
@@ -116,6 +117,12 @@ var rootCmd = &cobra.Command{
 			&network.DNSSource{},
 			&network.HTTPSource{},
 			&network.IPSource{},
+			&test.TestDogSource{},
+			&test.TestGroupSource{},
+			&test.TestHobbySource{},
+			&test.TestLocationSource{},
+			&test.TestPersonSource{},
+			&test.TestRegionSource{},
 		}
 
 		e.AddSources(sources...)
