@@ -147,6 +147,11 @@ func (bc *IPSource) Get(ctx context.Context, scope string, query string) (*sdp.I
 					Query:  ip.String(),
 					Scope:  "global",
 				},
+				BlastPropagation: &sdp.BlastPropagation{
+					// DNS always linked
+					In:  true,
+					Out: true,
+				},
 			},
 		},
 	}, nil

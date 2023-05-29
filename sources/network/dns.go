@@ -372,12 +372,19 @@ func AToItem(name string, records []dns.RR) (*sdp.Item, error) {
 				"ip":   ip.String(),
 			})
 
-			liq = append(liq, &sdp.LinkedItemQuery{Query: &sdp.Query{
-				Type:   "ip",
-				Method: sdp.QueryMethod_GET,
-				Query:  ip.String(),
-				Scope:  "global",
-			}})
+			liq = append(liq, &sdp.LinkedItemQuery{
+				Query: &sdp.Query{
+					Type:   "ip",
+					Method: sdp.QueryMethod_GET,
+					Query:  ip.String(),
+					Scope:  "global",
+				},
+				BlastPropagation: &sdp.BlastPropagation{
+					// Tightly coupled
+					In:  true,
+					Out: true,
+				},
+			})
 		}
 
 	}
