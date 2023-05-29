@@ -242,12 +242,20 @@ func (s *CertificateSource) Search(ctx context.Context, scope string, query stri
 			// still work for linking as long as the referenced cert has been
 			// included in the bundle since the cache will correctly return the
 			// Get() request when it is run
-			item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{Query: &sdp.Query{
-				Type:   "certificate",
-				Method: sdp.QueryMethod_GET,
-				Query:  cert.Issuer.String(),
-				Scope:  scope,
-			}})
+			item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
+				Query: &sdp.Query{
+					Type:   "certificate",
+					Method: sdp.QueryMethod_GET,
+					Query:  cert.Issuer.String(),
+					Scope:  scope,
+				},
+				BlastPropagation: &sdp.BlastPropagation{
+					// Changing issuer will affect the child
+					In: true,
+					// The child can't affect the issuer
+					Out: false,
+				},
+			})
 		}
 	}
 

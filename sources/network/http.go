@@ -140,20 +140,34 @@ func (s *HTTPSource) Get(ctx context.Context, scope string, query string) (*sdp.
 
 	if ip := net.ParseIP(req.URL.Hostname()); ip != nil {
 		// If the host is an IP, add a linked item to that IP address
-		item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{Query: &sdp.Query{
-			Type:   "ip",
-			Method: sdp.QueryMethod_GET,
-			Query:  ip.String(),
-			Scope:  "global",
-		}})
+		item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
+			Query: &sdp.Query{
+				Type:   "ip",
+				Method: sdp.QueryMethod_GET,
+				Query:  ip.String(),
+				Scope:  "global",
+			},
+			BlastPropagation: &sdp.BlastPropagation{
+				// IPs always linked
+				In:  true,
+				Out: true,
+			},
+		})
 	} else {
 		// If the host is not an ip, try to resolve via DNS
-		item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{Query: &sdp.Query{
-			Type:   "dns",
-			Method: sdp.QueryMethod_SEARCH,
-			Query:  req.URL.Hostname(),
-			Scope:  "global",
-		}})
+		item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
+			Query: &sdp.Query{
+				Type:   "dns",
+				Method: sdp.QueryMethod_SEARCH,
+				Query:  req.URL.Hostname(),
+				Scope:  "global",
+			},
+			BlastPropagation: &sdp.BlastPropagation{
+				// DNS always linked
+				In:  true,
+				Out: true,
+			},
+		})
 	}
 
 	if tlsState := res.TLS; tlsState != nil {
@@ -195,23 +209,37 @@ func (s *HTTPSource) Get(ctx context.Context, scope string, query string) (*sdp.
 				certs = append(certs, string(pem.EncodeToMemory(&block)))
 			}
 
-			item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{Query: &sdp.Query{
-				Type:   "certificate",
-				Method: sdp.QueryMethod_SEARCH,
-				Query:  strings.Join(certs, "\n"),
-				Scope:  scope,
-			}})
+			item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
+				Query: &sdp.Query{
+					Type:   "certificate",
+					Method: sdp.QueryMethod_SEARCH,
+					Query:  strings.Join(certs, "\n"),
+					Scope:  scope,
+				},
+				BlastPropagation: &sdp.BlastPropagation{
+					// Changing the cert will affect the HTTP endpoint
+					In:  true,
+					Out: true,
+				},
+			})
 		}
 	}
 	// Detect redirect and add a linked item for the redirect target
 	if res.StatusCode >= 300 && res.StatusCode < 400 {
 		if loc := res.Header.Get("Location"); loc != "" {
-			item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{Query: &sdp.Query{
-				Type:   "http",
-				Method: sdp.QueryMethod_GET,
-				Query:  loc,
-				Scope:  scope,
-			}})
+			item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
+				Query: &sdp.Query{
+					Type:   "http",
+					Method: sdp.QueryMethod_GET,
+					Query:  loc,
+					Scope:  scope,
+				},
+				BlastPropagation: &sdp.BlastPropagation{
+					// Redirects are tightly coupled
+					In:  true,
+					Out: true,
+				},
+			})
 		}
 	}
 
