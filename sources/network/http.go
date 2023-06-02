@@ -218,8 +218,9 @@ func (s *HTTPSource) Get(ctx context.Context, scope string, query string) (*sdp.
 				},
 				BlastPropagation: &sdp.BlastPropagation{
 					// Changing the cert will affect the HTTP endpoint
-					In:  true,
-					Out: true,
+					In: true,
+					// The HTTP endpoint won't affect the cert
+					Out: false,
 				},
 			})
 		}
