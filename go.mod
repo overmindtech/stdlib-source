@@ -4,7 +4,7 @@ go 1.19
 
 // Direct dependencies
 require (
-	github.com/getsentry/sentry-go v0.21.0
+	github.com/getsentry/sentry-go v0.22.0
 	github.com/miekg/dns v1.1.54
 	github.com/nats-io/jwt/v2 v2.4.1
 	github.com/nats-io/nkeys v0.4.4
