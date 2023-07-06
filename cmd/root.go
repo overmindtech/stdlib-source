@@ -30,7 +30,7 @@ var cfgFile string
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "source-template",
+	Use:   "stdlib-source",
 	Short: "Standard library of remotely accessible items",
 	Long: `Gets details of items that are globally scoped
 (usually) and able to be queried without authentication.
@@ -128,7 +128,7 @@ var rootCmd = &cobra.Command{
 		e.AddSources(sources...)
 
 		// Start HTTP server for status
-		healthCheckPort := 8080
+		healthCheckPort := viper.GetInt("health-check-port")
 		healthCheckPath := "/healthz"
 
 		http.HandleFunc(healthCheckPath, func(rw http.ResponseWriter, r *http.Request) {
@@ -146,19 +146,20 @@ var rootCmd = &cobra.Command{
 
 		go func() {
 			defer sentry.Recover()
-			log.Fatal(http.ListenAndServe(":8080", nil))
+
+			log.Fatal(http.ListenAndServe(fmt.Sprintf(":%v", healthCheckPort), nil))
 		}()
 
 		if err != nil {
-			log.WithFields(log.Fields{
-				"error": err,
+			log.WithError(err).WithFields(log.Fields{
+				"port": healthCheckPort,
+				"path": healthCheckPath,
 			}).Error("Could not start HTTP server for /healthz health checks")
 
 			os.Exit(1)
 		}
 
 		err = e.Start()
-
 		if err != nil {
 			log.WithFields(log.Fields{
 				"error": err,
@@ -219,6 +220,7 @@ func init() {
 	rootCmd.PersistentFlags().String("nats-jwt", "", "The JWT token that should be used to authenticate to NATS, provided in raw format e.g. eyJ0eXAiOiJKV1Q...")
 	rootCmd.PersistentFlags().String("nats-nkey-seed", "", "The NKey seed which corresponds to the NATS JWT e.g. SUAFK6QUC...")
 	rootCmd.PersistentFlags().Int("max-parallel", (runtime.NumCPU() * 10), "Max number of requests to run in parallel")
+	rootCmd.PersistentFlags().IntP("health-check-port", "", 8080, "The port that the health check should run on")
 
 	// tracing
 	rootCmd.PersistentFlags().String("honeycomb-api-key", "", "If specified, configures opentelemetry libraries to submit traces to honeycomb")
