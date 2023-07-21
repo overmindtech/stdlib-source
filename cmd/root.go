@@ -14,8 +14,8 @@ import (
 	"github.com/getsentry/sentry-go"
 	"github.com/nats-io/jwt/v2"
 	"github.com/nats-io/nkeys"
-	"github.com/overmindtech/connect"
 	"github.com/overmindtech/discovery"
+	"github.com/overmindtech/sdp-go/auth"
 	"github.com/overmindtech/stdlib-source/sources/network"
 	"github.com/overmindtech/stdlib-source/sources/test"
 	"github.com/spf13/cobra"
@@ -63,7 +63,7 @@ var rootCmd = &cobra.Command{
 		}
 
 		var natsNKeySeedLog string
-		var tokenClient connect.TokenClient
+		var tokenClient auth.TokenClient
 
 		if natsNKeySeed != "" {
 			natsNKeySeedLog = "[REDACTED]"
@@ -98,7 +98,7 @@ var rootCmd = &cobra.Command{
 			}).Fatal("Error initializing Engine")
 		}
 		e.Name = "stdlib-source"
-		e.NATSOptions = &connect.NATSOptions{
+		e.NATSOptions = &auth.NATSOptions{
 			NumRetries:        -1,
 			RetryDelay:        5 * time.Second,
 			Servers:           natsServers,
@@ -282,7 +282,7 @@ func initConfig() {
 
 // createTokenClient Creates a basic token client that will authenticate to NATS
 // using the given values
-func createTokenClient(natsJWT string, natsNKeySeed string) (connect.TokenClient, error) {
+func createTokenClient(natsJWT string, natsNKeySeed string) (auth.TokenClient, error) {
 	var kp nkeys.KeyPair
 	var err error
 
@@ -302,7 +302,7 @@ func createTokenClient(natsJWT string, natsNKeySeed string) (connect.TokenClient
 		return nil, fmt.Errorf("could not parse nats-nkey-seed: %v", err)
 	}
 
-	return connect.NewBasicTokenClient(natsJWT, kp), nil
+	return auth.NewBasicTokenClient(natsJWT, kp), nil
 }
 
 // TerminationLogHook A hook that logs fatal errors to the termination log
