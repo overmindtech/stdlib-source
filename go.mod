@@ -8,7 +8,7 @@ require (
 	github.com/miekg/dns v1.1.55
 	github.com/nats-io/jwt/v2 v2.4.1
 	github.com/nats-io/nkeys v0.4.4
-	github.com/overmindtech/discovery v0.22.1
+	github.com/overmindtech/discovery v0.23.0
 	github.com/overmindtech/sdp-go v0.43.0
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.7.0
