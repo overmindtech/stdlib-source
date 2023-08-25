@@ -6,7 +6,7 @@ go 1.21
 require (
 	github.com/getsentry/sentry-go v0.23.0
 	github.com/miekg/dns v1.1.55
-	github.com/nats-io/jwt/v2 v2.4.1
+	github.com/nats-io/jwt/v2 v2.5.0
 	github.com/nats-io/nkeys v0.4.4
 	github.com/overmindtech/discovery v0.23.2
 	github.com/overmindtech/sdp-go v0.45.0
