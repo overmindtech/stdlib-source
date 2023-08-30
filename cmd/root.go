@@ -52,6 +52,7 @@ var rootCmd = &cobra.Command{
 		natsJWT := viper.GetString("nats-jwt")
 		natsNKeySeed := viper.GetString("nats-nkey-seed")
 		maxParallel := viper.GetInt("max-parallel")
+		reverseDNS := viper.GetBool("reverse-dns")
 		hostname, err := os.Hostname()
 
 		if err != nil {
@@ -75,6 +76,7 @@ var rootCmd = &cobra.Command{
 			"max-parallel":     maxParallel,
 			"nats-jwt":         natsJWT,
 			"nats-nkey-seed":   natsNKeySeedLog,
+			"reverse-dns":      reverseDNS,
 		}).Info("Got config")
 
 		// Validate the auth params and create a token client if we are using
@@ -114,7 +116,9 @@ var rootCmd = &cobra.Command{
 		// ⚠️ Here is where you add your sources
 		sources := []discovery.Source{
 			&network.CertificateSource{},
-			&network.DNSSource{},
+			&network.DNSSource{
+				ReverseLookup: reverseDNS,
+			},
 			&network.HTTPSource{},
 			&network.IPSource{},
 			&test.TestDogSource{},
@@ -208,6 +212,7 @@ func init() {
 	// General config options
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "/etc/srcman/config/source.yaml", "config file path")
 	rootCmd.PersistentFlags().StringVar(&logLevel, "log", "info", "Set the log level. Valid values: panic, fatal, error, warn, info, debug, trace")
+	rootCmd.PersistentFlags().Bool("reverse-dns", false, "If true, will perform reverse DNS lookups on IP addresses")
 
 	// Config required by all sources in order to connect to NATS. You shouldn't
 	// need to change these

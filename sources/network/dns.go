@@ -25,6 +25,9 @@ type DNSSource struct {
 	// format "ip:port"
 	Servers []string
 
+	// Whether to perform reverse lookups on IP addresses
+	ReverseLookup bool
+
 	client dns.Client
 }
 
@@ -148,8 +151,13 @@ func (d *DNSSource) Search(ctx context.Context, scope string, query string) ([]*
 	}
 
 	if net.ParseIP(query) != nil {
-		// If it's an IP then we want to run a reverse lookup
-		return d.MakeReverseQuery(ctx, query)
+		if d.ReverseLookup {
+			// If it's an IP then we want to run a reverse lookup
+			return d.MakeReverseQuery(ctx, query)
+		} else {
+			// If disabled, return nothing
+			return []*sdp.Item{}, nil
+		}
 	}
 
 	return d.MakeQuery(ctx, query, true)

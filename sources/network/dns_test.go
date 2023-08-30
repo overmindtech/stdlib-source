@@ -61,6 +61,7 @@ func TestSearch(t *testing.T) {
 	})
 
 	t.Run("with an IP and therefore reverse DNS", func(t *testing.T) {
+		s.ReverseLookup = true
 		items, err := s.Search(context.Background(), "global", "1.1.1.1")
 
 		if err != nil {
