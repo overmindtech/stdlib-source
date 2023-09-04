@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net"
+	"sort"
 
 	"github.com/miekg/dns"
 	"github.com/overmindtech/sdp-go"
@@ -394,8 +395,12 @@ func AToItem(name string, records []dns.RR) (*sdp.Item, error) {
 				},
 			})
 		}
-
 	}
+
+	// Sort records to ensure they are consistent
+	sort.Slice(recordAttrs, func(i, j int) bool {
+		return fmt.Sprint(i) < fmt.Sprint(j)
+	})
 
 	attrs, err := sdp.ToAttributes(map[string]interface{}{
 		"name":    name,
