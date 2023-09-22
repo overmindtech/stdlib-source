@@ -9,7 +9,7 @@ require (
 	github.com/nats-io/jwt/v2 v2.5.0
 	github.com/nats-io/nkeys v0.4.4
 	github.com/overmindtech/discovery v0.24.0
-	github.com/overmindtech/sdp-go v0.49.1
+	github.com/overmindtech/sdp-go v0.49.5
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
