@@ -2,6 +2,7 @@ package test
 
 import (
 	"fmt"
+	"sync/atomic"
 	"time"
 
 	"github.com/overmindtech/sdp-go"
@@ -42,8 +43,15 @@ import (
 //                      +----+
 //
 
+// this global atomic variable keeps track of the generation count for test
+// items. It is increased every time a new item is created, and is used to
+// ensure that users of the test-source can determine that queries have hit the
+// actual source and were not cached.
+var generation atomic.Int32
+
 // createTestItem Creates a simple item for testing
 func createTestItem(typ, value string) *sdp.Item {
+	thisGen := generation.Add(1)
 	return &sdp.Item{
 		Type:            typ,
 		UniqueAttribute: "name",
@@ -53,6 +61,12 @@ func createTestItem(typ, value string) *sdp.Item {
 					"name": {
 						Kind: &structpb.Value_StringValue{
 							StringValue: value,
+						},
+					},
+					"generation": {
+						Kind: &structpb.Value_NumberValue{
+							// good enough for google, good enough for testing
+							NumberValue: float64(thisGen),
 						},
 					},
 				},
