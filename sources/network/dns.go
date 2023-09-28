@@ -6,9 +6,12 @@ import (
 	"fmt"
 	"net"
 	"sort"
+	"sync"
+	"time"
 
 	"github.com/miekg/dns"
 	"github.com/overmindtech/sdp-go"
+	"github.com/overmindtech/sdpcache"
 )
 
 //go:generate docgen ../../doc
@@ -30,6 +33,34 @@ type DNSSource struct {
 	ReverseLookup bool
 
 	client dns.Client
+
+	CacheDuration time.Duration   // How long to cache items for
+	cache         *sdpcache.Cache // The sdpcache of this source
+	cacheInitMu   sync.Mutex      // Mutex to ensure cache is only initialised once
+}
+
+// DefaultCacheDuration Returns the default cache duration for this source
+// TODO: evaluate response's TTL to set accurate cache duration
+func (s *DNSSource) DefaultCacheDuration() time.Duration {
+	if s.CacheDuration == 0 {
+		return 1 * time.Minute // shorter than the normal default, since DNS lookups are cheap and the entries change often
+	}
+
+	return s.CacheDuration
+}
+
+func (s *DNSSource) ensureCache() {
+	s.cacheInitMu.Lock()
+	defer s.cacheInitMu.Unlock()
+
+	if s.cache == nil {
+		s.cache = sdpcache.NewCache()
+	}
+}
+
+func (s *DNSSource) Cache() *sdpcache.Cache {
+	s.ensureCache()
+	return s.cache
 }
 
 var DefaultServers = []string{
@@ -87,7 +118,7 @@ func (d *DNSSource) Scopes() []string {
 }
 
 // Gets a single item. This expects a DNS name
-func (d *DNSSource) Get(ctx context.Context, scope string, query string) (*sdp.Item, error) {
+func (d *DNSSource) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
 	if scope != "global" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
@@ -101,6 +132,19 @@ func (d *DNSSource) Get(ctx context.Context, scope string, query string) (*sdp.I
 		return &sdp.Item{}, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOTFOUND,
 			ErrorString: fmt.Sprintf("%v is already an IP address, no DNS entry will be found", query),
+		}
+	}
+
+	d.ensureCache()
+	cacheHit, ck, cachedItems, qErr := d.cache.Lookup(ctx, d.Name(), sdp.QueryMethod_GET, scope, d.Type(), query, ignoreCache)
+	if qErr != nil {
+		return nil, qErr
+	}
+	if cacheHit {
+		if len(cachedItems) > 0 {
+			return cachedItems[0], nil
+		} else {
+			return nil, nil
 		}
 	}
 
@@ -120,11 +164,12 @@ func (d *DNSSource) Get(ctx context.Context, scope string, query string) (*sdp.I
 		}
 	}
 
+	d.cache.StoreItem(items[0], d.CacheDuration, ck)
 	return items[0], nil
 }
 
 // List calls back to the ListFunction to find all items
-func (d *DNSSource) List(ctx context.Context, scope string) ([]*sdp.Item, error) {
+func (d *DNSSource) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
 	if scope != "global" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
@@ -142,7 +187,7 @@ type DNSRecord struct {
 	Type   string
 }
 
-func (d *DNSSource) Search(ctx context.Context, scope string, query string) ([]*sdp.Item, error) {
+func (d *DNSSource) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
 	if scope != "global" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
@@ -161,7 +206,19 @@ func (d *DNSSource) Search(ctx context.Context, scope string, query string) ([]*
 		}
 	}
 
-	return d.MakeQuery(ctx, query, true)
+	ck := sdpcache.CacheKeyFromParts(d.Name(), sdp.QueryMethod_SEARCH, scope, d.Type(), query)
+
+	items, err := d.MakeQuery(ctx, query, true)
+	if err != nil {
+		d.cache.StoreError(err, d.CacheDuration, ck)
+		return nil, err
+	}
+
+	for _, item := range items {
+		d.cache.StoreItem(item, d.CacheDuration, ck)
+	}
+
+	return items, nil
 }
 
 // MakeReverseQuery Makes a reverse DNS query, then forward DNS queries for all results

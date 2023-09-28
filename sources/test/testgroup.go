@@ -44,7 +44,7 @@ func (s *TestGroupSource) Hidden() bool {
 }
 
 // Gets a single item. This expects a name
-func (d *TestGroupSource) Get(ctx context.Context, scope string, query string) (*sdp.Item, error) {
+func (d *TestGroupSource) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
 	if scope != "test" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
@@ -64,7 +64,7 @@ func (d *TestGroupSource) Get(ctx context.Context, scope string, query string) (
 	}
 }
 
-func (d *TestGroupSource) List(ctx context.Context, scope string) ([]*sdp.Item, error) {
+func (d *TestGroupSource) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
 	if scope != "test" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
@@ -76,7 +76,7 @@ func (d *TestGroupSource) List(ctx context.Context, scope string) ([]*sdp.Item, 
 	return []*sdp.Item{admins()}, nil
 }
 
-func (d *TestGroupSource) Search(ctx context.Context, scope string, query string) ([]*sdp.Item, error) {
+func (d *TestGroupSource) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
 	if scope != "test" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,

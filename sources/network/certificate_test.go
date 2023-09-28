@@ -75,7 +75,7 @@ vEsXCS+0yx5DaMkHJ8HSXPfqIbloEpw8nL+e/IBcm2PN7EeqJSdnoDfzAIJ9VNep
 func TestCertificateGet(t *testing.T) {
 	src := CertificateSource{}
 
-	_, err := src.Get(context.Background(), "global", "foo")
+	_, err := src.Get(context.Background(), "global", "foo", false)
 
 	if err == nil {
 		t.Error("expected error but got none")
@@ -85,7 +85,7 @@ func TestCertificateGet(t *testing.T) {
 func TestCertificateList(t *testing.T) {
 	src := CertificateSource{}
 
-	items, err := src.List(context.Background(), "global")
+	items, err := src.List(context.Background(), "global", false)
 
 	if err != nil {
 		t.Error(err)
@@ -117,7 +117,7 @@ func (c *CertTest) Run(t *testing.T, cert *sdp.Item) {
 func TestCertificateSearch(t *testing.T) {
 	src := CertificateSource{}
 
-	certs, err := src.Search(context.Background(), "global", chain)
+	certs, err := src.Search(context.Background(), "global", chain, false)
 
 	if err != nil {
 		t.Fatal(err)

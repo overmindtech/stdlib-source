@@ -13,7 +13,7 @@ func TestIPGet(t *testing.T) {
 	src := IPSource{}
 
 	t.Run("with ipv4 address", func(t *testing.T) {
-		item, err := src.Get(context.Background(), "global", "213.21.3.187")
+		item, err := src.Get(context.Background(), "global", "213.21.3.187", false)
 
 		if err != nil {
 			t.Fatal(err)
@@ -31,7 +31,7 @@ func TestIPGet(t *testing.T) {
 	})
 
 	t.Run("with ipv6 address", func(t *testing.T) {
-		item, err := src.Get(context.Background(), "global", "2a01:4b00:8602:b600:5523:ce8d:dafc:3243")
+		item, err := src.Get(context.Background(), "global", "2a01:4b00:8602:b600:5523:ce8d:dafc:3243", false)
 
 		if err != nil {
 			t.Fatal(err)
@@ -49,7 +49,7 @@ func TestIPGet(t *testing.T) {
 	})
 
 	t.Run("with invalid address", func(t *testing.T) {
-		_, err := src.Get(context.Background(), "global", "this is not valid")
+		_, err := src.Get(context.Background(), "global", "this is not valid", false)
 
 		if err == nil {
 			t.Error("expected error")
@@ -67,7 +67,7 @@ func TestIPGet(t *testing.T) {
 			// link-local source or destination addresses. This means that it
 			// doesn't make sense to have a "global" link-local address as it's
 			// not truly global
-			_, err := src.Get(context.Background(), "global", "169.254.1.25")
+			_, err := src.Get(context.Background(), "global", "169.254.1.25", false)
 
 			if err == nil {
 				t.Error("expected error but got nil")
@@ -75,7 +75,7 @@ func TestIPGet(t *testing.T) {
 		})
 
 		t.Run("in another scope", func(t *testing.T) {
-			item, err := src.Get(context.Background(), "some.computer", "169.254.1.25")
+			item, err := src.Get(context.Background(), "some.computer", "169.254.1.25", false)
 
 			if err != nil {
 				t.Fatal(err)
@@ -95,7 +95,7 @@ func TestIPGet(t *testing.T) {
 
 	t.Run("with ipv4 private address", func(t *testing.T) {
 		t.Run("in the global scope", func(t *testing.T) {
-			item, err := src.Get(context.Background(), "global", "10.0.4.5")
+			item, err := src.Get(context.Background(), "global", "10.0.4.5", false)
 
 			if err != nil {
 				t.Fatal(err)
@@ -109,7 +109,7 @@ func TestIPGet(t *testing.T) {
 		})
 
 		t.Run("in another scope", func(t *testing.T) {
-			_, err := src.Get(context.Background(), "some.computer", "10.0.4.5")
+			_, err := src.Get(context.Background(), "some.computer", "10.0.4.5", false)
 
 			if err == nil {
 				t.Error("expected error but got nil")
@@ -124,7 +124,7 @@ func TestIPGet(t *testing.T) {
 			// link-local source or destination addresses. This means that it
 			// doesn't make sense to have a "global" link-local address as it's
 			// not truly global
-			_, err := src.Get(context.Background(), "global", "127.0.0.1")
+			_, err := src.Get(context.Background(), "global", "127.0.0.1", false)
 
 			if err == nil {
 				t.Error("expected error but got nil")
@@ -132,7 +132,7 @@ func TestIPGet(t *testing.T) {
 		})
 
 		t.Run("in another scope", func(t *testing.T) {
-			item, err := src.Get(context.Background(), "some.computer", "127.0.0.1")
+			item, err := src.Get(context.Background(), "some.computer", "127.0.0.1", false)
 
 			if err != nil {
 				t.Fatal(err)
@@ -157,7 +157,7 @@ func TestIPGet(t *testing.T) {
 			// link-local source or destination addresses. This means that it
 			// doesn't make sense to have a "global" link-local address as it's
 			// not truly global
-			_, err := src.Get(context.Background(), "global", "fe80::a70f:3a:338b:4801")
+			_, err := src.Get(context.Background(), "global", "fe80::a70f:3a:338b:4801", false)
 
 			if err == nil {
 				t.Error("expected error but got nil")
@@ -165,7 +165,7 @@ func TestIPGet(t *testing.T) {
 		})
 
 		t.Run("in another scope", func(t *testing.T) {
-			item, err := src.Get(context.Background(), "some.computer", "fe80::a70f:3a:338b:4801")
+			item, err := src.Get(context.Background(), "some.computer", "fe80::a70f:3a:338b:4801", false)
 
 			if err != nil {
 				t.Fatal(err)
@@ -185,7 +185,7 @@ func TestIPGet(t *testing.T) {
 
 	t.Run("with ipv6 private address", func(t *testing.T) {
 		t.Run("in the global scope", func(t *testing.T) {
-			item, err := src.Get(context.Background(), "global", "fd12:3456:789a:1::1")
+			item, err := src.Get(context.Background(), "global", "fd12:3456:789a:1::1", false)
 
 			if err != nil {
 				t.Fatal(err)
@@ -200,7 +200,7 @@ func TestIPGet(t *testing.T) {
 		})
 
 		t.Run("in another scope", func(t *testing.T) {
-			_, err := src.Get(context.Background(), "some.computer", "fd12:3456:789a:1::1")
+			_, err := src.Get(context.Background(), "some.computer", "fd12:3456:789a:1::1", false)
 
 			if err == nil {
 				t.Error("expected error but got nil")
@@ -215,7 +215,7 @@ func TestIPGet(t *testing.T) {
 			// link-local source or destination addresses. This means that it
 			// doesn't make sense to have a "global" link-local address as it's
 			// not truly global
-			_, err := src.Get(context.Background(), "global", "::1")
+			_, err := src.Get(context.Background(), "global", "::1", false)
 
 			if err == nil {
 				t.Error("expected error but got nil")
@@ -223,7 +223,7 @@ func TestIPGet(t *testing.T) {
 		})
 
 		t.Run("in another scope", func(t *testing.T) {
-			item, err := src.Get(context.Background(), "some.computer", "::1")
+			item, err := src.Get(context.Background(), "some.computer", "::1", false)
 
 			if err != nil {
 				t.Fatal(err)
@@ -242,7 +242,7 @@ func TestIPGet(t *testing.T) {
 	})
 
 	t.Run("with a wildcard scope", func(t *testing.T) {
-		item, err := src.Get(context.Background(), sdp.WILDCARD, "213.21.3.187")
+		item, err := src.Get(context.Background(), sdp.WILDCARD, "213.21.3.187", false)
 
 		if err != nil {
 			t.Fatal(err)

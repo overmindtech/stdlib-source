@@ -18,7 +18,7 @@ func TestSearch(t *testing.T) {
 	}
 
 	t.Run("with a bad DNS name", func(t *testing.T) {
-		_, err := s.Search(context.Background(), "global", "not.real.overmind.tech")
+		_, err := s.Search(context.Background(), "global", "not.real.overmind.tech", false)
 
 		if err == nil {
 			t.Error("expected error")
@@ -26,7 +26,7 @@ func TestSearch(t *testing.T) {
 	})
 
 	t.Run("with one.one.one.one", func(t *testing.T) {
-		items, err := s.Search(context.Background(), "global", "one.one.one.one")
+		items, err := s.Search(context.Background(), "global", "one.one.one.one", false)
 
 		if err != nil {
 			t.Error(err)
@@ -62,7 +62,7 @@ func TestSearch(t *testing.T) {
 
 	t.Run("with an IP and therefore reverse DNS", func(t *testing.T) {
 		s.ReverseLookup = true
-		items, err := s.Search(context.Background(), "global", "1.1.1.1")
+		items, err := s.Search(context.Background(), "global", "1.1.1.1", false)
 
 		if err != nil {
 			t.Error(err)
@@ -109,7 +109,7 @@ func TestDnsGet(t *testing.T) {
 	src := DNSSource{}
 
 	t.Run("working request", func(t *testing.T) {
-		item, err := src.Get(context.Background(), "global", "one.one.one.one")
+		item, err := src.Get(context.Background(), "global", "one.one.one.one", false)
 
 		if err != nil {
 			t.Fatal(err)
@@ -119,7 +119,7 @@ func TestDnsGet(t *testing.T) {
 	})
 
 	t.Run("bad dns entry", func(t *testing.T) {
-		_, err := src.Get(context.Background(), "global", "something.does.not.exist.please.testing")
+		_, err := src.Get(context.Background(), "global", "something.does.not.exist.please.testing", false)
 
 		if err == nil {
 			t.Error("expected error but got nil")
@@ -135,7 +135,7 @@ func TestDnsGet(t *testing.T) {
 	})
 
 	t.Run("bad scope", func(t *testing.T) {
-		_, err := src.Get(context.Background(), "something.local.test", "something.does.not.exist.please.testing")
+		_, err := src.Get(context.Background(), "something.local.test", "something.does.not.exist.please.testing", false)
 
 		if err == nil {
 			t.Error("expected error but got nil")
