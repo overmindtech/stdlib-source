@@ -44,7 +44,7 @@ func (s *TestDogSource) Hidden() bool {
 }
 
 // Gets a single item. This expects a name
-func (d *TestDogSource) Get(ctx context.Context, scope string, query string) (*sdp.Item, error) {
+func (d *TestDogSource) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
 	if scope != "test" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
@@ -64,7 +64,7 @@ func (d *TestDogSource) Get(ctx context.Context, scope string, query string) (*s
 	}
 }
 
-func (d *TestDogSource) List(ctx context.Context, scope string) ([]*sdp.Item, error) {
+func (d *TestDogSource) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
 	if scope != "test" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
@@ -76,7 +76,7 @@ func (d *TestDogSource) List(ctx context.Context, scope string) ([]*sdp.Item, er
 	return []*sdp.Item{manny()}, nil
 }
 
-func (d *TestDogSource) Search(ctx context.Context, scope string, query string) ([]*sdp.Item, error) {
+func (d *TestDogSource) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
 	if scope != "test" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,

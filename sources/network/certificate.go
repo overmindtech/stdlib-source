@@ -84,7 +84,7 @@ func (s *CertificateSource) Scopes() []string {
 // Rather than implement a source that knows how to make each of these
 // connections, instead we have created this source which takes the cert itself
 // as an input to Search() and parses it and returns the info
-func (s *CertificateSource) Get(ctx context.Context, scope string, query string) (*sdp.Item, error) {
+func (s *CertificateSource) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
 	return nil, &sdp.QueryError{
 		ErrorType:   sdp.QueryError_NOTFOUND,
 		ErrorString: "certificate only responds to Search() requests. Consult the documentation",
@@ -94,7 +94,7 @@ func (s *CertificateSource) Get(ctx context.Context, scope string, query string)
 
 // List Is not implemented for HTTP as this would require scanning many
 // endpoints or something, doesn't really make sense
-func (s *CertificateSource) List(ctx context.Context, scope string) ([]*sdp.Item, error) {
+func (s *CertificateSource) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
 	items := make([]*sdp.Item, 0)
 
 	return items, nil
@@ -103,7 +103,7 @@ func (s *CertificateSource) List(ctx context.Context, scope string) ([]*sdp.Item
 // Search This method takes a full certificate, or certificate bundle as input
 // (in PEM encoded format), parses them, and returns a items, one for each
 // certificate that was found
-func (s *CertificateSource) Search(ctx context.Context, scope string, query string) ([]*sdp.Item, error) {
+func (s *CertificateSource) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
 	var errors []error
 	var items []*sdp.Item
 

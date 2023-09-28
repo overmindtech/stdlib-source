@@ -62,7 +62,7 @@ func (s *IPSource) Scopes() []string {
 //
 // The purpose of this is mainly to provide a node in the graph that many things
 // can be linked to, rather than being particularly useful on its own
-func (bc *IPSource) Get(ctx context.Context, scope string, query string) (*sdp.Item, error) {
+func (bc *IPSource) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
 	var ip net.IP
 	var err error
 	var attributes *sdp.ItemAttributes
@@ -159,7 +159,7 @@ func (bc *IPSource) Get(ctx context.Context, scope string, query string) (*sdp.I
 
 // List Returns an empty list as returning all possible IP addresses would be
 // unproductive
-func (bc *IPSource) List(ctx context.Context, scope string) ([]*sdp.Item, error) {
+func (bc *IPSource) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
 	if scope != "global" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,

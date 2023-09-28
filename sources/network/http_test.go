@@ -53,7 +53,7 @@ func TestHTTPGet(t *testing.T) {
 	src := HTTPSource{}
 
 	t.Run("With a valid endpoint", func(t *testing.T) {
-		item, err := src.Get(context.Background(), "global", "https://www.google.com")
+		item, err := src.Get(context.Background(), "global", "https://www.google.com", false)
 
 		if err != nil {
 			t.Fatal(err)
@@ -77,7 +77,7 @@ func TestHTTPGet(t *testing.T) {
 	})
 
 	t.Run("With a specified port", func(t *testing.T) {
-		item, err := src.Get(context.Background(), "global", "https://www.google.com:443")
+		item, err := src.Get(context.Background(), "global", "https://www.google.com:443", false)
 
 		if err != nil {
 			t.Fatal(err)
@@ -104,7 +104,7 @@ func TestHTTPGet(t *testing.T) {
 	})
 
 	t.Run("With an IP", func(t *testing.T) {
-		item, err := src.Get(context.Background(), "global", "https://1.1.1.1:443")
+		item, err := src.Get(context.Background(), "global", "https://1.1.1.1:443", false)
 
 		if err != nil {
 			t.Fatal(err)
@@ -139,7 +139,7 @@ func TestHTTPGet(t *testing.T) {
 
 		defer s.Server.Close()
 
-		item, err := src.Get(context.Background(), "global", s.NotFoundPage)
+		item, err := src.Get(context.Background(), "global", s.NotFoundPage, false)
 
 		if err != nil {
 			t.Fatal(err)
@@ -163,7 +163,7 @@ func TestHTTPGet(t *testing.T) {
 	t.Run("With a timeout", func(t *testing.T) {
 		ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
 		defer cancel()
-		item, err := src.Get(ctx, "global", "http://www.google.com:81/")
+		item, err := src.Get(ctx, "global", "http://www.google.com:81/", false)
 
 		if err == nil {
 			t.Errorf("Expected timeout but got %v", item.String())
@@ -179,7 +179,7 @@ func TestHTTPGet(t *testing.T) {
 
 		defer s.Server.Close()
 
-		item, err := src.Get(context.Background(), "global", s.InternalServerErrorPage)
+		item, err := src.Get(context.Background(), "global", s.InternalServerErrorPage, false)
 
 		if err != nil {
 			t.Fatal(err)
@@ -209,7 +209,7 @@ func TestHTTPGet(t *testing.T) {
 
 		defer s.Server.Close()
 
-		item, err := src.Get(context.Background(), "global", s.RedirectPage)
+		item, err := src.Get(context.Background(), "global", s.RedirectPage, false)
 
 		if err != nil {
 			t.Fatal(err)
@@ -235,7 +235,7 @@ func TestHTTPGet(t *testing.T) {
 	})
 
 	t.Run("With no TLS", func(t *testing.T) {
-		item, err := src.Get(context.Background(), "global", "http://neverssl.com")
+		item, err := src.Get(context.Background(), "global", "http://neverssl.com", false)
 
 		if err != nil {
 			t.Fatal(err)

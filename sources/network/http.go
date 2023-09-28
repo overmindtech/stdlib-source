@@ -9,8 +9,11 @@ import (
 	"net/http"
 	"runtime"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/overmindtech/sdp-go"
+	"github.com/overmindtech/sdpcache"
 )
 
 const USER_AGENT_VERSION = "0.1"
@@ -25,7 +28,34 @@ const USER_AGENT_VERSION = "0.1"
 // get the headers, certificate, code etc. without needing to download the
 // entire page
 
-type HTTPSource struct{}
+type HTTPSource struct {
+	CacheDuration time.Duration   // How long to cache items for
+	cache         *sdpcache.Cache // The sdpcache of this source
+	cacheInitMu   sync.Mutex      // Mutex to ensure cache is only initialised once
+}
+
+// DefaultCacheDuration Returns the default cache duration for this source
+func (s *HTTPSource) DefaultCacheDuration() time.Duration {
+	if s.CacheDuration == 0 {
+		return 10 * time.Minute
+	}
+
+	return s.CacheDuration
+}
+
+func (s *HTTPSource) ensureCache() {
+	s.cacheInitMu.Lock()
+	defer s.cacheInitMu.Unlock()
+
+	if s.cache == nil {
+		s.cache = sdpcache.NewCache()
+	}
+}
+
+func (s *HTTPSource) Cache() *sdpcache.Cache {
+	s.ensureCache()
+	return s.cache
+}
 
 // Type The type of items that this source is capable of finding
 func (s *HTTPSource) Type() string {
@@ -51,12 +81,25 @@ func (s *HTTPSource) Scopes() []string {
 // ctx parameter contains a golang Context object which should be used to allow
 // this source to timeout or be cancelled when executing potentially
 // long-running actions
-func (s *HTTPSource) Get(ctx context.Context, scope string, query string) (*sdp.Item, error) {
+func (s *HTTPSource) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
 	if scope != "global" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
 			ErrorString: "http is only supported in the 'global' scope",
 			Scope:       scope,
+		}
+	}
+
+	s.ensureCache()
+	cacheHit, ck, cachedItems, qErr := s.cache.Lookup(ctx, s.Name(), sdp.QueryMethod_GET, scope, s.Type(), query, ignoreCache)
+	if qErr != nil {
+		return nil, qErr
+	}
+	if cacheHit {
+		if len(cachedItems) > 0 {
+			return cachedItems[0], nil
+		} else {
+			return nil, nil
 		}
 	}
 
@@ -77,13 +120,14 @@ func (s *HTTPSource) Get(ctx context.Context, scope string, query string) (*sdp.
 	}
 
 	req, err := http.NewRequestWithContext(ctx, "HEAD", query, http.NoBody)
-
 	if err != nil {
-		return nil, &sdp.QueryError{
+		err = &sdp.QueryError{
 			ErrorType:   sdp.QueryError_OTHER,
 			ErrorString: err.Error(),
 			Scope:       scope,
 		}
+		s.cache.StoreError(err, s.CacheDuration, ck)
+		return nil, err
 	}
 
 	req.Header.Add("User-Agent", fmt.Sprintf("Overmind/%v (%v/%v)", USER_AGENT_VERSION, runtime.GOOS, runtime.GOARCH))
@@ -94,11 +138,13 @@ func (s *HTTPSource) Get(ctx context.Context, scope string, query string) (*sdp.
 	res, err = client.Do(req)
 
 	if err != nil {
-		return nil, &sdp.QueryError{
+		err = &sdp.QueryError{
 			ErrorType:   sdp.QueryError_OTHER,
 			ErrorString: err.Error(),
 			Scope:       scope,
 		}
+		s.cache.StoreError(err, s.CacheDuration, ck)
+		return nil, err
 	}
 
 	// Clean up connections once we're done
@@ -124,11 +170,13 @@ func (s *HTTPSource) Get(ctx context.Context, scope string, query string) (*sdp.
 	})
 
 	if err != nil {
-		return nil, &sdp.QueryError{
+		err = &sdp.QueryError{
 			ErrorType:   sdp.QueryError_OTHER,
 			ErrorString: err.Error(),
 			Scope:       scope,
 		}
+		s.cache.StoreError(err, s.CacheDuration, ck)
+		return nil, err
 	}
 
 	item := sdp.Item{
@@ -244,12 +292,14 @@ func (s *HTTPSource) Get(ctx context.Context, scope string, query string) (*sdp.
 		}
 	}
 
+	s.cache.StoreItem(&item, s.CacheDuration, ck)
+
 	return &item, nil
 }
 
-// List Is not implemented for HTTP as this would require scanning many
+// List is not implemented for HTTP as this would require scanning infinitely many
 // endpoints or something, doesn't really make sense
-func (s *HTTPSource) List(ctx context.Context, scope string) ([]*sdp.Item, error) {
+func (s *HTTPSource) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
 	items := make([]*sdp.Item, 0)
 
 	return items, nil

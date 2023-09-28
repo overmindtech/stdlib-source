@@ -44,7 +44,7 @@ func (s *TestRegionSource) Hidden() bool {
 }
 
 // Gets a single item. This expects a name
-func (d *TestRegionSource) Get(ctx context.Context, scope string, query string) (*sdp.Item, error) {
+func (d *TestRegionSource) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
 	if scope != "test" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
@@ -64,7 +64,7 @@ func (d *TestRegionSource) Get(ctx context.Context, scope string, query string) 
 	}
 }
 
-func (d *TestRegionSource) List(ctx context.Context, scope string) ([]*sdp.Item, error) {
+func (d *TestRegionSource) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
 	if scope != "test" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
@@ -76,7 +76,7 @@ func (d *TestRegionSource) List(ctx context.Context, scope string) ([]*sdp.Item,
 	return []*sdp.Item{gb()}, nil
 }
 
-func (d *TestRegionSource) Search(ctx context.Context, scope string, query string) ([]*sdp.Item, error) {
+func (d *TestRegionSource) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
 	if scope != "test" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
