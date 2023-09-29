@@ -9,9 +9,9 @@ require (
 	github.com/miekg/dns v1.1.56
 	github.com/nats-io/jwt/v2 v2.5.2
 	github.com/nats-io/nkeys v0.4.5
-	github.com/overmindtech/discovery v0.25.0
-	github.com/overmindtech/sdp-go v0.49.5
-	github.com/overmindtech/sdpcache v1.6.0
+	github.com/overmindtech/discovery v0.25.1
+	github.com/overmindtech/sdp-go v0.49.6
+	github.com/overmindtech/sdpcache v1.6.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
@@ -46,7 +46,7 @@ require (
 	github.com/klauspost/compress v1.17.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
-	github.com/nats-io/nats.go v1.30.0 // indirect
+	github.com/nats-io/nats.go v1.30.2 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/overmindtech/api-client v0.14.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.8 // indirect
@@ -56,7 +56,7 @@ require (
 	github.com/spf13/cast v1.5.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/subosito/gotenv v1.4.2 // indirect
-	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.42.0 // indirect
+	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.45.0 // indirect
 	go.opentelemetry.io/otel/metric v1.19.0 // indirect
 	go.opentelemetry.io/otel/schema v0.0.5 // indirect
 	go.opentelemetry.io/otel/trace v1.19.0 // indirect
@@ -77,22 +77,4 @@ require (
 	gopkg.in/square/go-jose.v2 v2.6.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-)
-
-// Due to the absolule unparalleled nightmare that is every single OTEL release,
-// the only way I can get this to work is to exclude all of the new versions. These
-// should be removed when https://github.com/overmindtech/aws-source/pull/272 is
-// merged
-exclude (
-	go.opentelemetry.io/contrib/detectors/aws/ec2 v1.17.0
-	go.opentelemetry.io/contrib/detectors/aws/ec2 v1.18.0
-	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.43.0
-	go.opentelemetry.io/otel v1.17.0
-	go.opentelemetry.io/otel/exporters/otlp/internal/retry v1.17.0
-	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.17.0
-	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.17.0
-	go.opentelemetry.io/otel/exportersn/otlp/otlptrace/otlptracehttp v1.17.0
-	go.opentelemetry.io/otel/metric v1.17.0
-	go.opentelemetry.io/otel/sdk v1.17.0
-	go.opentelemetry.io/otel/trace v1.17.0
 )
