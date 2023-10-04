@@ -34,15 +34,6 @@ type HTTPSource struct {
 	cacheInitMu   sync.Mutex      // Mutex to ensure cache is only initialised once
 }
 
-// DefaultCacheDuration Returns the default cache duration for this source
-func (s *HTTPSource) DefaultCacheDuration() time.Duration {
-	if s.CacheDuration == 0 {
-		return 10 * time.Minute
-	}
-
-	return s.CacheDuration
-}
-
 func (s *HTTPSource) ensureCache() {
 	s.cacheInitMu.Lock()
 	defer s.cacheInitMu.Unlock()

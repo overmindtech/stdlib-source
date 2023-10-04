@@ -39,16 +39,6 @@ type DNSSource struct {
 	cacheInitMu   sync.Mutex      // Mutex to ensure cache is only initialised once
 }
 
-// DefaultCacheDuration Returns the default cache duration for this source
-// TODO: evaluate response's TTL to set accurate cache duration
-func (s *DNSSource) DefaultCacheDuration() time.Duration {
-	if s.CacheDuration == 0 {
-		return 1 * time.Minute // shorter than the normal default, since DNS lookups are cheap and the entries change often
-	}
-
-	return s.CacheDuration
-}
-
 func (s *DNSSource) ensureCache() {
 	s.cacheInitMu.Lock()
 	defer s.cacheInitMu.Unlock()
