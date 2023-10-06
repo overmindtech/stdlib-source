@@ -5,7 +5,7 @@ go 1.21
 // Direct dependencies
 require (
 	github.com/MrAlias/otel-schema-utils v0.2.1-alpha
-	github.com/getsentry/sentry-go v0.24.1
+	github.com/getsentry/sentry-go v0.25.0
 	github.com/miekg/dns v1.1.56
 	github.com/nats-io/jwt/v2 v2.5.2
 	github.com/nats-io/nkeys v0.4.5
