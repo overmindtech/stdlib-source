@@ -9,8 +9,8 @@ require (
 	github.com/miekg/dns v1.1.56
 	github.com/nats-io/jwt/v2 v2.5.2
 	github.com/nats-io/nkeys v0.4.6
-	github.com/overmindtech/discovery v0.25.1
-	github.com/overmindtech/sdp-go v0.54.1
+	github.com/overmindtech/discovery v0.26.0
+	github.com/overmindtech/sdp-go v0.56.0
 	github.com/overmindtech/sdpcache v1.6.1
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.7.0
@@ -43,7 +43,7 @@ require (
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
-	github.com/klauspost/compress v1.17.0 // indirect
+	github.com/klauspost/compress v1.17.2 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/nats-io/nats.go v1.31.0 // indirect
