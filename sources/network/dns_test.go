@@ -2,6 +2,7 @@ package network
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"testing"
 
@@ -148,5 +149,17 @@ func TestDnsGet(t *testing.T) {
 		} else {
 			t.Errorf("expected error type to be *sdp.QueryError, got %t", err)
 		}
+	})
+
+	t.Run("with a CNAME", func(t *testing.T) {
+		// When we do a Get on a CNAME, I wan it to work, but only return the
+		// first thing
+		item, err := src.Get(context.Background(), "global", "www.github.com", false)
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		fmt.Println(item)
 	})
 }

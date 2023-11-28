@@ -29,10 +29,11 @@ const USER_AGENT_VERSION = "0.1"
 // entire page
 
 type HTTPSource struct {
-	CacheDuration time.Duration   // How long to cache items for
-	cache         *sdpcache.Cache // The sdpcache of this source
-	cacheInitMu   sync.Mutex      // Mutex to ensure cache is only initialised once
+	cache       *sdpcache.Cache // The sdpcache of this source
+	cacheInitMu sync.Mutex      // Mutex to ensure cache is only initialised once
 }
+
+const httpCacheDuration = 5 * time.Minute
 
 func (s *HTTPSource) ensureCache() {
 	s.cacheInitMu.Lock()
@@ -117,7 +118,7 @@ func (s *HTTPSource) Get(ctx context.Context, scope string, query string, ignore
 			ErrorString: err.Error(),
 			Scope:       scope,
 		}
-		s.cache.StoreError(err, s.CacheDuration, ck)
+		s.cache.StoreError(err, httpCacheDuration, ck)
 		return nil, err
 	}
 
@@ -134,7 +135,7 @@ func (s *HTTPSource) Get(ctx context.Context, scope string, query string, ignore
 			ErrorString: err.Error(),
 			Scope:       scope,
 		}
-		s.cache.StoreError(err, s.CacheDuration, ck)
+		s.cache.StoreError(err, httpCacheDuration, ck)
 		return nil, err
 	}
 
@@ -166,7 +167,7 @@ func (s *HTTPSource) Get(ctx context.Context, scope string, query string, ignore
 			ErrorString: err.Error(),
 			Scope:       scope,
 		}
-		s.cache.StoreError(err, s.CacheDuration, ck)
+		s.cache.StoreError(err, httpCacheDuration, ck)
 		return nil, err
 	}
 
@@ -283,7 +284,7 @@ func (s *HTTPSource) Get(ctx context.Context, scope string, query string, ignore
 		}
 	}
 
-	s.cache.StoreItem(&item, s.CacheDuration, ck)
+	s.cache.StoreItem(&item, httpCacheDuration, ck)
 
 	return &item, nil
 }
