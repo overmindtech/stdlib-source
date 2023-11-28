@@ -34,10 +34,11 @@ type DNSSource struct {
 
 	client dns.Client
 
-	CacheDuration time.Duration   // How long to cache items for
-	cache         *sdpcache.Cache // The sdpcache of this source
-	cacheInitMu   sync.Mutex      // Mutex to ensure cache is only initialised once
+	cache       *sdpcache.Cache // The sdpcache of this source
+	cacheInitMu sync.Mutex      // Mutex to ensure cache is only initialised once
 }
+
+const dnsCacheDuration = 5 * time.Minute
 
 func (s *DNSSource) ensureCache() {
 	s.cacheInitMu.Lock()
@@ -141,7 +142,7 @@ func (d *DNSSource) Get(ctx context.Context, scope string, query string, ignoreC
 	// This won't work for CNAMEs since the linked query logic needs to be
 	// different and we're only querying for A and AAAA. Realistically people
 	// should be using Search() now anyway
-	items, err := d.MakeQuery(ctx, query, false)
+	items, err := d.MakeQuery(ctx, query)
 
 	if err != nil {
 		return nil, err
@@ -154,7 +155,7 @@ func (d *DNSSource) Get(ctx context.Context, scope string, query string, ignoreC
 		}
 	}
 
-	d.cache.StoreItem(items[0], d.CacheDuration, ck)
+	d.cache.StoreItem(items[0], dnsCacheDuration, ck)
 	return items[0], nil
 }
 
@@ -198,14 +199,14 @@ func (d *DNSSource) Search(ctx context.Context, scope string, query string, igno
 
 	ck := sdpcache.CacheKeyFromParts(d.Name(), sdp.QueryMethod_SEARCH, scope, d.Type(), query)
 
-	items, err := d.MakeQuery(ctx, query, true)
+	items, err := d.MakeQuery(ctx, query)
 	if err != nil {
-		d.cache.StoreError(err, d.CacheDuration, ck)
+		d.cache.StoreError(err, dnsCacheDuration, ck)
 		return nil, err
 	}
 
 	for _, item := range items {
-		d.cache.StoreItem(item, d.CacheDuration, ck)
+		d.cache.StoreItem(item, dnsCacheDuration, ck)
 	}
 
 	return items, nil
@@ -250,7 +251,7 @@ func (d *DNSSource) MakeReverseQuery(ctx context.Context, query string) ([]*sdp.
 
 	for _, rr := range r.Answer {
 		if ptr, ok := rr.(*dns.PTR); ok {
-			newItems, err := d.MakeQuery(ctx, ptr.Ptr, true)
+			newItems, err := d.MakeQuery(ctx, ptr.Ptr)
 
 			if err != nil {
 				return nil, err
@@ -264,7 +265,7 @@ func (d *DNSSource) MakeReverseQuery(ctx context.Context, query string) ([]*sdp.
 }
 
 // MakeQuery Actually makes A and AAAA queries for a given DNS entry
-func (d *DNSSource) MakeQuery(ctx context.Context, query string, recurse bool) ([]*sdp.Item, error) {
+func (d *DNSSource) MakeQuery(ctx context.Context, query string) ([]*sdp.Item, error) {
 	server, err := d.getActiveServer(ctx)
 
 	if err != nil {
@@ -282,7 +283,7 @@ func (d *DNSSource) MakeQuery(ctx context.Context, query string, recurse bool) (
 		},
 		MsgHdr: dns.MsgHdr{
 			Opcode:           dns.OpcodeQuery,
-			RecursionDesired: recurse,
+			RecursionDesired: true,
 		},
 	}
 
