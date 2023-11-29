@@ -66,3 +66,4 @@ go test ./...
 ### Packaging
 
 Docker images can be created manually using `docker build`, but GitHub actions also exist that are able to create, tag and push images. Images will be build for the `main` branch, and also for any commits tagged with a version such as `v1.2.0`
+
