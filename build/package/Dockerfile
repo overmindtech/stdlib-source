@@ -24,7 +24,7 @@ COPY sources/ sources/
 RUN --mount=type=cache,target=/root/.cache/go-build \
     GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o source main.go
 
-FROM alpine:3.18
+FROM alpine:3.19
 WORKDIR /
 COPY --from=builder /workspace/source .
 USER 65534:65534
