@@ -1,6 +1,6 @@
 module github.com/overmindtech/stdlib-source
 
-go 1.21.5
+go 1.21.6
 
 // Direct dependencies
 require (
