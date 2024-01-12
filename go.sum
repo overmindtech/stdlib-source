@@ -1,5 +1,7 @@
 connectrpc.com/connect v1.13.0 h1:lGs5maZZzWOOD+PFFiOt5OncKmMsk9ZdPwpy5jcmaYg=
 connectrpc.com/connect v1.13.0/go.mod h1:uHAFHtYgeSZJxXrkN1IunDpKghnTXhYbVh0wW4StPW0=
+connectrpc.com/connect v1.14.0 h1:PDS+J7uoz5Oui2VEOMcfz6Qft7opQM9hPiKvtGC01pA=
+connectrpc.com/connect v1.14.0/go.mod h1:uoAq5bmhhn43TwhaKdGKN/bZcGtzPW1v+ngDTn5u+8s=
 github.com/Masterminds/semver/v3 v3.2.1 h1:RN9w6+7QoMeJVGyfmbcgs28Br8cvmnucEXnY0rYXWg0=
 github.com/Masterminds/semver/v3 v3.2.1/go.mod h1:qvl/7zhW3nngYb5+80sSMF+FG2BjYrf8m9wsX0PNOMQ=
 github.com/MrAlias/otel-schema-utils v0.2.1-alpha h1:dSeMM04tO+EY1JLof0bL8rIDkaMV3yBiUFdcSeIfbqI=
@@ -96,6 +98,8 @@ github.com/overmindtech/sdp-go v0.60.1 h1:clxu7fm0cX8DEAl78PpAVcWQpy1xgeZ0pHqdlq
 github.com/overmindtech/sdp-go v0.60.1/go.mod h1:8bMmdHMjIIgr8UzbkQU1ozx0dgLbixxInnZB4tPwsXc=
 github.com/overmindtech/sdp-go v0.61.0 h1:u/ap/qn+/2EdtyaL53w7HIRtxlxWZG6m7FOdQN2AXaI=
 github.com/overmindtech/sdp-go v0.61.0/go.mod h1:8bMmdHMjIIgr8UzbkQU1ozx0dgLbixxInnZB4tPwsXc=
+github.com/overmindtech/sdp-go v0.61.4 h1:hcgijUyWuk6L9cVKabqGxlNx105jZ8hPc5PnOV/q8kY=
+github.com/overmindtech/sdp-go v0.61.4/go.mod h1:cpXdmlrfxfnEvwy7q7Y47uClLpw4kNEzLqm5yZ30xks=
 github.com/overmindtech/sdpcache v1.6.1 h1:laFibDvdUGeLBIclzM0pS3XtFdby2KnfaM3+Nn/2YuA=
 github.com/overmindtech/sdpcache v1.6.1/go.mod h1:EqpA/qHcyxKmPauMtE73qjk4Xr08QkRq3kmY5cD1zfY=
 github.com/pelletier/go-toml/v2 v2.1.0 h1:FnwAJ4oYMvbT/34k9zzHuZNrhlz48GB3/s6at6/MHO4=
