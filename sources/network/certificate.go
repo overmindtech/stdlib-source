@@ -242,6 +242,7 @@ func (s *CertificateSource) Search(ctx context.Context, scope string, query stri
 			// still work for linking as long as the referenced cert has been
 			// included in the bundle since the cache will correctly return the
 			// Get() request when it is run
+			// +overmind:link certificate
 			item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
 				Query: &sdp.Query{
 					Type:   "certificate",

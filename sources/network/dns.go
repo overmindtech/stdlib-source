@@ -339,12 +339,28 @@ func (d *DNSSource) MakeQuery(ctx context.Context, query string) ([]*sdp.Item, e
 				UniqueAttribute: UniqueAttribute,
 				Scope:           "global",
 				Attributes:      attrs,
+				// +overmind:link dns
 				LinkedItems: []*sdp.LinkedItem{
 					{
 						Item: &sdp.Reference{
 							Type:                 ItemType,
 							UniqueAttributeValue: cname.Target,
 							Scope:                "global",
+						},
+					},
+				},
+				LinkedItemQueries: []*sdp.LinkedItemQuery{
+					// +overmind:link rdap-domain
+					{
+						Query: &sdp.Query{
+							Type:   "rdap-domain",
+							Method: sdp.QueryMethod_SEARCH,
+							Query:  cname.Hdr.Name,
+							Scope:  "global",
+						},
+						BlastPropagation: &sdp.BlastPropagation{
+							In:  true,
+							Out: false,
 						},
 					},
 				},
@@ -467,6 +483,22 @@ func AToItem(name string, records []dns.RR) (*sdp.Item, error) {
 		Attributes:        attrs,
 		LinkedItemQueries: liq,
 	}
+
+	// +overmind:link rdap-domain
+	item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
+		Query: &sdp.Query{
+			Type:   "rdap-domain",
+			Method: sdp.QueryMethod_SEARCH,
+			Query:  name,
+			Scope:  "global",
+		},
+		BlastPropagation: &sdp.BlastPropagation{
+			// Changes to the domain will affect the DNS entry
+			In: true,
+			// Changes to the DNS entry won't affect the domain
+			Out: false,
+		},
+	})
 
 	return &item, nil
 }

@@ -140,6 +140,7 @@ func (bc *IPSource) Get(ctx context.Context, scope string, query string, ignoreC
 		Scope:           scope,
 		LinkedItemQueries: []*sdp.LinkedItemQuery{
 			// Reverse DNS
+			// +overmind:link dns
 			{
 				Query: &sdp.Query{
 					Type:   "dns",
@@ -151,6 +152,21 @@ func (bc *IPSource) Get(ctx context.Context, scope string, query string, ignoreC
 					// DNS always linked
 					In:  true,
 					Out: true,
+				},
+			},
+			{
+				// RDAP
+				Query: &sdp.Query{
+					Type:   "rdap-ip-network",
+					Method: sdp.QueryMethod_SEARCH,
+					Query:  ip.String(),
+					Scope:  "global",
+				},
+				BlastPropagation: &sdp.BlastPropagation{
+					// Changing the network will affect the IP
+					In: true,
+					// The IP won't affect the network
+					Out: false,
 				},
 			},
 		},

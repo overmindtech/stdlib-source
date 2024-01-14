@@ -180,6 +180,7 @@ func (s *HTTPSource) Get(ctx context.Context, scope string, query string, ignore
 
 	if ip := net.ParseIP(req.URL.Hostname()); ip != nil {
 		// If the host is an IP, add a linked item to that IP address
+		// +overmind:link ip
 		item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
 			Query: &sdp.Query{
 				Type:   "ip",
@@ -195,6 +196,7 @@ func (s *HTTPSource) Get(ctx context.Context, scope string, query string, ignore
 		})
 	} else {
 		// If the host is not an ip, try to resolve via DNS
+		// +overmind:link dns
 		item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
 			Query: &sdp.Query{
 				Type:   "dns",
@@ -249,6 +251,7 @@ func (s *HTTPSource) Get(ctx context.Context, scope string, query string, ignore
 				certs = append(certs, string(pem.EncodeToMemory(&block)))
 			}
 
+			// +overmind:link certificate
 			item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
 				Query: &sdp.Query{
 					Type:   "certificate",
@@ -268,6 +271,7 @@ func (s *HTTPSource) Get(ctx context.Context, scope string, query string, ignore
 	// Detect redirect and add a linked item for the redirect target
 	if res.StatusCode >= 300 && res.StatusCode < 400 {
 		if loc := res.Header.Get("Location"); loc != "" {
+			// +overmind:link http
 			item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
 				Query: &sdp.Query{
 					Type:   "http",
