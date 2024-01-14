@@ -145,5 +145,45 @@ func (s *EntitySource) runEntityRequest(query string, server *url.URL, scope str
 	// Link to related entities
 	item.LinkedItemQueries = extractEntityLinks(entity.Entities)
 
+	// Link to related networks
+	for _, network := range entity.Networks {
+		// +overmind:link rdap-ip-network
+		item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
+			Query: &sdp.Query{
+				Type:   "rdap-ip-network",
+				Method: sdp.QueryMethod_SEARCH,
+				Query:  network.StartAddress,
+				Scope:  scope,
+			},
+			BlastPropagation: &sdp.BlastPropagation{
+				// The network won't affect the entity
+				In: false,
+				// The entity could maybe affect the network? Change this if it
+				// causes issues
+				Out: true,
+			},
+		})
+	}
+
+	// Link to related ASNs
+	for _, autnum := range entity.Autnums {
+		// +overmind:link rdap-asn
+		item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
+			Query: &sdp.Query{
+				Type:   "rdap-asn",
+				Method: sdp.QueryMethod_GET,
+				Query:  autnum.Handle,
+				Scope:  scope,
+			},
+			BlastPropagation: &sdp.BlastPropagation{
+				// The ASN won't affect the entity
+				In: false,
+				// The entity could maybe affect the ASN? Change this if it
+				// causes issues
+				Out: true,
+			},
+		})
+	}
+
 	return item, nil
 }

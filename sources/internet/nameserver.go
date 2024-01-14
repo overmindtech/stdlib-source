@@ -3,6 +3,7 @@ package internet
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/openrdap/rdap"
 	"github.com/overmindtech/sdp-go"
@@ -126,6 +127,22 @@ func (s *NameserverSource) Search(ctx context.Context, scope string, query strin
 	// Link entities
 	// +overmind:link rdap-entity
 	item.LinkedItemQueries = append(item.LinkedItemQueries, extractEntityLinks(nameserver.Entities)...)
+
+	// Nameservers are resolvable in DNS too
+	// +overmind:link dns
+	item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
+		Query: &sdp.Query{
+			Type:   "dns",
+			Method: sdp.QueryMethod_SEARCH,
+			Query:  strings.ToLower(nameserver.LDHName),
+			Scope:  "global",
+		},
+		BlastPropagation: &sdp.BlastPropagation{
+			// These represent the same thing so linked them both ways
+			In:  true,
+			Out: true,
+		},
+	})
 
 	// Link IP addresses
 	if nameserver.IPAddresses != nil {

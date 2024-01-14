@@ -15,7 +15,7 @@ func TestEntitySourceSearch(t *testing.T) {
 	realUrls := []string{
 		"https://rdap.apnic.net/entity/AIC3-AP",
 		"https://rdap.apnic.net/entity/IRT-APNICRANDNET-AU",
-		"https://rdap.arin.net/registry/entity/GOGL",
+		"https://rdap.arin.net/registry/entity/HPINC-Z",
 	}
 
 	src := &EntitySource{

@@ -12,8 +12,7 @@ func TestIpNetworkSourceSearch(t *testing.T) {
 		Client: &rdap.Client{},
 	}
 
-	// items, err := src.Search(context.Background(), "global", "1.1.1.1", false)
-	items, err := src.Search(context.Background(), "global", "8.8.8.8", false)
+	items, err := src.Search(context.Background(), "global", "1.1.1.1", false)
 
 	if err != nil {
 		t.Fatal(err)
