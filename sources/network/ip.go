@@ -156,6 +156,7 @@ func (bc *IPSource) Get(ctx context.Context, scope string, query string, ignoreC
 			},
 			{
 				// RDAP
+				// +overmind:link rdap-ip-network
 				Query: &sdp.Query{
 					Type:   "rdap-ip-network",
 					Method: sdp.QueryMethod_SEARCH,
