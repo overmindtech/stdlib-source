@@ -11,7 +11,7 @@ import (
 )
 
 //go:generate docgen ../../doc
-// +overmind:type rdap-domain
+// +overmind:type rdap-asn
 // +overmind:get Get an ASN by handle i.e. "AS15169"
 // +overmind:description Uses RDAP to get the details of an Autonomous System
 // Number (ASN) by number

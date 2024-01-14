@@ -3,11 +3,8 @@ package internet
 import (
 	"context"
 	"errors"
-	"net/url"
-	"strings"
 	"testing"
 
-	"github.com/openrdap/rdap"
 	"github.com/overmindtech/sdp-go"
 	"github.com/overmindtech/sdpcache"
 )
@@ -63,70 +60,4 @@ func TestEntitySourceSearch(t *testing.T) {
 			t.Fatalf("Expected QueryError, got %T", err)
 		}
 	})
-}
-
-func TestTest(t *testing.T) {
-	request := rdap.Request{
-		Type:  rdap.IPRequest,
-		Query: "8.8.8.8",
-	}
-
-	client := testRdapClient(t)
-
-	response, err := client.Do(&request)
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	t.Log(response)
-
-	// Get the first entity
-	ipNetwork, ok := response.Object.(*rdap.IPNetwork)
-
-	if !ok {
-		t.Fatal("Expected IPNetwork")
-	}
-
-	if len(ipNetwork.Entities) == 0 {
-		t.Fatal("Expected at least one entity")
-	}
-
-	exampleEntity := ipNetwork.Entities[0]
-
-	request.Type = rdap.EntityRequest
-	request.Query = exampleEntity.Handle
-
-	// Parse the self link
-	var selfLink string
-	for _, link := range exampleEntity.Links {
-		if link.Rel == "self" {
-			selfLink = link.Href
-		}
-	}
-
-	if selfLink == "" {
-		t.Fatal("Expected self link")
-	}
-
-	// Strip everything after and including /entity since this will be re-added
-	// by the library
-	selfLink = strings.Split(selfLink, "/entity")[0]
-
-	// Convert to url
-	rdapUrl, err := url.Parse(selfLink)
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	request.Server = rdapUrl
-
-	response, err = client.Do(&request)
-
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	t.Log(response)
 }

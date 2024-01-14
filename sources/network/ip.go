@@ -154,6 +154,21 @@ func (bc *IPSource) Get(ctx context.Context, scope string, query string, ignoreC
 					Out: true,
 				},
 			},
+			{
+				// RDAP
+				Query: &sdp.Query{
+					Type:   "rdap-ip-network",
+					Method: sdp.QueryMethod_SEARCH,
+					Query:  ip.String(),
+					Scope:  "global",
+				},
+				BlastPropagation: &sdp.BlastPropagation{
+					// Changing the network will affect the IP
+					In: true,
+					// The IP won't affect the network
+					Out: false,
+				},
+			},
 		},
 	}, nil
 }

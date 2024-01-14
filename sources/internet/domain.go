@@ -156,8 +156,7 @@ func (s *DomainSource) Search(ctx context.Context, scope string, query string, i
 				// +overmind:link rdap-nameserver
 				item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
 					Query: &sdp.Query{
-						Type: "rdap-nameserver",
-						// TODO: This is an assumption as the nameserver source hasn't been built yet
+						Type:   "rdap-nameserver",
 						Method: sdp.QueryMethod_SEARCH,
 						Query:  newURL.String(),
 						Scope:  "global",
