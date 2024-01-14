@@ -10,8 +10,9 @@ import (
 
 func TestIpNetworkSourceSearch(t *testing.T) {
 	src := &IPNetworkSource{
-		Client: &rdap.Client{},
-		Cache:  sdpcache.NewCache(),
+		Client:  &rdap.Client{},
+		Cache:   sdpcache.NewCache(),
+		IPCache: NewIPCache[*rdap.IPNetwork](),
 	}
 
 	items, err := src.Search(context.Background(), "global", "1.1.1.1", false)
@@ -32,5 +33,36 @@ func TestIpNetworkSourceSearch(t *testing.T) {
 
 	if len(item.LinkedItemQueries) != 3 {
 		t.Errorf("Expected 3 linked items, got %v", len(item.LinkedItemQueries))
+	}
+}
+
+func TestCalculateNetwork(t *testing.T) {
+	tests := []struct {
+		Start    string
+		End      string
+		Expected string
+	}{
+		{
+			Start:    "10.0.0.0",
+			End:      "10.0.0.255",
+			Expected: "10.0.0.0/24",
+		},
+		{
+			Start:    "10.0.0.0",
+			End:      "10.0.0.7",
+			Expected: "10.0.0.0/29",
+		},
+	}
+
+	for _, test := range tests {
+		network, err := calculateNetwork(test.Start, test.End)
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if network.String() != test.Expected {
+			t.Errorf("Expected network to be %v, got %v", test.Expected, network.String())
+		}
 	}
 }

@@ -3,6 +3,7 @@ package internet
 import (
 	"context"
 	"fmt"
+	"net"
 
 	"github.com/openrdap/rdap"
 	"github.com/overmindtech/sdp-go"
@@ -18,8 +19,9 @@ import (
 // which is the unique attribute
 
 type IPNetworkSource struct {
-	Client *rdap.Client
-	Cache  *sdpcache.Cache
+	Client  *rdap.Client
+	Cache   *sdpcache.Cache
+	IPCache *IPCache[*rdap.IPNetwork]
 }
 
 // Type is the type of items that this returns
@@ -72,34 +74,65 @@ func (s *IPNetworkSource) Search(ctx context.Context, scope string, query string
 		return items, nil
 	}
 
-	request := rdap.Request{
-		Type:  rdap.IPRequest,
-		Query: query,
+	// Second layer of caching means that we cn look up an IP, and if there is
+	// anything in the cache that covers a range that IP is in, it will hit
+	// the cache
+	var ipNetwork *rdap.IPNetwork
+
+	// See which type of argument we have and parse it
+	if ip := net.ParseIP(query); ip != nil {
+		// Check if the IP is in the cache
+		ipNetwork, hit = s.IPCache.SearchIP(ip)
+	} else if _, network, err := net.ParseCIDR(query); err == nil {
+		// Check if the CIDR is in the cache
+		ipNetwork, hit = s.IPCache.SearchCIDR(network)
+	} else {
+		return nil, fmt.Errorf("Invalid IP or CIDR: %v", query)
 	}
 
-	response, err := s.Client.Do(&request)
-
-	if err != nil {
-		err = wrapRdapError(err)
-
-		s.Cache.StoreError(err, CacheDuration, ck)
-
-		return nil, err
-	}
-
-	if response.Object == nil {
-		return nil, &sdp.QueryError{
-			ErrorType:   sdp.QueryError_NOTFOUND,
-			Scope:       scope,
-			ErrorString: fmt.Sprintf("No IP Network found for %s", query),
-			SourceName:  s.Name(),
+	if !hit {
+		// If we didn't hit the cache, then actually execute the query
+		request := rdap.Request{
+			Type:  rdap.IPRequest,
+			Query: query,
 		}
-	}
 
-	ipNetwork, ok := response.Object.(*rdap.IPNetwork)
+		response, err := s.Client.Do(&request)
 
-	if !ok {
-		return nil, fmt.Errorf("Expected IPNetwork, got %T", response.Object)
+		if err != nil {
+			err = wrapRdapError(err)
+
+			s.Cache.StoreError(err, CacheDuration, ck)
+
+			return nil, err
+		}
+
+		if response.Object == nil {
+			return nil, &sdp.QueryError{
+				ErrorType:   sdp.QueryError_NOTFOUND,
+				Scope:       scope,
+				ErrorString: fmt.Sprintf("No IP Network found for %s", query),
+				SourceName:  s.Name(),
+			}
+		}
+
+		var ok bool
+
+		ipNetwork, ok = response.Object.(*rdap.IPNetwork)
+
+		if !ok {
+			return nil, fmt.Errorf("Expected IPNetwork, got %T", response.Object)
+		}
+
+		// Calculate the CIDR for this network
+		network, err := calculateNetwork(ipNetwork.StartAddress, ipNetwork.EndAddress)
+
+		if err != nil {
+			return nil, err
+		}
+
+		// Cache this network
+		s.IPCache.Store(network, ipNetwork, CacheDuration)
 	}
 
 	attributes, err := sdp.ToAttributesSorted(map[string]interface{}{
@@ -138,4 +171,51 @@ func (s *IPNetworkSource) Search(ctx context.Context, scope string, query string
 	s.Cache.StoreError(nil, CacheDuration, ck)
 
 	return []*sdp.Item{item}, nil
+}
+
+// Calculates the network (like a CIDR) from a given start and end IP
+func calculateNetwork(startIP, endIP string) (*net.IPNet, error) {
+	// Parse start and end IP addresses
+	start := net.ParseIP(startIP)
+	if start == nil {
+		return nil, fmt.Errorf("Invalid start IP address: %s", startIP)
+	}
+
+	end := net.ParseIP(endIP)
+	if end == nil {
+		return nil, fmt.Errorf("Invalid end IP address: %s", endIP)
+	}
+
+	// Calculate the CIDR prefix length
+	var prefixLen int
+	for i := 0; i < len(start); i++ {
+		startByte := start[i]
+		endByte := end[i]
+
+		if startByte != endByte {
+			// Find the differing bit position
+			diffBit := startByte ^ endByte
+
+			// Count the number of consecutive zero bits in the differing byte
+			for j := 7; j >= 0; j-- {
+				if (diffBit & (1 << uint(j))) != 0 {
+					break
+				}
+				prefixLen++
+			}
+			break
+		}
+
+		prefixLen += 8
+	}
+
+	mask := net.CIDRMask(int(prefixLen), 128)
+
+	// Calculate the network address
+	network := net.IPNet{
+		IP:   start,
+		Mask: mask,
+	}
+
+	return &network, nil
 }
