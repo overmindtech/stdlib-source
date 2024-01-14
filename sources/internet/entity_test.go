@@ -9,6 +9,7 @@ import (
 
 	"github.com/openrdap/rdap"
 	"github.com/overmindtech/sdp-go"
+	"github.com/overmindtech/sdpcache"
 )
 
 func TestEntitySourceSearch(t *testing.T) {
@@ -20,6 +21,7 @@ func TestEntitySourceSearch(t *testing.T) {
 
 	src := &EntitySource{
 		Client: testRdapClient(t),
+		Cache:  sdpcache.NewCache(),
 	}
 
 	for _, realUrl := range realUrls {

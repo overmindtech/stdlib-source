@@ -5,11 +5,13 @@ import (
 	"testing"
 
 	"github.com/openrdap/rdap"
+	"github.com/overmindtech/sdpcache"
 )
 
 func TestIpNetworkSourceSearch(t *testing.T) {
 	src := &IPNetworkSource{
 		Client: &rdap.Client{},
+		Cache:  sdpcache.NewCache(),
 	}
 
 	items, err := src.Search(context.Background(), "global", "1.1.1.1", false)

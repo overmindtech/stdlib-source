@@ -3,11 +3,14 @@ package internet
 import (
 	"context"
 	"testing"
+
+	"github.com/overmindtech/sdpcache"
 )
 
 func TestDomainSourceGet(t *testing.T) {
 	src := &DomainSource{
 		Client: testRdapClient(t),
+		Cache:  sdpcache.NewCache(),
 	}
 
 	items, err := src.Search(context.Background(), "global", "www.google.com", false)

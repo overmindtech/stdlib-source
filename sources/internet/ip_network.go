@@ -63,6 +63,15 @@ func (s *IPNetworkSource) List(ctx context.Context, scope string, ignoreCache bo
 
 // Search for the most specific network that contains the specified IP or CIDR
 func (s *IPNetworkSource) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
+	hit, ck, items, sdpErr := s.Cache.Lookup(ctx, s.Name(), sdp.QueryMethod_SEARCH, scope, s.Type(), query, ignoreCache)
+
+	if sdpErr != nil {
+		return nil, sdpErr
+	}
+	if hit {
+		return items, nil
+	}
+
 	request := rdap.Request{
 		Type:  rdap.IPRequest,
 		Query: query,
@@ -71,7 +80,11 @@ func (s *IPNetworkSource) Search(ctx context.Context, scope string, query string
 	response, err := s.Client.Do(&request)
 
 	if err != nil {
-		return nil, wrapRdapError(err)
+		err = wrapRdapError(err)
+
+		s.Cache.StoreError(err, CacheDuration, ck)
+
+		return nil, err
 	}
 
 	if response.Object == nil {
@@ -121,6 +134,8 @@ func (s *IPNetworkSource) Search(ctx context.Context, scope string, query string
 
 	// Loop over the entities and create linkedin item queries
 	item.LinkedItemQueries = extractEntityLinks(ipNetwork.Entities)
+
+	s.Cache.StoreError(nil, CacheDuration, ck)
 
 	return []*sdp.Item{item}, nil
 }

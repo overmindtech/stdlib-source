@@ -64,6 +64,15 @@ func (s *DomainSource) List(ctx context.Context, scope string, ignoreCache bool)
 // input should be something like "www.google.com". This will first search for
 // "www.google.com", then "google.com", then "com"
 func (s *DomainSource) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
+	hit, ck, items, sdpErr := s.Cache.Lookup(ctx, s.Name(), sdp.QueryMethod_SEARCH, scope, s.Type(), query, ignoreCache)
+
+	if sdpErr != nil {
+		return nil, sdpErr
+	}
+	if hit {
+		return items, nil
+	}
+
 	// Split the query into subdomains
 	sections := strings.Split(query, ".")
 
@@ -84,126 +93,125 @@ func (s *DomainSource) Search(ctx context.Context, scope string, query string, i
 			continue
 		}
 
-		item, err := s.mapDomainResponse(response, scope)
+		if response.Object == nil {
+			return nil, &sdp.QueryError{
+				ErrorType:   sdp.QueryError_NOTFOUND,
+				Scope:       scope,
+				ErrorString: "Empty domain response",
+			}
+		}
+
+		domain, ok := response.Object.(*rdap.Domain)
+
+		if !ok {
+			return nil, fmt.Errorf("Unexpected response type %T", response.Object)
+		}
+
+		attributes, err := sdp.ToAttributesSorted(map[string]interface{}{
+			"conformance":     domain.Conformance,
+			"events":          domain.Events,
+			"handle":          domain.Handle,
+			"ldhName":         domain.LDHName,
+			"links":           domain.Links,
+			"notices":         domain.Notices,
+			"objectClassName": domain.ObjectClassName,
+			"port43":          domain.Port43,
+			"publicIDs":       domain.PublicIDs,
+			"remarks":         domain.Remarks,
+			"secureDNS":       domain.SecureDNS,
+			"status":          domain.Status,
+			"unicodeName":     domain.UnicodeName,
+			"variants":        domain.Variants,
+		})
 
 		if err != nil {
 			return nil, err
 		}
 
-		return []*sdp.Item{item}, nil
-	}
-
-	return nil, &sdp.QueryError{
-		ErrorType:   sdp.QueryError_NOTFOUND,
-		Scope:       scope,
-		ErrorString: fmt.Sprintf("No domain found for %s", query),
-	}
-}
-
-// Maps the response from a domain query to an SDP item
-func (s *DomainSource) mapDomainResponse(response *rdap.Response, scope string) (*sdp.Item, error) {
-	if response.Object == nil {
-		return nil, &sdp.QueryError{
-			ErrorType:   sdp.QueryError_NOTFOUND,
-			Scope:       scope,
-			ErrorString: "Empty domain response",
+		item := &sdp.Item{
+			Type:            s.Type(),
+			UniqueAttribute: "handle",
+			Attributes:      attributes,
+			Scope:           scope,
 		}
-	}
 
-	domain, ok := response.Object.(*rdap.Domain)
+		// Link to nameservers
+		for _, nameServer := range domain.Nameservers {
+			// Look through the HTTP responses until we find one
+			var parsed *RDAPUrl
+			for _, httpResponse := range response.HTTP {
+				if httpResponse.URL != "" {
+					parsed, err = parseRdapUrl(httpResponse.URL)
 
-	if !ok {
-		return nil, fmt.Errorf("Unexpected response type %T", response.Object)
-	}
-
-	attributes, err := sdp.ToAttributesSorted(map[string]interface{}{
-		"conformance":     domain.Conformance,
-		"events":          domain.Events,
-		"handle":          domain.Handle,
-		"ldhName":         domain.LDHName,
-		"links":           domain.Links,
-		"notices":         domain.Notices,
-		"objectClassName": domain.ObjectClassName,
-		"port43":          domain.Port43,
-		"publicIDs":       domain.PublicIDs,
-		"remarks":         domain.Remarks,
-		"secureDNS":       domain.SecureDNS,
-		"status":          domain.Status,
-		"unicodeName":     domain.UnicodeName,
-		"variants":        domain.Variants,
-	})
-
-	if err != nil {
-		return nil, err
-	}
-
-	item := &sdp.Item{
-		Type:            s.Type(),
-		UniqueAttribute: "handle",
-		Attributes:      attributes,
-		Scope:           scope,
-	}
-
-	// Link to nameservers
-	for _, nameServer := range domain.Nameservers {
-		// Look through the HTTP responses until we find one
-		var parsed *RDAPUrl
-		for _, httpResponse := range response.HTTP {
-			if httpResponse.URL != "" {
-				parsed, err = parseRdapUrl(httpResponse.URL)
-
-				if err == nil {
-					break
+					if err == nil {
+						break
+					}
 				}
 			}
+
+			// Reconstruct the required query URL
+			if parsed != nil {
+				newURL := parsed.ServerRoot.JoinPath("/nameserver/" + nameServer.LDHName)
+
+				// +overmind:link rdap-nameserver
+				item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
+					Query: &sdp.Query{
+						Type: "rdap-nameserver",
+						// TODO: This is an assumption as the nameserver source hasn't been built yet
+						Method: sdp.QueryMethod_SEARCH,
+						Query:  newURL.String(),
+						Scope:  "global",
+					},
+					BlastPropagation: &sdp.BlastPropagation{
+						// A change in a name server could affect the domains
+						In: true,
+						// Domains won't affect the name server
+						Out: false,
+					},
+				})
+			}
+
 		}
 
-		// Reconstruct the required query URL
-		if parsed != nil {
-			newURL := parsed.ServerRoot.JoinPath("/nameserver/" + nameServer.LDHName)
+		// Link to entities
+		// +overmind:link rdap-entity
+		item.LinkedItemQueries = append(item.LinkedItemQueries, extractEntityLinks(domain.Entities)...)
 
-			// +overmind:link rdap-nameserver
+		// Link to IP Network
+		if network := domain.Network; network != nil {
+			// +overmind:link rdap-ip-network
 			item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
 				Query: &sdp.Query{
-					Type: "rdap-nameserver",
-					// TODO: This is an assumption as the nameserver source hasn't been built yet
+					Type:   "rdap-ip-network",
 					Method: sdp.QueryMethod_SEARCH,
-					Query:  newURL.String(),
+					Query:  network.StartAddress,
 					Scope:  "global",
 				},
 				BlastPropagation: &sdp.BlastPropagation{
-					// A change in a name server could affect the domains
+					// Changes to the network could affect the domain presumably
 					In: true,
-					// Domains won't affect the name server
+					// The domain won't affect the network
 					Out: false,
 				},
 			})
 		}
 
+		if err != nil {
+			return nil, err
+		}
+
+		s.Cache.StoreItem(item, CacheDuration, ck)
+
+		return []*sdp.Item{item}, nil
 	}
 
-	// Link to entities
-	// +overmind:link rdap-entity
-	item.LinkedItemQueries = append(item.LinkedItemQueries, extractEntityLinks(domain.Entities)...)
-
-	// Link to IP Network
-	if network := domain.Network; network != nil {
-		// +overmind:link rdap-ip-network
-		item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
-			Query: &sdp.Query{
-				Type:   "rdap-ip-network",
-				Method: sdp.QueryMethod_SEARCH,
-				Query:  network.StartAddress,
-				Scope:  "global",
-			},
-			BlastPropagation: &sdp.BlastPropagation{
-				// Changes to the network could affect the domain presumably
-				In: true,
-				// The domain won't affect the network
-				Out: false,
-			},
-		})
+	err := &sdp.QueryError{
+		ErrorType:   sdp.QueryError_NOTFOUND,
+		Scope:       scope,
+		ErrorString: fmt.Sprintf("No domain found for %s", query),
 	}
 
-	return item, nil
+	s.Cache.StoreError(err, CacheDuration, ck)
+
+	return nil, err
 }

@@ -5,27 +5,49 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"time"
 
 	"github.com/openrdap/rdap"
 	"github.com/overmindtech/discovery"
 	"github.com/overmindtech/sdp-go"
 	"github.com/overmindtech/sdpcache"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
+
+// Cache duration for RDAP sources, these things shouldn't change very often
+const CacheDuration = 30 * time.Minute
 
 // Create sources from this package, these sources will share a cache, http
 // client, and rdap client
 func NewSources() []discovery.Source {
 	// TODO: Change this to something from Otel
-	httpClient := http.DefaultClient
+	httpClient := &http.Client{
+		Transport: otelhttp.NewTransport(http.DefaultTransport),
+	}
 	rdapClient := &rdap.Client{
 		HTTP: httpClient,
 	}
-	cache := sdpcache.NewCache()
 
 	return []discovery.Source{
 		&IPNetworkSource{
 			Client: rdapClient,
-			Cache:  cache,
+			Cache:  sdpcache.NewCache(),
+		},
+		&ASNSource{
+			Client: rdapClient,
+			Cache:  sdpcache.NewCache(),
+		},
+		&DomainSource{
+			Client: rdapClient,
+			Cache:  sdpcache.NewCache(),
+		},
+		&EntitySource{
+			Client: rdapClient,
+			Cache:  sdpcache.NewCache(),
+		},
+		&NameserverSource{
+			Client: rdapClient,
+			Cache:  sdpcache.NewCache(),
 		},
 	}
 }

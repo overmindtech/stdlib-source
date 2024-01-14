@@ -48,7 +48,18 @@ func (s *EntitySource) Scopes() []string {
 // bootstrapping in RDAP isn't comprehensive and might not be able to find the
 // correct registry to search
 func (s *EntitySource) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
-	return s.runEntityRequest(query, nil, scope)
+	hit, ck, items, sdpErr := s.Cache.Lookup(ctx, s.Name(), sdp.QueryMethod_GET, scope, s.Type(), query, ignoreCache)
+
+	if sdpErr != nil {
+		return nil, sdpErr
+	}
+	if hit {
+		if len(items) > 0 {
+			return items[0], nil
+		}
+	}
+
+	return s.runEntityRequest(query, nil, scope, ck)
 }
 
 func (s *EntitySource) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
@@ -62,6 +73,15 @@ func (s *EntitySource) List(ctx context.Context, scope string, ignoreCache bool)
 // able to do a lookup using that which will also tell us which server to use
 // for the lookup
 func (s *EntitySource) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
+	hit, ck, items, sdpErr := s.Cache.Lookup(ctx, s.Name(), sdp.QueryMethod_SEARCH, scope, s.Type(), query, ignoreCache)
+
+	if sdpErr != nil {
+		return nil, sdpErr
+	}
+	if hit {
+		return items, nil
+	}
+
 	// Parse the URL
 	parsed, err := parseRdapUrl(query)
 
@@ -74,7 +94,7 @@ func (s *EntitySource) Search(ctx context.Context, scope string, query string, i
 	}
 
 	// Run the entity request
-	item, err := s.runEntityRequest(parsed.Query, parsed.ServerRoot, scope)
+	item, err := s.runEntityRequest(parsed.Query, parsed.ServerRoot, scope, ck)
 
 	if err != nil {
 		return nil, err
@@ -84,7 +104,7 @@ func (s *EntitySource) Search(ctx context.Context, scope string, query string, i
 }
 
 // Runs the entity request and converts into the SDP version of an entity
-func (s *EntitySource) runEntityRequest(query string, server *url.URL, scope string) (*sdp.Item, error) {
+func (s *EntitySource) runEntityRequest(query string, server *url.URL, scope string, cacheKey sdpcache.CacheKey) (*sdp.Item, error) {
 	request := rdap.Request{
 		Type:   rdap.EntityRequest,
 		Query:  query,
@@ -94,7 +114,11 @@ func (s *EntitySource) runEntityRequest(query string, server *url.URL, scope str
 	response, err := s.Client.Do(&request)
 
 	if err != nil {
-		return nil, wrapRdapError(err)
+		err = wrapRdapError(err)
+
+		s.Cache.StoreError(err, CacheDuration, cacheKey)
+
+		return nil, err
 	}
 
 	if response.Object == nil {
@@ -184,6 +208,8 @@ func (s *EntitySource) runEntityRequest(query string, server *url.URL, scope str
 			},
 		})
 	}
+
+	s.Cache.StoreItem(item, CacheDuration, cacheKey)
 
 	return item, nil
 }

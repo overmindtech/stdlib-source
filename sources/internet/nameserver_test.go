@@ -3,11 +3,14 @@ package internet
 import (
 	"context"
 	"testing"
+
+	"github.com/overmindtech/sdpcache"
 )
 
 func TestNameserverSourceSearch(t *testing.T) {
 	src := &NameserverSource{
 		Client: testRdapClient(t),
+		Cache:  sdpcache.NewCache(),
 	}
 
 	items, err := src.Search(context.Background(), "global", "https://rdap.verisign.com/com/v1/nameserver/NS4.GOOGLE.COM", false)

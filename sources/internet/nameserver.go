@@ -65,6 +65,15 @@ func (s *NameserverSource) List(ctx context.Context, scope string, ignoreCache b
 // be bootstrapped, so we can use the domain query to find the nameserver in the
 // link
 func (s *NameserverSource) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
+	hit, ck, items, sdpErr := s.Cache.Lookup(ctx, s.Name(), sdp.QueryMethod_SEARCH, scope, s.Type(), query, ignoreCache)
+
+	if sdpErr != nil {
+		return nil, sdpErr
+	}
+	if hit {
+		return items, nil
+	}
+
 	parsed, err := parseRdapUrl(query)
 
 	if err != nil {
@@ -80,7 +89,11 @@ func (s *NameserverSource) Search(ctx context.Context, scope string, query strin
 	response, err := s.Client.Do(&request)
 
 	if err != nil {
-		return nil, wrapRdapError(err)
+		err = wrapRdapError(err)
+
+		s.Cache.StoreError(err, CacheDuration, ck)
+
+		return nil, err
 	}
 
 	if response.Object == nil {
@@ -165,6 +178,8 @@ func (s *NameserverSource) Search(ctx context.Context, scope string, query strin
 			})
 		}
 	}
+
+	s.Cache.StoreItem(item, CacheDuration, ck)
 
 	return []*sdp.Item{item}, nil
 }

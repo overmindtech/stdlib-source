@@ -43,6 +43,18 @@ func (s *ASNSource) Scopes() []string {
 }
 
 func (s *ASNSource) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
+	hit, ck, items, sdpErr := s.Cache.Lookup(ctx, s.Name(), sdp.QueryMethod_GET, scope, s.Type(), query, ignoreCache)
+
+	if sdpErr != nil {
+		return nil, sdpErr
+	}
+
+	if hit {
+		if len(items) > 0 {
+			return items[0], nil
+		}
+	}
+
 	// Strip the AS prefix
 	query = strings.TrimPrefix(query, "AS")
 
@@ -54,7 +66,11 @@ func (s *ASNSource) Get(ctx context.Context, scope string, query string, ignoreC
 	response, err := s.Client.Do(&request)
 
 	if err != nil {
-		return nil, wrapRdapError(err)
+		err = wrapRdapError(err)
+
+		s.Cache.StoreError(err, CacheDuration, ck)
+
+		return nil, err
 	}
 
 	if response.Object == nil {
@@ -103,6 +119,8 @@ func (s *ASNSource) Get(ctx context.Context, scope string, query string, ignoreC
 	// Link the entities
 	// +overmind:link rdap-entity
 	item.LinkedItemQueries = extractEntityLinks(asn.Entities)
+
+	s.Cache.StoreItem(item, CacheDuration, ck)
 
 	return item, nil
 }

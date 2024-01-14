@@ -15,6 +15,7 @@ import (
 	"github.com/nats-io/nkeys"
 	"github.com/overmindtech/discovery"
 	"github.com/overmindtech/sdp-go/auth"
+	"github.com/overmindtech/stdlib-source/sources/internet"
 	"github.com/overmindtech/stdlib-source/sources/network"
 	"github.com/overmindtech/stdlib-source/sources/test"
 	"github.com/spf13/cobra"
@@ -112,7 +113,7 @@ var rootCmd = &cobra.Command{
 		}
 		e.MaxParallelExecutions = maxParallel
 
-		// ⚠️ Here is where you add your sources
+		// Add the base sources
 		sources := []discovery.Source{
 			&network.CertificateSource{},
 			&network.DNSSource{
@@ -129,6 +130,9 @@ var rootCmd = &cobra.Command{
 		}
 
 		e.AddSources(sources...)
+
+		// Add the "internet" (RDAP) sources
+		e.AddSources(internet.NewSources()...)
 
 		// Start HTTP server for status
 		healthCheckPort := viper.GetInt("health-check-port")
