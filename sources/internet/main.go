@@ -20,7 +20,6 @@ const CacheDuration = 30 * time.Minute
 // Create sources from this package, these sources will share a cache, http
 // client, and rdap client
 func NewSources() []discovery.Source {
-	// TODO: Change this to something from Otel
 	httpClient := &http.Client{
 		Transport: otelhttp.NewTransport(http.DefaultTransport),
 	}
@@ -30,8 +29,9 @@ func NewSources() []discovery.Source {
 
 	return []discovery.Source{
 		&IPNetworkSource{
-			Client: rdapClient,
-			Cache:  sdpcache.NewCache(),
+			Client:  rdapClient,
+			Cache:   sdpcache.NewCache(),
+			IPCache: NewIPCache[*rdap.IPNetwork](),
 		},
 		&ASNSource{
 			Client: rdapClient,
