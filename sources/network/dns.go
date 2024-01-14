@@ -339,6 +339,7 @@ func (d *DNSSource) MakeQuery(ctx context.Context, query string) ([]*sdp.Item, e
 				UniqueAttribute: UniqueAttribute,
 				Scope:           "global",
 				Attributes:      attrs,
+				// +overmind:link dns
 				LinkedItems: []*sdp.LinkedItem{
 					{
 						Item: &sdp.Reference{

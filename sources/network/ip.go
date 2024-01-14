@@ -140,6 +140,7 @@ func (bc *IPSource) Get(ctx context.Context, scope string, query string, ignoreC
 		Scope:           scope,
 		LinkedItemQueries: []*sdp.LinkedItemQuery{
 			// Reverse DNS
+			// +overmind:link dns
 			{
 				Query: &sdp.Query{
 					Type:   "dns",
