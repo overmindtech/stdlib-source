@@ -80,13 +80,14 @@ func (s *NameserverSource) Search(ctx context.Context, scope string, query strin
 		return nil, err
 	}
 
-	request := rdap.Request{
+	request := &rdap.Request{
 		Type:   rdap.NameserverRequest,
 		Query:  parsed.Query,
 		Server: parsed.ServerRoot,
 	}
+	request.WithContext(ctx)
 
-	response, err := s.Client.Do(&request)
+	response, err := s.Client.Do(request)
 
 	if err != nil {
 		err = wrapRdapError(err)
