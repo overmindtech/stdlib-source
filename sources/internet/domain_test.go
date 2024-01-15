@@ -14,7 +14,6 @@ func TestDomainSourceGet(t *testing.T) {
 	}
 
 	t.Run("without a dot", func(t *testing.T) {
-		t.Parallel()
 		items, err := src.Search(context.Background(), "global", "reddit.map.fastly.net", false)
 
 		if err != nil {
@@ -35,7 +34,6 @@ func TestDomainSourceGet(t *testing.T) {
 	})
 
 	t.Run("with a dot", func(t *testing.T) {
-		t.Parallel()
 		items, err := src.Search(context.Background(), "global", "reddit.map.fastly.net.", false)
 
 		if err != nil {
