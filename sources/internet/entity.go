@@ -59,7 +59,7 @@ func (s *EntitySource) Get(ctx context.Context, scope string, query string, igno
 		}
 	}
 
-	return s.runEntityRequest(query, nil, scope, ck)
+	return s.runEntityRequest(ctx, query, nil, scope, ck)
 }
 
 func (s *EntitySource) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
@@ -94,7 +94,7 @@ func (s *EntitySource) Search(ctx context.Context, scope string, query string, i
 	}
 
 	// Run the entity request
-	item, err := s.runEntityRequest(parsed.Query, parsed.ServerRoot, scope, ck)
+	item, err := s.runEntityRequest(ctx, parsed.Query, parsed.ServerRoot, scope, ck)
 
 	if err != nil {
 		return nil, err
@@ -104,14 +104,15 @@ func (s *EntitySource) Search(ctx context.Context, scope string, query string, i
 }
 
 // Runs the entity request and converts into the SDP version of an entity
-func (s *EntitySource) runEntityRequest(query string, server *url.URL, scope string, cacheKey sdpcache.CacheKey) (*sdp.Item, error) {
-	request := rdap.Request{
+func (s *EntitySource) runEntityRequest(ctx context.Context, query string, server *url.URL, scope string, cacheKey sdpcache.CacheKey) (*sdp.Item, error) {
+	request := &rdap.Request{
 		Type:   rdap.EntityRequest,
 		Query:  query,
 		Server: server,
 	}
+	request = request.WithContext(ctx)
 
-	response, err := s.Client.Do(&request)
+	response, err := s.Client.Do(request)
 
 	if err != nil {
 		err = wrapRdapError(err)

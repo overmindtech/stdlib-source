@@ -58,12 +58,13 @@ func (s *ASNSource) Get(ctx context.Context, scope string, query string, ignoreC
 	// Strip the AS prefix
 	query = strings.TrimPrefix(query, "AS")
 
-	request := rdap.Request{
+	request := &rdap.Request{
 		Type:  rdap.AutnumRequest,
 		Query: query,
 	}
+	request = request.WithContext(ctx)
 
-	response, err := s.Client.Do(&request)
+	response, err := s.Client.Do(request)
 
 	if err != nil {
 		err = wrapRdapError(err)

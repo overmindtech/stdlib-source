@@ -85,6 +85,7 @@ func (s *DomainSource) Search(ctx context.Context, scope string, query string, i
 			Type:  rdap.DomainRequest,
 			Query: domainName,
 		}
+		request = request.WithContext(ctx)
 
 		response, err := s.Client.Do(request)
 

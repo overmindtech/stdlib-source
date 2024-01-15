@@ -92,12 +92,13 @@ func (s *IPNetworkSource) Search(ctx context.Context, scope string, query string
 
 	if !hit {
 		// If we didn't hit the cache, then actually execute the query
-		request := rdap.Request{
+		request := &rdap.Request{
 			Type:  rdap.IPRequest,
 			Query: query,
 		}
+		request = request.WithContext(ctx)
 
-		response, err := s.Client.Do(&request)
+		response, err := s.Client.Do(request)
 
 		if err != nil {
 			err = wrapRdapError(err)
