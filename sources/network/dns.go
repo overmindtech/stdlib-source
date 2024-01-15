@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -323,8 +324,12 @@ func (d *DNSSource) MakeQuery(ctx context.Context, query string) ([]*sdp.Item, e
 	// Iterate over the groups and convert
 	for _, r := range ag.CNAME {
 		if cname, ok := r.(*dns.CNAME); ok {
+			// Strip trailing dot as while it's *technically* correct, it's
+			// annoying to have to deal with
+			name := strings.TrimSuffix(cname.Hdr.Name, ".")
+
 			attrs, err = sdp.ToAttributes(map[string]interface{}{
-				"name":   cname.Hdr.Name,
+				"name":   name,
 				"type":   "CNAME",
 				"ttl":    cname.Hdr.Ttl,
 				"target": cname.Target,
@@ -355,7 +360,7 @@ func (d *DNSSource) MakeQuery(ctx context.Context, query string) ([]*sdp.Item, e
 						Query: &sdp.Query{
 							Type:   "rdap-domain",
 							Method: sdp.QueryMethod_SEARCH,
-							Query:  cname.Hdr.Name,
+							Query:  name,
 							Scope:  "global",
 						},
 						BlastPropagation: &sdp.BlastPropagation{
@@ -372,6 +377,10 @@ func (d *DNSSource) MakeQuery(ctx context.Context, query string) ([]*sdp.Item, e
 
 	// Convert A & AAAA records by group
 	for name, rs := range ag.Address {
+		// Strip trailing dot as while it's *technically* correct, it's
+		// annoying to have to deal with
+		name = strings.TrimSuffix(name, ".")
+
 		item, err := AToItem(name, rs)
 
 		if err != nil {

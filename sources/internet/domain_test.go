@@ -13,21 +13,43 @@ func TestDomainSourceGet(t *testing.T) {
 		Cache:  sdpcache.NewCache(),
 	}
 
-	items, err := src.Search(context.Background(), "global", "www.google.com", false)
+	t.Run("without a dot", func(t *testing.T) {
+		items, err := src.Search(context.Background(), "global", "reddit.map.fastly.net", false)
 
-	if err != nil {
-		t.Fatal(err)
-	}
+		if err != nil {
+			t.Fatal(err)
+		}
 
-	if len(items) != 1 {
-		t.Fatal("Expected 1 item")
-	}
+		if len(items) != 1 {
+			t.Fatal("Expected 1 item")
+		}
 
-	item := items[0]
+		item := items[0]
 
-	err = item.Validate()
+		err = item.Validate()
 
-	if err != nil {
-		t.Error(err)
-	}
+		if err != nil {
+			t.Error(err)
+		}
+	})
+
+	t.Run("with a dot", func(t *testing.T) {
+		items, err := src.Search(context.Background(), "global", "reddit.map.fastly.net.", false)
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if len(items) != 1 {
+			t.Fatal("Expected 1 item")
+		}
+
+		item := items[0]
+
+		err = item.Validate()
+
+		if err != nil {
+			t.Error(err)
+		}
+	})
 }

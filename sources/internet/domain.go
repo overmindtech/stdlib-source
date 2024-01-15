@@ -64,6 +64,9 @@ func (s *DomainSource) List(ctx context.Context, scope string, ignoreCache bool)
 // input should be something like "www.google.com". This will first search for
 // "www.google.com", then "google.com", then "com"
 func (s *DomainSource) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
+	// Strip the trailing dot if it exists
+	query = strings.TrimSuffix(query, ".")
+
 	hit, ck, items, sdpErr := s.Cache.Lookup(ctx, s.Name(), sdp.QueryMethod_SEARCH, scope, s.Type(), query, ignoreCache)
 
 	if sdpErr != nil {
