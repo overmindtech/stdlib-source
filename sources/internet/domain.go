@@ -45,6 +45,20 @@ func (s *DomainSource) Scopes() []string {
 }
 
 func (s *DomainSource) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
+	// While we can't actually run GET queries, we can return them if they are
+	// cached
+	hit, _, items, sdpErr := s.Cache.Lookup(ctx, s.Name(), sdp.QueryMethod_GET, scope, s.Type(), query, ignoreCache)
+
+	if sdpErr != nil {
+		return nil, sdpErr
+	}
+
+	if hit {
+		if len(items) > 0 {
+			return items[0], nil
+		}
+	}
+
 	return nil, &sdp.QueryError{
 		ErrorType:   sdp.QueryError_NOTFOUND,
 		Scope:       scope,

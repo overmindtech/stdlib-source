@@ -46,6 +46,17 @@ func (s *IPNetworkSource) Scopes() []string {
 }
 
 func (s *IPNetworkSource) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
+	hit, _, items, sdpErr := s.Cache.Lookup(ctx, s.Name(), sdp.QueryMethod_GET, scope, s.Type(), query, ignoreCache)
+
+	if sdpErr != nil {
+		return nil, sdpErr
+	}
+
+	if hit {
+		if len(items) > 0 {
+			return items[0], nil
+		}
+	}
 	// This source doesn't technically support the GET method (since you can't
 	// use the handle to query for an IP network)
 	return nil, &sdp.QueryError{
@@ -169,7 +180,7 @@ func (s *IPNetworkSource) Search(ctx context.Context, scope string, query string
 	// Loop over the entities and create linkedin item queries
 	item.LinkedItemQueries = extractEntityLinks(ipNetwork.Entities)
 
-	s.Cache.StoreError(nil, CacheDuration, ck)
+	s.Cache.StoreItem(item, CacheDuration, ck)
 
 	return []*sdp.Item{item}, nil
 }

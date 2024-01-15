@@ -42,6 +42,20 @@ func (s *NameserverSource) Scopes() []string {
 }
 
 func (s *NameserverSource) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
+	// Check the cache for GET requests, if we don't hit the cache then there is
+	// nothing we can do though
+	hit, _, items, sdpErr := s.Cache.Lookup(ctx, s.Name(), sdp.QueryMethod_GET, scope, s.Type(), query, ignoreCache)
+
+	if sdpErr != nil {
+		return nil, sdpErr
+	}
+
+	if hit {
+		if len(items) > 0 {
+			return items[0], nil
+		}
+	}
+
 	// This source doesn't technically support the GET method (since you can't
 	// use the handle to query for an IP network)
 	return nil, &sdp.QueryError{

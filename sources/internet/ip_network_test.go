@@ -34,6 +34,13 @@ func TestIpNetworkSourceSearch(t *testing.T) {
 	if len(item.LinkedItemQueries) != 3 {
 		t.Errorf("Expected 3 linked items, got %v", len(item.LinkedItemQueries))
 	}
+
+	// Then run a get for that same thing and hit the cache
+	_, err = src.Get(context.Background(), "global", item.UniqueAttributeValue(), false)
+
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestCalculateNetwork(t *testing.T) {
