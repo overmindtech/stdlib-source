@@ -265,6 +265,15 @@ func (d *DNSSource) MakeReverseQuery(ctx context.Context, query string) ([]*sdp.
 	return items, nil
 }
 
+// trimDnsSuffix Trims the trailing dot from a name to make it more user friendly
+func trimDnsSuffix(name string) string {
+	if strings.HasSuffix(name, ".") {
+		return name[:len(name)-1]
+	}
+
+	return name
+}
+
 // MakeQuery Actually makes A and AAAA queries for a given DNS entry
 func (d *DNSSource) MakeQuery(ctx context.Context, query string) ([]*sdp.Item, error) {
 	server, err := d.getActiveServer(ctx)
@@ -326,7 +335,7 @@ func (d *DNSSource) MakeQuery(ctx context.Context, query string) ([]*sdp.Item, e
 		if cname, ok := r.(*dns.CNAME); ok {
 			// Strip trailing dot as while it's *technically* correct, it's
 			// annoying to have to deal with
-			name := strings.TrimSuffix(cname.Hdr.Name, ".")
+			name := trimDnsSuffix(cname.Hdr.Name)
 
 			attrs, err = sdp.ToAttributes(map[string]interface{}{
 				"name":   name,
@@ -349,7 +358,7 @@ func (d *DNSSource) MakeQuery(ctx context.Context, query string) ([]*sdp.Item, e
 					{
 						Item: &sdp.Reference{
 							Type:                 ItemType,
-							UniqueAttributeValue: cname.Target,
+							UniqueAttributeValue: trimDnsSuffix(cname.Target),
 							Scope:                "global",
 						},
 					},
@@ -379,7 +388,7 @@ func (d *DNSSource) MakeQuery(ctx context.Context, query string) ([]*sdp.Item, e
 	for name, rs := range ag.Address {
 		// Strip trailing dot as while it's *technically* correct, it's
 		// annoying to have to deal with
-		name = strings.TrimSuffix(name, ".")
+		name = trimDnsSuffix(name)
 
 		item, err := AToItem(name, rs)
 
