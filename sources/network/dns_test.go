@@ -2,7 +2,6 @@ package network
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"testing"
 
@@ -160,6 +159,11 @@ func TestDnsGet(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		fmt.Println(item)
+		target := item.Attributes.AttrStruct.Fields["target"].GetStringValue()
+		if target != "github.com" {
+			t.Errorf("expected target to be github.com, got %v", target)
+		}
+
+		t.Log(item)
 	})
 }

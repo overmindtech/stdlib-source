@@ -336,12 +336,13 @@ func (d *DNSSource) MakeQuery(ctx context.Context, query string) ([]*sdp.Item, e
 			// Strip trailing dot as while it's *technically* correct, it's
 			// annoying to have to deal with
 			name := trimDnsSuffix(cname.Hdr.Name)
+			target := trimDnsSuffix(cname.Target)
 
 			attrs, err = sdp.ToAttributes(map[string]interface{}{
 				"name":   name,
 				"type":   "CNAME",
 				"ttl":    cname.Hdr.Ttl,
-				"target": cname.Target,
+				"target": target,
 			})
 
 			if err != nil {
@@ -358,7 +359,7 @@ func (d *DNSSource) MakeQuery(ctx context.Context, query string) ([]*sdp.Item, e
 					{
 						Item: &sdp.Reference{
 							Type:                 ItemType,
-							UniqueAttributeValue: trimDnsSuffix(cname.Target),
+							UniqueAttributeValue: target,
 							Scope:                "global",
 						},
 					},
