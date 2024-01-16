@@ -19,8 +19,8 @@ import (
 // is the unique attribute
 
 type DomainSource struct {
-	Client *rdap.Client
-	Cache  *sdpcache.Cache
+	ClientFac func() *rdap.Client
+	Cache     *sdpcache.Cache
 }
 
 // Type is the type of items that this returns
@@ -104,7 +104,7 @@ func (s *DomainSource) Search(ctx context.Context, scope string, query string, i
 		}
 		request = request.WithContext(ctx)
 
-		response, err := s.Client.Do(request)
+		response, err := s.ClientFac().Do(request)
 
 		if err != nil {
 			// If there was an error, continue to the next domain

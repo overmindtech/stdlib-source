@@ -19,9 +19,9 @@ import (
 // which is the unique attribute
 
 type IPNetworkSource struct {
-	Client  *rdap.Client
-	Cache   *sdpcache.Cache
-	IPCache *IPCache[*rdap.IPNetwork]
+	ClientFac func() *rdap.Client
+	Cache     *sdpcache.Cache
+	IPCache   *IPCache[*rdap.IPNetwork]
 }
 
 // Type is the type of items that this returns
@@ -109,7 +109,7 @@ func (s *IPNetworkSource) Search(ctx context.Context, scope string, query string
 		}
 		request = request.WithContext(ctx)
 
-		response, err := s.Client.Do(request)
+		response, err := s.ClientFac().Do(request)
 
 		if err != nil {
 			err = wrapRdapError(err)

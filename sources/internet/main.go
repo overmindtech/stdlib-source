@@ -2,7 +2,6 @@ package internet
 
 import (
 	"errors"
-	"net/http"
 	"net/url"
 	"regexp"
 	"time"
@@ -20,35 +19,35 @@ const CacheDuration = 30 * time.Minute
 // Create sources from this package, these sources will share a cache, http
 // client, and rdap client
 func NewSources() []discovery.Source {
-	httpClient := &http.Client{
-		Transport: otelhttp.NewTransport(http.DefaultTransport),
-	}
-	rdapClient := &rdap.Client{
-		HTTP: httpClient,
-	}
-
 	return []discovery.Source{
 		&IPNetworkSource{
-			Client:  rdapClient,
-			Cache:   sdpcache.NewCache(),
-			IPCache: NewIPCache[*rdap.IPNetwork](),
+			ClientFac: newRdapClient,
+			Cache:     sdpcache.NewCache(),
+			IPCache:   NewIPCache[*rdap.IPNetwork](),
 		},
 		&ASNSource{
-			Client: rdapClient,
-			Cache:  sdpcache.NewCache(),
+			ClientFac: newRdapClient,
+			Cache:     sdpcache.NewCache(),
 		},
 		&DomainSource{
-			Client: rdapClient,
-			Cache:  sdpcache.NewCache(),
+			ClientFac: newRdapClient,
+			Cache:     sdpcache.NewCache(),
 		},
 		&EntitySource{
-			Client: rdapClient,
-			Cache:  sdpcache.NewCache(),
+			ClientFac: newRdapClient,
+			Cache:     sdpcache.NewCache(),
 		},
 		&NameserverSource{
-			Client: rdapClient,
-			Cache:  sdpcache.NewCache(),
+			ClientFac: newRdapClient,
+			Cache:     sdpcache.NewCache(),
 		},
+	}
+}
+
+// newRdapClient Creates a new RDAP client using otelhttp.DefaultClient. rdap is suspected to not be thread safe, so we create a new client for each request
+func newRdapClient() *rdap.Client {
+	return &rdap.Client{
+		HTTP: otelhttp.DefaultClient,
 	}
 }
 

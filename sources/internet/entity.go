@@ -19,8 +19,8 @@ import (
 // non-profits, clubs, individual persons, and informal groups of people
 
 type EntitySource struct {
-	Client *rdap.Client
-	Cache  *sdpcache.Cache
+	ClientFac func() *rdap.Client
+	Cache     *sdpcache.Cache
 }
 
 // Type is the type of items that this returns
@@ -112,7 +112,7 @@ func (s *EntitySource) runEntityRequest(ctx context.Context, query string, serve
 	}
 	request = request.WithContext(ctx)
 
-	response, err := s.Client.Do(request)
+	response, err := s.ClientFac().Do(request)
 
 	if err != nil {
 		err = wrapRdapError(err)

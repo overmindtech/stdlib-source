@@ -10,6 +10,8 @@ import (
 )
 
 func TestSearch(t *testing.T) {
+	t.Parallel()
+
 	s := DNSSource{
 		Servers: []string{
 			"1.1.1.1:53",
@@ -94,6 +96,8 @@ func TestSearch(t *testing.T) {
 }
 
 func TestDnsGet(t *testing.T) {
+	t.Parallel()
+
 	var conn net.Conn
 	var err error
 

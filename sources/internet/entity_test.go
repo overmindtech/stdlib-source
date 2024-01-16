@@ -5,11 +5,14 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/openrdap/rdap"
 	"github.com/overmindtech/sdp-go"
 	"github.com/overmindtech/sdpcache"
 )
 
 func TestEntitySourceSearch(t *testing.T) {
+	t.Parallel()
+
 	realUrls := []string{
 		"https://rdap.apnic.net/entity/AIC3-AP",
 		"https://rdap.apnic.net/entity/IRT-APNICRANDNET-AU",
@@ -17,8 +20,8 @@ func TestEntitySourceSearch(t *testing.T) {
 	}
 
 	src := &EntitySource{
-		Client: testRdapClient(t),
-		Cache:  sdpcache.NewCache(),
+		ClientFac: func() *rdap.Client { return testRdapClient(t) },
+		Cache:     sdpcache.NewCache(),
 	}
 
 	for _, realUrl := range realUrls {
