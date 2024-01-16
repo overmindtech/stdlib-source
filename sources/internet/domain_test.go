@@ -4,13 +4,16 @@ import (
 	"context"
 	"testing"
 
+	"github.com/openrdap/rdap"
 	"github.com/overmindtech/sdpcache"
 )
 
 func TestDomainSourceGet(t *testing.T) {
+	t.Parallel()
+
 	src := &DomainSource{
-		Client: testRdapClient(t),
-		Cache:  sdpcache.NewCache(),
+		ClientFac: func() *rdap.Client { return testRdapClient(t) },
+		Cache:     sdpcache.NewCache(),
 	}
 
 	t.Run("without a dot", func(t *testing.T) {

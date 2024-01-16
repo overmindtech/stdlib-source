@@ -9,10 +9,12 @@ import (
 )
 
 func TestIpNetworkSourceSearch(t *testing.T) {
+	t.Parallel()
+
 	src := &IPNetworkSource{
-		Client:  &rdap.Client{},
-		Cache:   sdpcache.NewCache(),
-		IPCache: NewIPCache[*rdap.IPNetwork](),
+		ClientFac: func() *rdap.Client { return testRdapClient(t) },
+		Cache:     sdpcache.NewCache(),
+		IPCache:   NewIPCache[*rdap.IPNetwork](),
 	}
 
 	items, err := src.Search(context.Background(), "global", "1.1.1.1", false)
@@ -44,6 +46,8 @@ func TestIpNetworkSourceSearch(t *testing.T) {
 }
 
 func TestCalculateNetwork(t *testing.T) {
+	t.Parallel()
+
 	tests := []struct {
 		Start    string
 		End      string

@@ -17,8 +17,8 @@ import (
 // Number (ASN) by number
 
 type ASNSource struct {
-	Client *rdap.Client
-	Cache  *sdpcache.Cache
+	ClientFac func() *rdap.Client
+	Cache     *sdpcache.Cache
 }
 
 // Type is the type of items that this returns
@@ -64,7 +64,7 @@ func (s *ASNSource) Get(ctx context.Context, scope string, query string, ignoreC
 	}
 	request = request.WithContext(ctx)
 
-	response, err := s.Client.Do(request)
+	response, err := s.ClientFac().Do(request)
 
 	if err != nil {
 		err = wrapRdapError(err)
