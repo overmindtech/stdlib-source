@@ -6,7 +6,7 @@ go 1.21.6
 require (
 	github.com/MrAlias/otel-schema-utils v0.2.1-alpha
 	github.com/getsentry/sentry-go v0.26.0
-	github.com/miekg/dns v1.1.57
+	github.com/miekg/dns v1.1.58
 	github.com/nats-io/jwt/v2 v2.5.3
 	github.com/nats-io/nkeys v0.4.7
 	github.com/openrdap/rdap v0.9.2-0.20230603210527-86d21b10b8d6
@@ -73,10 +73,10 @@ require (
 	golang.org/x/mod v0.14.0 // indirect
 	golang.org/x/net v0.20.0 // indirect
 	golang.org/x/oauth2 v0.16.0 // indirect
-	golang.org/x/sync v0.5.0 // indirect
+	golang.org/x/sync v0.6.0 // indirect
 	golang.org/x/sys v0.16.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
-	golang.org/x/tools v0.16.0 // indirect
+	golang.org/x/tools v0.17.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20231127180814-3a041ad873d4 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20231127180814-3a041ad873d4 // indirect
