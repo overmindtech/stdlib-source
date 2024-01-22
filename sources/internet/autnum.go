@@ -88,7 +88,7 @@ func (s *ASNSource) Get(ctx context.Context, scope string, query string, ignoreC
 		return nil, fmt.Errorf("Unexpected response type: %T", response.Object)
 	}
 
-	attributes, err := sdp.ToAttributesSorted(map[string]interface{}{
+	attributes, err := sdp.ToAttributesCustom(map[string]interface{}{
 		"conformance":     asn.Conformance,
 		"objectClassName": asn.ObjectClassName,
 		"notices":         asn.Notices,
@@ -104,7 +104,7 @@ func (s *ASNSource) Get(ctx context.Context, scope string, query string, ignoreC
 		"links":           asn.Links,
 		"port43":          asn.Port43,
 		"events":          asn.Events,
-	})
+	}, true, RDAPTransforms)
 
 	if err != nil {
 		return nil, err

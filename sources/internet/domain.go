@@ -125,7 +125,7 @@ func (s *DomainSource) Search(ctx context.Context, scope string, query string, i
 			return nil, fmt.Errorf("Unexpected response type %T", response.Object)
 		}
 
-		attributes, err := sdp.ToAttributesSorted(map[string]interface{}{
+		attributes, err := sdp.ToAttributesCustom(map[string]interface{}{
 			"conformance":     domain.Conformance,
 			"events":          domain.Events,
 			"handle":          domain.Handle,
@@ -140,7 +140,7 @@ func (s *DomainSource) Search(ctx context.Context, scope string, query string, i
 			"status":          domain.Status,
 			"unicodeName":     domain.UnicodeName,
 			"variants":        domain.Variants,
-		})
+		}, true, RDAPTransforms)
 
 		if err != nil {
 			return nil, err
