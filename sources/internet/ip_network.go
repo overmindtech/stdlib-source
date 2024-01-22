@@ -147,7 +147,7 @@ func (s *IPNetworkSource) Search(ctx context.Context, scope string, query string
 		s.IPCache.Store(network, ipNetwork, CacheDuration)
 	}
 
-	attributes, err := sdp.ToAttributesSorted(map[string]interface{}{
+	attributes, err := sdp.ToAttributesCustom(map[string]interface{}{
 		"conformance":     ipNetwork.Conformance,
 		"country":         ipNetwork.Country,
 		"endAddress":      ipNetwork.EndAddress,
@@ -164,7 +164,7 @@ func (s *IPNetworkSource) Search(ctx context.Context, scope string, query string
 		"startAddress":    ipNetwork.StartAddress,
 		"status":          ipNetwork.Status,
 		"type":            ipNetwork.Type,
-	})
+	}, true, RDAPTransforms)
 
 	if err != nil {
 		return nil, err

@@ -126,7 +126,7 @@ func (s *NameserverSource) Search(ctx context.Context, scope string, query strin
 		return nil, fmt.Errorf("Expected Nameserver, got %T", response.Object)
 	}
 
-	attributes, err := sdp.ToAttributesSorted(map[string]interface{}{
+	attributes, err := sdp.ToAttributesCustom(map[string]interface{}{
 		"conformance":     nameserver.Conformance,
 		"objectClassName": nameserver.ObjectClassName,
 		"notices":         nameserver.Notices,
@@ -139,7 +139,7 @@ func (s *NameserverSource) Search(ctx context.Context, scope string, query strin
 		"links":           nameserver.Links,
 		"port43":          nameserver.Port43,
 		"events":          nameserver.Events,
-	})
+	}, true, RDAPTransforms)
 
 	if err != nil {
 		return nil, err

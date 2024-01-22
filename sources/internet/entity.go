@@ -138,14 +138,12 @@ func (s *EntitySource) runEntityRequest(ctx context.Context, query string, serve
 		return nil, fmt.Errorf("Expected Entity, got %T", response.Object)
 	}
 
-	attributes, err := sdp.ToAttributesSorted(map[string]interface{}{
+	attributes, err := sdp.ToAttributesCustom(map[string]interface{}{
 		"asEventActor":    entity.AsEventActor,
-		"autnums":         entity.Autnums,
 		"conformance":     entity.Conformance,
 		"events":          entity.Events,
 		"handle":          entity.Handle,
 		"links":           entity.Links,
-		"networks":        entity.Networks,
 		"notices":         entity.Notices,
 		"objectClassName": entity.ObjectClassName,
 		"port43":          entity.Port43,
@@ -154,7 +152,7 @@ func (s *EntitySource) runEntityRequest(ctx context.Context, query string, serve
 		"roles":           entity.Roles,
 		"status":          entity.Status,
 		"vCard":           entity.VCard,
-	})
+	}, true, RDAPTransforms)
 
 	if err != nil {
 		return nil, err

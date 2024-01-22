@@ -3,6 +3,7 @@ package internet
 import (
 	"errors"
 	"net/url"
+	"reflect"
 	"regexp"
 	"time"
 
@@ -139,4 +140,70 @@ func parseRdapUrl(rdapUrl string) (*RDAPUrl, error) {
 		Type:       matches[2],
 		Query:      matches[3],
 	}, nil
+}
+
+var RDAPTransforms = sdp.TransformMap{
+	reflect.TypeOf(rdap.Link{}): func(i interface{}) interface{} {
+		// We only want to return the href for links
+		link, ok := i.(rdap.Link)
+
+		if ok {
+			return link.Href
+		}
+
+		return ""
+	},
+	reflect.TypeOf(rdap.VCard{}): func(i interface{}) interface{} {
+		vcard, ok := i.(rdap.VCard)
+
+		if ok {
+			// Convert a vCard to a map as it's much more readable
+			vCardDetails := make(map[string]string)
+
+			if name := vcard.Name(); name != "" {
+				vCardDetails["Name"] = name
+			}
+			if pOBox := vcard.POBox(); pOBox != "" {
+				vCardDetails["POBox"] = pOBox
+			}
+			if extendedAddress := vcard.ExtendedAddress(); extendedAddress != "" {
+				vCardDetails["ExtendedAddress"] = extendedAddress
+			}
+			if streetAddress := vcard.StreetAddress(); streetAddress != "" {
+				vCardDetails["StreetAddress"] = streetAddress
+			}
+			if locality := vcard.Locality(); locality != "" {
+				vCardDetails["Locality"] = locality
+			}
+			if region := vcard.Region(); region != "" {
+				vCardDetails["Region"] = region
+			}
+			if postalCode := vcard.PostalCode(); postalCode != "" {
+				vCardDetails["PostalCode"] = postalCode
+			}
+			if country := vcard.Country(); country != "" {
+				vCardDetails["Country"] = country
+			}
+			if tel := vcard.Tel(); tel != "" {
+				vCardDetails["Tel"] = tel
+			}
+			if fax := vcard.Fax(); fax != "" {
+				vCardDetails["Fax"] = fax
+			}
+			if email := vcard.Email(); email != "" {
+				vCardDetails["Email"] = email
+			}
+			if org := vcard.Org(); org != "" {
+				vCardDetails["Org"] = org
+			}
+
+			return vCardDetails
+		}
+
+		return nil
+	},
+	reflect.TypeOf(&rdap.DecodeData{}): func(i interface{}) interface{} {
+		// Exclude these
+		return nil
+	},
 }
