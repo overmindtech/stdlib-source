@@ -5,9 +5,6 @@ jobs:
     name: Test
     runs-on: ubuntu-latest-8cpu
 
-    env:
-      GOEXPERIMENT: loopvar
-
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -42,9 +39,6 @@ jobs:
         include:
           - dockerfile: Dockerfile
             image_name: stdlib-source
-
-    env:
-      GOEXPERIMENT: loopvar
 
     steps:
       - name: Checkout
