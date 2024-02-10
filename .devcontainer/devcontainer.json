@@ -33,10 +33,6 @@
 	"features": {
 		"ghcr.io/devcontainers/features/github-cli:1": {}
 	},
-	// Set up environment variables in the remote container. These will need to
-	// be set locally first using:
-	// https://github.com/overmindtech/auth0-test-data
-	"remoteEnv": {
-		"GOEXPERIMENT": "loopvar"
-	}
+	// Set up environment variables in the remote container.
+	"remoteEnv": {}
 }
