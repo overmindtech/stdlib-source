@@ -56,6 +56,8 @@ func (d *TestHobbySource) Get(ctx context.Context, scope string, query string, i
 	switch query {
 	case "test-motorcycling":
 		return motorcycling(), nil
+	case "test-knitting":
+		return knitting(), nil
 	default:
 		return nil, &sdp.QueryError{
 			ErrorType: sdp.QueryError_NOTFOUND,
@@ -73,7 +75,7 @@ func (d *TestHobbySource) List(ctx context.Context, scope string, ignoreCache bo
 		}
 	}
 
-	return []*sdp.Item{motorcycling()}, nil
+	return []*sdp.Item{motorcycling(), knitting()}, nil
 }
 
 func (d *TestHobbySource) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
