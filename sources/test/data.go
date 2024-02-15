@@ -184,6 +184,10 @@ func motorcycling() *sdp.Item {
 	return createTestItem("test-hobby", "test-motorcycling")
 }
 
+func knitting() *sdp.Item {
+	return createTestItem("test-hobby", "test-knitting")
+}
+
 func london() *sdp.Item {
 	l := createTestItem("test-location", "test-london")
 	l.LinkedItemQueries = []*sdp.LinkedItemQuery{
