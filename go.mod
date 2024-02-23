@@ -9,7 +9,7 @@ require (
 	github.com/miekg/dns v1.1.58
 	github.com/nats-io/jwt/v2 v2.5.4
 	github.com/nats-io/nkeys v0.4.7
-	github.com/openrdap/rdap v0.9.2-0.20230603210527-86d21b10b8d6
+	github.com/openrdap/rdap v0.9.2-0.20240219192926-2210b535d40b
 	github.com/overmindtech/discovery v0.26.3
 	github.com/overmindtech/sdp-go v0.66.1
 	github.com/overmindtech/sdpcache v1.6.3
