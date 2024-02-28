@@ -93,14 +93,7 @@ var rootCmd = &cobra.Command{
 			}
 		}
 
-		e, err := discovery.NewEngine()
-		if err != nil {
-			log.WithFields(log.Fields{
-				"error": err.Error(),
-			}).Fatal("Error initializing Engine")
-		}
-		e.Name = "stdlib-source"
-		e.NATSOptions = &auth.NATSOptions{
+		natsOptions := auth.NATSOptions{
 			NumRetries:        -1,
 			RetryDelay:        5 * time.Second,
 			Servers:           natsServers,
@@ -111,28 +104,12 @@ var rootCmd = &cobra.Command{
 			ReconnectJitter:   1 * time.Second,
 			TokenClient:       tokenClient,
 		}
-		e.MaxParallelExecutions = maxParallel
 
-		// Add the base sources
-		sources := []discovery.Source{
-			&network.CertificateSource{},
-			&network.DNSSource{
-				ReverseLookup: reverseDNS,
-			},
-			&network.HTTPSource{},
-			&network.IPSource{},
-			&test.TestDogSource{},
-			&test.TestGroupSource{},
-			&test.TestHobbySource{},
-			&test.TestLocationSource{},
-			&test.TestPersonSource{},
-			&test.TestRegionSource{},
+		e, err := InitializeStdlibSourceEngine(natsOptions, maxParallel, reverseDNS)
+		if err != nil {
+			log.WithError(err).Error("Could not initialize aws source")
+			return
 		}
-
-		e.AddSources(sources...)
-
-		// Add the "internet" (RDAP) sources
-		e.AddSources(internet.NewSources()...)
 
 		// Start HTTP server for status
 		healthCheckPort := viper.GetInt("health-check-port")
@@ -338,4 +315,39 @@ func (t TerminationLogHook) Fire(e *log.Entry) error {
 	_, err = tLog.WriteString(message)
 
 	return err
+}
+
+func InitializeStdlibSourceEngine(natsOptions auth.NATSOptions, maxParallel int, reverseDNS bool) (*discovery.Engine, error) {
+	e, err := discovery.NewEngine()
+	if err != nil {
+		log.WithFields(log.Fields{
+			"error": err.Error(),
+		}).Fatal("Error initializing Engine")
+	}
+	e.Name = "stdlib-source"
+	e.NATSOptions = &natsOptions
+	e.MaxParallelExecutions = maxParallel
+
+	// Add the base sources
+	sources := []discovery.Source{
+		&network.CertificateSource{},
+		&network.DNSSource{
+			ReverseLookup: reverseDNS,
+		},
+		&network.HTTPSource{},
+		&network.IPSource{},
+		&test.TestDogSource{},
+		&test.TestGroupSource{},
+		&test.TestHobbySource{},
+		&test.TestLocationSource{},
+		&test.TestPersonSource{},
+		&test.TestRegionSource{},
+	}
+
+	e.AddSources(sources...)
+
+	// Add the "internet" (RDAP) sources
+	e.AddSources(internet.NewSources()...)
+
+	return e, nil
 }
