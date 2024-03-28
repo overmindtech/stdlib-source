@@ -13,11 +13,8 @@ import (
 	"github.com/getsentry/sentry-go"
 	"github.com/nats-io/jwt/v2"
 	"github.com/nats-io/nkeys"
-	"github.com/overmindtech/discovery"
 	"github.com/overmindtech/sdp-go/auth"
-	"github.com/overmindtech/stdlib-source/sources/internet"
-	"github.com/overmindtech/stdlib-source/sources/network"
-	"github.com/overmindtech/stdlib-source/sources/test"
+	"github.com/overmindtech/stdlib-source/sources"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
@@ -105,14 +102,14 @@ var rootCmd = &cobra.Command{
 			TokenClient:       tokenClient,
 		}
 
-		e, err := InitializeStdlibSourceEngine(natsOptions, maxParallel, reverseDNS)
+		e, err := sources.InitializeEngine(natsOptions, maxParallel, reverseDNS)
 		if err != nil {
 			log.WithError(err).Error("Could not initialize aws source")
 			return
 		}
 
 		// Start HTTP server for status
-		healthCheckPort := viper.GetInt("health-check-port")
+		healthCheckPort := viper.GetString("service-port")
 		healthCheckPath := "/healthz"
 
 		http.HandleFunc(healthCheckPath, func(rw http.ResponseWriter, r *http.Request) {
@@ -192,20 +189,29 @@ func init() {
 	// General config options
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "/etc/srcman/config/source.yaml", "config file path")
 	rootCmd.PersistentFlags().StringVar(&logLevel, "log", "info", "Set the log level. Valid values: panic, fatal, error, warn, info, debug, trace")
+	cobra.CheckErr(viper.BindEnv("log", "STDLIB_LOG", "LOG")) // fallback to global config
 	rootCmd.PersistentFlags().Bool("reverse-dns", false, "If true, will perform reverse DNS lookups on IP addresses")
 
 	// Config required by all sources in order to connect to NATS. You shouldn't
 	// need to change these
-	rootCmd.PersistentFlags().StringArray("nats-servers", []string{"nats://localhost:4222", "nats://nats:4222"}, "A list of NATS servers to connect to")
+	rootCmd.PersistentFlags().StringArray("nats-servers", []string{"nats://localhost:4222", "nats://nats:4222"}, "A list of NATS servers to connect to.")
+	cobra.CheckErr(viper.BindEnv("nats-servers", "STDLIB_NATS_SERVERS", "NATS_SERVERS")) // fallback to srcman config
 	rootCmd.PersistentFlags().String("nats-name-prefix", "", "A name label prefix. Sources should append a dot and their hostname .{hostname} to this, then set this is the NATS connection name which will be sent to the server on CONNECT to identify the client")
+	cobra.CheckErr(viper.BindEnv("nats-name-prefix", "STDLIB_NATS_NAME_PREFIX", "NATS_NAME_PREFIX")) // fallback to srcman config
 	rootCmd.PersistentFlags().String("nats-jwt", "", "The JWT token that should be used to authenticate to NATS, provided in raw format e.g. eyJ0eXAiOiJKV1Q...")
+	cobra.CheckErr(viper.BindEnv("nats-jwt", "STDLIB_NATS_JWT", "NATS_JWT")) // fallback to srcman config
 	rootCmd.PersistentFlags().String("nats-nkey-seed", "", "The NKey seed which corresponds to the NATS JWT e.g. SUAFK6QUC...")
+	cobra.CheckErr(viper.BindEnv("nats-nkey-seed", "STDLIB_NATS_NKEY_SEED", "NATS_NKEY_SEED")) // fallback to srcman config
 	rootCmd.PersistentFlags().Int("max-parallel", 2_000, "Max number of requests to run in parallel")
-	rootCmd.PersistentFlags().IntP("health-check-port", "", 8080, "The port that the health check should run on")
+	cobra.CheckErr(viper.BindEnv("max-parallel", "STDLIB_MAX_PARALLEL", "MAX_PARALLEL")) // fallback to srcman config
+	rootCmd.PersistentFlags().String("service-port", "8089", "the port to listen on")
+	cobra.CheckErr(viper.BindEnv("service-port", "STDLIB_SERVICE_PORT", "SERVICE_PORT")) // fallback to srcman config
 
 	// tracing
 	rootCmd.PersistentFlags().String("honeycomb-api-key", "", "If specified, configures opentelemetry libraries to submit traces to honeycomb")
+	cobra.CheckErr(viper.BindEnv("sentry-dsn", "STDLIB_SENTRY_DSN", "SENTRY_DSN")) // fallback to global config
 	rootCmd.PersistentFlags().String("sentry-dsn", "", "If specified, configures sentry libraries to capture errors")
+	cobra.CheckErr(viper.BindEnv("sentry-dsn", "STDLIB_SENTRY_DSN", "SENTRY_DSN")) // fallback to global config
 	rootCmd.PersistentFlags().String("run-mode", "release", "Set the run mode for this service, 'release', 'debug' or 'test'. Defaults to 'release'.")
 
 	// Bind these to viper
@@ -257,6 +263,7 @@ func initConfig() {
 	replacer := strings.NewReplacer("-", "_")
 
 	viper.SetEnvKeyReplacer(replacer)
+	viper.SetEnvPrefix("STDLIB")
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.
@@ -315,39 +322,4 @@ func (t TerminationLogHook) Fire(e *log.Entry) error {
 	_, err = tLog.WriteString(message)
 
 	return err
-}
-
-func InitializeStdlibSourceEngine(natsOptions auth.NATSOptions, maxParallel int, reverseDNS bool) (*discovery.Engine, error) {
-	e, err := discovery.NewEngine()
-	if err != nil {
-		log.WithFields(log.Fields{
-			"error": err.Error(),
-		}).Fatal("Error initializing Engine")
-	}
-	e.Name = "stdlib-source"
-	e.NATSOptions = &natsOptions
-	e.MaxParallelExecutions = maxParallel
-
-	// Add the base sources
-	sources := []discovery.Source{
-		&network.CertificateSource{},
-		&network.DNSSource{
-			ReverseLookup: reverseDNS,
-		},
-		&network.HTTPSource{},
-		&network.IPSource{},
-		&test.TestDogSource{},
-		&test.TestGroupSource{},
-		&test.TestHobbySource{},
-		&test.TestLocationSource{},
-		&test.TestPersonSource{},
-		&test.TestRegionSource{},
-	}
-
-	e.AddSources(sources...)
-
-	// Add the "internet" (RDAP) sources
-	e.AddSources(internet.NewSources()...)
-
-	return e, nil
 }
