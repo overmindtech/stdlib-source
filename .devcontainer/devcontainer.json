@@ -34,5 +34,8 @@
 		"ghcr.io/devcontainers/features/github-cli:1": {}
 	},
 	// Set up environment variables in the remote container.
-	"remoteEnv": {}
+	"remoteEnv": {
+		"LOG": "trace",
+		"NATS_SERVERS": "nats://messages.app.overmind.tech"
+	}
 }

@@ -14,8 +14,7 @@ All configuration options can be provided via the command line or as environment
 | `NATS_NAME_PREFIX`| `--nats-name-prefix` | ✅ | A name label prefix. Sources should append a dot and their hostname .{hostname} to this, then set this is the NATS connection name which will be sent to the server on CONNECT to identify the client |
 | `NATS_JWT` | `--nats-jwt` | ✅ | The JWT token that should be used to authenticate to NATS, provided in raw format e.g. `eyJ0eXAiOiJKV1Q{...}` |
 | `NATS_NKEY_SEED` | `--nats-nkey-seed` | ✅ | The NKey seed which corresponds to the NATS JWT e.g. `SUAFK6QUC{...}` |
-| `MAX-PARALLEL`| `--max-parallel` | ✅ | Max number of requests to run in parallel |
-| `YOUR_CUSTOM_FLAG`| `--your-custom-flag` |   | Configuration that you add should be documented here |
+| `MAX_PARALLEL`| `--max-parallel` | ✅ | Max number of requests to run in parallel |
 
 ### `srcman` config
 
@@ -32,11 +31,9 @@ spec:
   manager: manager-source
 ```
 
-**NOTE:** Remove the above boilerplate once you know what configuration will be required.
-
 ### Health Check
 
-The source hosts a health check on `:8080/healthz` which will return an error if NATS is not connected. An example Kubernetes readiness probe is:
+The source hosts a health check on `:8089/healthz` which will return an error if NATS is not connected. An example Kubernetes readiness probe is:
 
 ```yaml
 readinessProbe:
@@ -55,6 +52,12 @@ The source CLI can be interacted with locally by running:
 go run main.go --help
 ```
 
+To get automatic recompiles and reloading on code changes, use:
+
+```
+air
+```
+
 ### Testing
 
 Tests in this package can be run using:
@@ -66,4 +69,3 @@ go test ./...
 ### Packaging
 
 Docker images can be created manually using `docker build`, but GitHub actions also exist that are able to create, tag and push images. Images will be build for the `main` branch, and also for any commits tagged with a version such as `v1.2.0`
-
