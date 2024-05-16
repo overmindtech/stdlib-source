@@ -10,7 +10,7 @@ require (
 	github.com/nats-io/jwt/v2 v2.5.7
 	github.com/nats-io/nkeys v0.4.7
 	github.com/openrdap/rdap v0.9.2-0.20240219192926-2210b535d40b
-	github.com/overmindtech/discovery v0.27.2
+	github.com/overmindtech/discovery v0.27.3
 	github.com/overmindtech/sdp-go v0.73.1
 	github.com/overmindtech/sdpcache v1.6.4
 	github.com/sirupsen/logrus v1.9.3
