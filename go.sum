@@ -66,6 +66,8 @@ github.com/jmespath/go-jmespath/internal/testify v1.5.1 h1:shLQSRRSCCPj3f2gpwzGw
 github.com/jmespath/go-jmespath/internal/testify v1.5.1/go.mod h1:L3OGu8Wl2/fWfCI6z80xFu9LTZmf1ZRjMHUOPmWr69U=
 github.com/klauspost/compress v1.17.7 h1:ehO88t2UGzQK66LMdE8tibEd1ErmzZjNEqWkjLAKQQg=
 github.com/klauspost/compress v1.17.7/go.mod h1:Di0epgTjJY877eYKx5yC51cX2A2Vl2ibi7bDH9ttBbw=
+github.com/klauspost/compress v1.17.8 h1:YcnTYrq7MikUT7k0Yb5eceMmALQPYBW/Xltxn0NAMnU=
+github.com/klauspost/compress v1.17.8/go.mod h1:Di0epgTjJY877eYKx5yC51cX2A2Vl2ibi7bDH9ttBbw=
 github.com/kr/pretty v0.3.1 h1:flRD4NNwYAUpkphVc1HcthR4KEIFJ65n8Mw5qdRn3LE=
 github.com/kr/pretty v0.3.1/go.mod h1:hoEshYVHaxMs3cyo3Yncou5ZscifuDolrwPKZanG3xk=
 github.com/kr/text v0.2.0 h1:5Nx0Ya0ZqY2ygV366QzturHI13Jq95ApcVaJBhpS+AY=
@@ -104,12 +106,16 @@ github.com/overmindtech/discovery v0.27.2 h1:P+V3FW7VDkPwiTpJz41DMleBFozuQOmKSDR
 github.com/overmindtech/discovery v0.27.2/go.mod h1:DWVo69qHlSn2pKVuu6PqIaTihws+ZpD6mJFhu+lKgd4=
 github.com/overmindtech/discovery v0.27.3 h1:H6nAM5w10BlQNol3Ne3nuei0NAfitfQXj5lMIiquPjI=
 github.com/overmindtech/discovery v0.27.3/go.mod h1:DWVo69qHlSn2pKVuu6PqIaTihws+ZpD6mJFhu+lKgd4=
+github.com/overmindtech/discovery v0.27.4 h1:EziX5JuRvH4570WMpncXYyUkiv4pmtJ5K7dvW6ndWfs=
+github.com/overmindtech/discovery v0.27.4/go.mod h1:oQBKSwGuJ7moViV5IeZKG3NW093f4koBAMpvrzaRsT0=
 github.com/overmindtech/sdp-go v0.73.0 h1:zo+lpPsWn3znM9BT8jA5IUrbCD39otGNUxK7sFVS3dQ=
 github.com/overmindtech/sdp-go v0.73.0/go.mod h1:+pAlm26clqfEycxBlf+n8YFYZZ5puGeqED6lfz/bBi4=
 github.com/overmindtech/sdp-go v0.73.1 h1:aEP/kj8sfoeH0eR0FTeRwzpb4RFTXCDnMZKbziOG5Is=
 github.com/overmindtech/sdp-go v0.73.1/go.mod h1:RVk/Bhezpi89QqTWOvRyF5mVDOqVrm3sgXM1EEY/Ejg=
 github.com/overmindtech/sdp-go v0.74.0 h1:inX9sxIYpjz/mrPRZGBGQpFwO09i9PkHvVgpwK6qtKc=
 github.com/overmindtech/sdp-go v0.74.0/go.mod h1:ZUO2LDFSNllG+Dha4lSIyX26PWd/eZviUlvRYqLOTJk=
+github.com/overmindtech/sdp-go v0.74.1 h1:BbANS8hNdWbh02e8IT/EfrIyOeWl1801/3tsPxCkqc8=
+github.com/overmindtech/sdp-go v0.74.1/go.mod h1:ZUO2LDFSNllG+Dha4lSIyX26PWd/eZviUlvRYqLOTJk=
 github.com/overmindtech/sdpcache v1.6.4 h1:MJoYBDqDE3s8FrRzZ0RPgFiH39HWI/Mv2ImH1NdLT8k=
 github.com/overmindtech/sdpcache v1.6.4/go.mod h1:/F9XStVdntRJEQjlZ86BPuB1Y7VPo1PFcsCNiU1IoGE=
 github.com/pelletier/go-toml/v2 v2.1.0 h1:FnwAJ4oYMvbT/34k9zzHuZNrhlz48GB3/s6at6/MHO4=
