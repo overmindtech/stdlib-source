@@ -26,12 +26,18 @@ func NewTestServer() (*TestHTTPServer, error) {
 
 	sm.Handle("/404", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(404)
-		w.Write([]byte("not found innit"))
+		_, err := w.Write([]byte("not found innit"))
+		if err != nil {
+			return
+		}
 	}))
 
 	sm.Handle("/500", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(500)
-		w.Write([]byte("yeah nah innit"))
+		_, err := w.Write([]byte("yeah nah innit"))
+		if err != nil {
+			return
+		}
 	}))
 
 	sm.Handle("/301", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -59,12 +65,12 @@ func TestHTTPGet(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if i, err := item.Attributes.Get("tls"); err == nil {
+		if i, err := item.GetAttributes().Get("tls"); err == nil {
 			if tlsMap, ok := i.(map[string]interface{}); ok {
 				certName := fmt.Sprint(tlsMap["certificate"])
 
-				if matched, _ := regexp.MatchString(`www.google.com \(SHA-1: `, certName); !matched {
-					t.Errorf("expected cert name to match www.google.com (SHA-1: , got: %v", certName)
+				if matched, _ := regexp.MatchString(`www.google.com \(SHA-256: `, certName); !matched {
+					t.Errorf("expected cert name to match www.google.com (SHA-256: , got: %v", certName)
 				}
 			} else {
 				t.Error("expected tls to be map[string]interface{}")
@@ -85,13 +91,13 @@ func TestHTTPGet(t *testing.T) {
 
 		var dnsFound bool
 
-		for _, link := range item.LinkedItemQueries {
-			switch link.Query.Type {
+		for _, link := range item.GetLinkedItemQueries() {
+			switch link.GetQuery().GetType() {
 			case "dns":
 				dnsFound = true
 
-				if link.Query.Query != "www.google.com" {
-					t.Errorf("expected dns query to be www.google.com, got %v", link.Query)
+				if link.GetQuery().GetQuery() != "www.google.com" {
+					t.Errorf("expected dns query to be www.google.com, got %v", link.GetQuery())
 				}
 			}
 		}
@@ -112,13 +118,13 @@ func TestHTTPGet(t *testing.T) {
 
 		var ipFound bool
 
-		for _, link := range item.LinkedItemQueries {
-			switch link.Query.Type {
+		for _, link := range item.GetLinkedItemQueries() {
+			switch link.GetQuery().GetType() {
 			case "ip":
 				ipFound = true
 
-				if link.Query.Query != "1.1.1.1" {
-					t.Errorf("expected dns query to be 1.1.1.1, got %v", link.Query)
+				if link.GetQuery().GetQuery() != "1.1.1.1" {
+					t.Errorf("expected dns query to be 1.1.1.1, got %v", link.GetQuery())
 				}
 			}
 		}
@@ -147,7 +153,7 @@ func TestHTTPGet(t *testing.T) {
 
 		var status interface{}
 
-		status, err = item.Attributes.Get("status")
+		status, err = item.GetAttributes().Get("status")
 
 		if err != nil {
 			t.Fatal(err)
@@ -187,7 +193,7 @@ func TestHTTPGet(t *testing.T) {
 
 		var status interface{}
 
-		status, err = item.Attributes.Get("status")
+		status, err = item.GetAttributes().Get("status")
 
 		if err != nil {
 			t.Fatal(err)
@@ -217,7 +223,7 @@ func TestHTTPGet(t *testing.T) {
 
 		var status interface{}
 
-		status, err = item.Attributes.Get("status")
+		status, err = item.GetAttributes().Get("status")
 
 		if err != nil {
 			t.Fatal(err)
@@ -227,7 +233,7 @@ func TestHTTPGet(t *testing.T) {
 			t.Errorf("expected status to be 301, got: %v", status)
 		}
 
-		if len(item.LinkedItemQueries) == 0 {
+		if len(item.GetLinkedItemQueries()) == 0 {
 			t.Error("expected a linked item to redirected location, got none")
 		}
 
@@ -241,7 +247,7 @@ func TestHTTPGet(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		_, err = item.Attributes.Get("tls")
+		_, err = item.GetAttributes().Get("tls")
 
 		if err == nil {
 			t.Error("Expected to not find TLS info")

@@ -56,8 +56,8 @@ func TestEntitySourceSearch(t *testing.T) {
 		var sdpError *sdp.QueryError
 
 		if ok := errors.As(err, &sdpError); ok {
-			if sdpError.ErrorType != sdp.QueryError_NOTFOUND {
-				t.Errorf("Expected QueryError_NOTFOUND, got %v", sdpError.ErrorType)
+			if sdpError.GetErrorType() != sdp.QueryError_NOTFOUND {
+				t.Errorf("Expected QueryError_NOTFOUND, got %v", sdpError.GetErrorType())
 			}
 		} else {
 			t.Fatalf("Expected QueryError, got %T", err)

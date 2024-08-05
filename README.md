@@ -54,7 +54,7 @@ go run main.go --help
 
 To get automatic recompiles and reloading on code changes, use:
 
-```
+```shell
 air
 ```
 

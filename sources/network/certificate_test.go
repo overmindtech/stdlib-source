@@ -103,7 +103,7 @@ type CertTest struct {
 
 func (c *CertTest) Run(t *testing.T, cert *sdp.Item) {
 	t.Run(fmt.Sprintf("Validating %v", c.Attribute), func(t *testing.T) {
-		if x, err := cert.Attributes.Get(c.Attribute); err == nil {
+		if x, err := cert.GetAttributes().Get(c.Attribute); err == nil {
 			if fmt.Sprint(x) != fmt.Sprint(c.Expected) {
 				t.Errorf("%v mismatch, expected %v, got %v", c.Attribute, c.Expected, x)
 			}

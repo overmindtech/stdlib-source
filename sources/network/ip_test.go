@@ -19,9 +19,9 @@ func TestIPGet(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if private, err := item.Attributes.Get("private"); err == nil {
+		if private, err := item.GetAttributes().Get("private"); err == nil {
 			if private != false {
-				t.Error("Expected itemattributes.private to be false")
+				t.Error("Expected itemAttributes.private to be false")
 			}
 		} else {
 			t.Error("could not find 'private' attribute")
@@ -37,9 +37,9 @@ func TestIPGet(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if private, err := item.Attributes.Get("private"); err == nil {
+		if private, err := item.GetAttributes().Get("private"); err == nil {
 			if private != false {
-				t.Error("Expected itemattributes.private to be false")
+				t.Error("Expected itemAttributes.private to be false")
 			}
 		} else {
 			t.Error("could not find 'private' attribute")
@@ -81,11 +81,11 @@ func TestIPGet(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			if item.Scope != "some.computer" {
-				t.Errorf("expected scope to be some.computer, got %v", item.Scope)
+			if item.GetScope() != "some.computer" {
+				t.Errorf("expected scope to be some.computer, got %v", item.GetScope())
 			}
 
-			if llu, err := item.Attributes.Get("linkLocalUnicast"); err != nil || llu == false {
+			if llu, err := item.GetAttributes().Get("linkLocalUnicast"); err != nil || llu == false {
 				t.Errorf("expected linkLocalUnicast to be false, got %v", llu)
 			}
 
@@ -101,7 +101,7 @@ func TestIPGet(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			if p, err := item.Attributes.Get("private"); err != nil || p == false {
+			if p, err := item.GetAttributes().Get("private"); err != nil || p == false {
 				t.Errorf("expected p to be true, got %v", p)
 			}
 
@@ -138,11 +138,11 @@ func TestIPGet(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			if item.Scope != "some.computer" {
-				t.Errorf("expected scope to be some.computer, got %v", item.Scope)
+			if item.GetScope() != "some.computer" {
+				t.Errorf("expected scope to be some.computer, got %v", item.GetScope())
 			}
 
-			if loopback, err := item.Attributes.Get("loopback"); err != nil || loopback == false {
+			if loopback, err := item.GetAttributes().Get("loopback"); err != nil || loopback == false {
 				t.Errorf("expected loopback to be false, got %v", loopback)
 			}
 
@@ -171,11 +171,11 @@ func TestIPGet(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			if item.Scope != "some.computer" {
-				t.Errorf("expected scope to be some.computer, got %v", item.Scope)
+			if item.GetScope() != "some.computer" {
+				t.Errorf("expected scope to be some.computer, got %v", item.GetScope())
 			}
 
-			if llu, err := item.Attributes.Get("linkLocalUnicast"); err != nil || llu == false {
+			if llu, err := item.GetAttributes().Get("linkLocalUnicast"); err != nil || llu == false {
 				t.Errorf("expected linkLocalUnicast top be false, got %v", llu)
 			}
 
@@ -191,7 +191,7 @@ func TestIPGet(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			if p, err := item.Attributes.Get("private"); err != nil || p == false {
+			if p, err := item.GetAttributes().Get("private"); err != nil || p == false {
 				t.Errorf("expected p to be true, got %v", p)
 			}
 
@@ -229,11 +229,11 @@ func TestIPGet(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			if item.Scope != "some.computer" {
-				t.Errorf("expected scope to be some.computer, got %v", item.Scope)
+			if item.GetScope() != "some.computer" {
+				t.Errorf("expected scope to be some.computer, got %v", item.GetScope())
 			}
 
-			if loopback, err := item.Attributes.Get("loopback"); err != nil || loopback == false {
+			if loopback, err := item.GetAttributes().Get("loopback"); err != nil || loopback == false {
 				t.Errorf("expected loopback to be false, got %v", loopback)
 			}
 
@@ -248,9 +248,9 @@ func TestIPGet(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if private, err := item.Attributes.Get("private"); err == nil {
+		if private, err := item.GetAttributes().Get("private"); err == nil {
 			if private != false {
-				t.Error("Expected itemattributes.private to be false")
+				t.Error("Expected itemAttributes.private to be false")
 			}
 		} else {
 			t.Error("could not find 'private' attribute")
