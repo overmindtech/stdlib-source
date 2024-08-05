@@ -1,0 +1,11 @@
+{
+	"type": "rdap-domain",
+	"descriptiveType": "",
+	"searchDescription": "Search for a domain record by the domain name e.g. \"www.google.com\"",
+	"group": "",
+	"links": [
+		"rdap-entity",
+		"rdap-ip-network",
+		"rdap-nameserver"
+	]
+}

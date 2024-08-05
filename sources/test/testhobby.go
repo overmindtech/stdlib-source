@@ -6,14 +6,6 @@ import (
 	"github.com/overmindtech/sdp-go"
 )
 
-//go:generate docgen ../../doc
-// +overmind:type test-hobby
-// +overmind:get Returns pre-canned items for automated tests.
-// +overmind:list Returns pre-canned items for automated tests.
-// +overmind:search Returns pre-canned items for automated tests.
-
-// +overmind:description This source reliably returns pre-canned items for automated tests.
-
 // TestHobbySource A source of `hobby` items for automated tests.
 type TestHobbySource struct{}
 

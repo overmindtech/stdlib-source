@@ -18,7 +18,7 @@ import (
 
 const USER_AGENT_VERSION = "0.1"
 
-//go:generate docgen ../../doc
+//go:generate docgen ../../docs-data
 // +overmind:type http
 // +overmind:get A HTTP endpoint to run a `HEAD` request against
 // +overmind:list **Not supported**

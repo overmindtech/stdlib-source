@@ -1,0 +1,11 @@
+{
+	"type": "ip",
+	"descriptiveType": "",
+	"getDescription": "An ipv4 or ipv6 address",
+	"listDescription": "**Not supported**",
+	"group": "",
+	"links": [
+		"dns",
+		"rdap-ip-network"
+	]
+}

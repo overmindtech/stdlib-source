@@ -10,7 +10,7 @@ import (
 	"github.com/overmindtech/sdpcache"
 )
 
-//go:generate docgen ../../doc
+//go:generate docgen ../../docs-data
 // +overmind:type rdap-domain
 // +overmind:search Search for a domain record by the domain name e.g. "www.google.com"
 // +overmind:description This source returns information about a domain using the

@@ -10,7 +10,7 @@ import (
 	"github.com/overmindtech/sdpcache"
 )
 
-//go:generate docgen ../../doc
+//go:generate docgen ../../docs-data
 // +overmind:type rdap-nameserver
 // +overmind:search Search for the RDAP entry for a nameserver by its full URL e.g. "https://rdap.verisign.com/com/v1/nameserver/NS4.GOOGLE.COM"
 // +overmind:description Returns details from RDAP about nameservers

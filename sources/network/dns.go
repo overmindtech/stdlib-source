@@ -15,7 +15,7 @@ import (
 	"github.com/overmindtech/sdpcache"
 )
 
-//go:generate docgen ../../doc
+//go:generate docgen ../../docs-data
 // +overmind:type dns
 // +overmind:get A DNS A or AAAA entry to look up
 // +overmind:list **Not supported**

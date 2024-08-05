@@ -1,0 +1,9 @@
+{
+	"type": "rdap-asn",
+	"descriptiveType": "",
+	"getDescription": "Get an ASN by handle i.e. \"AS15169\"",
+	"group": "",
+	"links": [
+		"rdap-entity"
+	]
+}

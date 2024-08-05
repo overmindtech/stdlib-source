@@ -10,7 +10,7 @@ import (
 	"github.com/overmindtech/sdpcache"
 )
 
-//go:generate docgen ../../doc
+//go:generate docgen ../../docs-data
 // +overmind:type rdap-asn
 // +overmind:get Get an ASN by handle i.e. "AS15169"
 // +overmind:description Uses RDAP to get the details of an Autonomous System

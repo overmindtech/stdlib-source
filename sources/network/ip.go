@@ -8,7 +8,7 @@ import (
 	"github.com/overmindtech/sdp-go"
 )
 
-//go:generate docgen ../../doc
+//go:generate docgen ../../docs-data
 // +overmind:type ip
 // +overmind:get An ipv4 or ipv6 address
 // +overmind:list **Not supported**

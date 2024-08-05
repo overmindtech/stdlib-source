@@ -1,0 +1,11 @@
+{
+	"type": "certificate",
+	"descriptiveType": "",
+	"getDescription": "**Not supported**",
+	"listDescription": "**Not supported**",
+	"searchDescription": "Takes a full certificate, or certificate bundle as input in PEM encoded format",
+	"group": "",
+	"links": [
+		"certificate"
+	]
+}

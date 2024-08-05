@@ -1,0 +1,12 @@
+{
+	"type": "dns",
+	"descriptiveType": "",
+	"getDescription": "A DNS A or AAAA entry to look up",
+	"listDescription": "**Not supported**",
+	"searchDescription": "A DNS name (or IP for reverse DNS), this will perform a recursive search and return all results",
+	"group": "",
+	"links": [
+		"dns",
+		"rdap-domain"
+	]
+}

@@ -46,7 +46,7 @@ func toHex(b []byte) string {
 	return strings.ToUpper(s)
 }
 
-//go:generate docgen ../../doc
+//go:generate docgen ../../docs-data
 // +overmind:type certificate
 // +overmind:get **Not supported**
 // +overmind:list **Not supported**

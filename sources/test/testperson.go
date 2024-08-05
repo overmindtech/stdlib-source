@@ -6,14 +6,6 @@ import (
 	"github.com/overmindtech/sdp-go"
 )
 
-//go:generate docgen ../../doc
-// +overmind:type test-person
-// +overmind:get Returns pre-canned items for automated tests.
-// +overmind:list Returns pre-canned items for automated tests.
-// +overmind:search Returns pre-canned items for automated tests.
-
-// +overmind:description This source reliably returns pre-canned items for automated tests.
-
 // TestPersonSource A source of `person` items for automated tests.
 type TestPersonSource struct{}
 

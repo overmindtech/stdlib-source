@@ -10,7 +10,7 @@ import (
 	"github.com/overmindtech/sdpcache"
 )
 
-//go:generate docgen ../../doc
+//go:generate docgen ../../docs-data
 // +overmind:type rdap-ip-network
 // +overmind:search Search for the most specific network that contains the specified IP or CIDR
 // +overmind:description Returns information about an IP network using the RDAP

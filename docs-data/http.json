@@ -1,0 +1,13 @@
+{
+	"type": "http",
+	"descriptiveType": "",
+	"getDescription": "A HTTP endpoint to run a `HEAD` request against",
+	"listDescription": "**Not supported**",
+	"group": "",
+	"links": [
+		"certificate",
+		"dns",
+		"http",
+		"ip"
+	]
+}
