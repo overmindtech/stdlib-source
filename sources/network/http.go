@@ -100,7 +100,7 @@ func (s *HTTPSource) Get(ctx context.Context, scope string, query string, ignore
 	// we are only running a HEAD request this is unlikely to be a problem
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: true,
+			InsecureSkipVerify: true, // nolint:gosec // This is fine for a HEAD request
 		},
 	}
 	client := &http.Client{
@@ -225,9 +225,6 @@ func (s *HTTPSource) Get(ctx context.Context, scope string, query string, ignore
 			version = "TLSv1.2"
 		case tls.VersionTLS13:
 			version = "TLSv1.3"
-		//lint:ignore SA1019 We are just *checking* SSLv3, not using it
-		case tls.VersionSSL30:
-			version = "SSLv3"
 		default:
 			version = "unknown"
 		}

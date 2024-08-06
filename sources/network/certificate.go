@@ -2,7 +2,7 @@ package network
 
 import (
 	"context"
-	"crypto/sha1"
+	"crypto/sha256"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/hex"
@@ -16,20 +16,19 @@ import (
 
 // CertToName Returns the name of a cert as a string. This is in the format of:
 //
-// {Subject.CommonName} (SHA-1: {fingerprint})
+// {Subject.CommonName} (SHA-256: {fingerprint})
 func CertToName(cert *x509.Certificate) string {
-	sum := sha1.Sum(cert.Raw)
+	sum := sha256.Sum256(cert.Raw)
 	hexString := toHex(sum[:])
 
 	return fmt.Sprintf(
-		"%v (SHA-1: %v)",
+		"%v (SHA-256: %v)",
 		cert.Subject.CommonName,
 		hexString,
 	)
 }
 
-// toHex converts bytes to their uppercase hex representation, separated by
-// colons
+// toHex converts bytes to their uppercase hex representation, separated by colons
 func toHex(b []byte) string {
 	if len(b) == 0 {
 		return ""
@@ -218,13 +217,13 @@ func (s *CertificateSource) Search(ctx context.Context, scope string, query stri
 		}
 
 		if len(cert.PolicyIdentifiers) > 0 {
-			oids := make([]string, len(cert.PolicyIdentifiers))
+			objectIdentifiers := make([]string, len(cert.PolicyIdentifiers))
 
 			for i := 0; i < len(cert.PolicyIdentifiers); i++ {
-				oids[i] = cert.PolicyIdentifiers[i].String()
+				objectIdentifiers[i] = cert.PolicyIdentifiers[i].String()
 			}
 
-			attributes.Set("policyIdentifiers", oids)
+			attributes.Set("policyIdentifiers", objectIdentifiers)
 		}
 
 		item := sdp.Item{
@@ -308,8 +307,7 @@ func (s *CertificateSource) Weight() int {
 func getKeyUsage(usage x509.KeyUsage) []string {
 	usageStrings := make([]string, 0)
 
-	// Uses the same string values as openssl's v3_bitst.c
-	//
+	// Uses the same string values as openssl's
 	// https://github.com/openssl/openssl/blob/1c0eede9827b0962f1d752fa4ab5d436fa039da4/crypto/x509/v3_bitst.c#L28-L39
 	if (usage & x509.KeyUsageDigitalSignature) == x509.KeyUsageDigitalSignature {
 		usageStrings = append(usageStrings, "Digital Signature")
@@ -342,7 +340,7 @@ func getKeyUsage(usage x509.KeyUsage) []string {
 	return usageStrings
 }
 
-// getExtendedKeyUsage Gets the list of extended usage, using the same workding
+// getExtendedKeyUsage Gets the list of extended usage, using the same working
 // as openssl does as much as possible
 //
 // See:

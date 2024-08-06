@@ -33,8 +33,8 @@ func TestIpNetworkSourceSearch(t *testing.T) {
 		t.Errorf("Expected unique attribute value to be 1.1.1.0 - 1.1.1.0 - 1.1.1.255, got %v", item.UniqueAttributeValue())
 	}
 
-	if len(item.LinkedItemQueries) != 3 {
-		t.Errorf("Expected 3 linked items, got %v", len(item.LinkedItemQueries))
+	if len(item.GetLinkedItemQueries()) != 3 {
+		t.Errorf("Expected 3 linked items, got %v", len(item.GetLinkedItemQueries()))
 	}
 
 	// Then run a get for that same thing and hit the cache

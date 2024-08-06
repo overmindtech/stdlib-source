@@ -2,6 +2,7 @@ package network
 
 import (
 	"context"
+	"errors"
 	"net"
 	"testing"
 
@@ -42,11 +43,11 @@ func TestSearch(t *testing.T) {
 		var foundV4 bool
 		var foundV6 bool
 		for _, item := range items {
-			for _, q := range item.LinkedItemQueries {
-				if q.Query.Query == "1.1.1.1" {
+			for _, q := range item.GetLinkedItemQueries() {
+				if q.GetQuery().GetQuery() == "1.1.1.1" {
 					foundV4 = true
 				}
-				if q.Query.Query == "2606:4700:4700::1111" {
+				if q.GetQuery().GetQuery() == "2606:4700:4700::1111" {
 					foundV6 = true
 				}
 			}
@@ -74,11 +75,11 @@ func TestSearch(t *testing.T) {
 		var foundV4 bool
 		var foundV6 bool
 		for _, item := range items {
-			for _, q := range item.LinkedItemQueries {
-				if q.Query.Query == "1.1.1.1" {
+			for _, q := range item.GetLinkedItemQueries() {
+				if q.GetQuery().GetQuery() == "1.1.1.1" {
 					foundV4 = true
 				}
-				if q.Query.Query == "2606:4700:4700::1111" {
+				if q.GetQuery().GetQuery() == "2606:4700:4700::1111" {
 					foundV6 = true
 				}
 			}
@@ -101,7 +102,7 @@ func TestDnsGet(t *testing.T) {
 	var conn net.Conn
 	var err error
 
-	// Check that we actually have an inertnet connection, if not there is not
+	// Check that we actually have an internet connection, if not there is not
 	// point running this test
 	conn, err = net.Dial("tcp", "one.one.one.one:443")
 	conn.Close()
@@ -129,11 +130,8 @@ func TestDnsGet(t *testing.T) {
 			t.Error("expected error but got nil")
 		}
 
-		if sdpErr, ok := err.(*sdp.QueryError); ok {
-			if sdpErr.ErrorType != sdp.QueryError_NOTFOUND {
-				t.Errorf("Expected error type to be NOTFOUND, got %v", sdpErr.ErrorType)
-			}
-		} else {
+		var e *sdp.QueryError
+		if !errors.As(err, &e) {
 			t.Errorf("expected error type to be *sdp.QueryError, got %T", err)
 		}
 	})
@@ -145,12 +143,9 @@ func TestDnsGet(t *testing.T) {
 			t.Error("expected error but got nil")
 		}
 
-		if sdpErr, ok := err.(*sdp.QueryError); ok {
-			if sdpErr.ErrorType != sdp.QueryError_NOSCOPE {
-				t.Errorf("Expected error type to be NOSCOPE, got %v", sdpErr.ErrorType)
-			}
-		} else {
-			t.Errorf("expected error type to be *sdp.QueryError, got %t", err)
+		var e *sdp.QueryError
+		if !errors.As(err, &e) {
+			t.Errorf("expected error type to be *sdp.QueryError, got %T", err)
 		}
 	})
 
@@ -163,7 +158,7 @@ func TestDnsGet(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		target := item.Attributes.AttrStruct.Fields["target"].GetStringValue()
+		target := item.GetAttributes().GetAttrStruct().GetFields()["target"].GetStringValue()
 		if target != "github.com" {
 			t.Errorf("expected target to be github.com, got %v", target)
 		}

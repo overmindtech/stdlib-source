@@ -128,7 +128,15 @@ var rootCmd = &cobra.Command{
 		go func() {
 			defer sentry.Recover()
 
-			err := http.ListenAndServe(fmt.Sprintf(":%v", healthCheckPort), nil)
+			server := &http.Server{
+				Addr:    fmt.Sprintf(":%v", healthCheckPort),
+				Handler: nil,
+				// due to https://github.com/securego/gosec/pull/842
+				ReadTimeout:  5 * time.Second, // Set the read timeout to 5 seconds
+				WriteTimeout: 5 * time.Second, // Set the write timeout to 5 seconds
+			}
+
+			err := server.ListenAndServe()
 
 			log.WithError(err).WithFields(log.Fields{
 				"port": healthCheckPort,
@@ -215,7 +223,12 @@ func init() {
 	rootCmd.PersistentFlags().String("run-mode", "release", "Set the run mode for this service, 'release', 'debug' or 'test'. Defaults to 'release'.")
 
 	// Bind these to viper
-	viper.BindPFlags(rootCmd.PersistentFlags())
+	err := viper.BindPFlags(rootCmd.PersistentFlags())
+	if err != nil {
+		log.WithFields(log.Fields{
+			"error": err,
+		}).Fatal("Could not bind flags to viper")
+	}
 
 	// Run this before we do anything to set up the loglevel
 	rootCmd.PersistentPreRun = func(cmd *cobra.Command, args []string) {
@@ -234,7 +247,12 @@ func init() {
 		cmd.PersistentFlags().VisitAll(func(f *pflag.Flag) {
 			// Bind the flag to viper only if it has a non-empty default
 			if f.DefValue != "" || f.Changed {
-				viper.BindPFlag(f.Name, f)
+				err = viper.BindPFlag(f.Name, f)
+				if err != nil {
+					log.WithFields(log.Fields{
+						"error": err,
+					}).Fatal("Could not bind flag to viper")
+				}
 			}
 		})
 
@@ -287,11 +305,11 @@ func createTokenClient(natsJWT string, natsNKeySeed string) (auth.TokenClient, e
 	}
 
 	if _, err = jwt.DecodeUserClaims(natsJWT); err != nil {
-		return nil, fmt.Errorf("could not parse nats-jwt: %v", err)
+		return nil, fmt.Errorf("could not parse nats-jwt: %w", err)
 	}
 
 	if kp, err = nkeys.FromSeed([]byte(natsNKeySeed)); err != nil {
-		return nil, fmt.Errorf("could not parse nats-nkey-seed: %v", err)
+		return nil, fmt.Errorf("could not parse nats-nkey-seed: %w", err)
 	}
 
 	return auth.NewBasicTokenClient(natsJWT, kp), nil
