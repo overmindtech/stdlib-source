@@ -1,6 +1,6 @@
 {
 	"type": "rdap-asn",
-	"descriptiveType": "",
+	"descriptiveType": "Autonomous System Number (ASN)",
 	"getDescription": "Get an ASN by handle i.e. \"AS15169\"",
 	"group": "",
 	"links": [

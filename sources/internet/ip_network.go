@@ -12,6 +12,7 @@ import (
 
 //go:generate docgen ../../docs-data
 // +overmind:type rdap-ip-network
+// +overmind:descriptiveType RDAP IP Network
 // +overmind:search Search for the most specific network that contains the specified IP or CIDR
 // +overmind:description Returns information about an IP network using the RDAP
 // protocol. Only the `SEARCH` method should be used for this source since it's

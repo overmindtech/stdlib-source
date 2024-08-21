@@ -1,6 +1,6 @@
 {
 	"type": "rdap-ip-network",
-	"descriptiveType": "",
+	"descriptiveType": "RDAP IP Network",
 	"searchDescription": "Search for the most specific network that contains the specified IP or CIDR",
 	"group": "",
 	"links": []

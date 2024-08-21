@@ -1,6 +1,6 @@
 {
 	"type": "rdap-nameserver",
-	"descriptiveType": "",
+	"descriptiveType": "RDAP Nameserver",
 	"searchDescription": "Search for the RDAP entry for a nameserver by its full URL e.g. \"https://rdap.verisign.com/com/v1/nameserver/NS4.GOOGLE.COM\"",
 	"group": "",
 	"links": [
