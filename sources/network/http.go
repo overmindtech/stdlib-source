@@ -20,8 +20,8 @@ const USER_AGENT_VERSION = "0.1"
 
 //go:generate docgen ../../docs-data
 // +overmind:type http
+// +overmind:descriptiveType HTTP Endpoint
 // +overmind:get A HTTP endpoint to run a `HEAD` request against
-// +overmind:list **Not supported**
 
 // +overmind:description The HTTP search gathers information about HTTP (or
 // HTTPS) endpoints by running a HEAD request against them. This means that we

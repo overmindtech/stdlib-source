@@ -12,6 +12,7 @@ import (
 
 //go:generate docgen ../../docs-data
 // +overmind:type rdap-entity
+// +overmind:descriptiveType RDAP Entity
 // +overmind:get Get an entity by its handle. This method is discouraged as it's not reliable since entity bootstrapping isn't comprehensive
 // +overmind:search Search for an entity by its URL e.g. https://rdap.apnic.net/entity/AIC3-AP
 // +overmind:description Returns information from RDAP about Entities. These can

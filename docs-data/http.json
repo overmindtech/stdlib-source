@@ -1,8 +1,7 @@
 {
 	"type": "http",
-	"descriptiveType": "",
+	"descriptiveType": "HTTP Endpoint",
 	"getDescription": "A HTTP endpoint to run a `HEAD` request against",
-	"listDescription": "**Not supported**",
 	"group": "",
 	"links": [
 		"certificate",

@@ -12,6 +12,7 @@ import (
 
 //go:generate docgen ../../docs-data
 // +overmind:type rdap-domain
+// +overmind:descriptiveType RDAP Domain
 // +overmind:search Search for a domain record by the domain name e.g. "www.google.com"
 // +overmind:description This source returns information about a domain using the
 // RDAP protocol. The `SEARCH` method should be used for this source since it's

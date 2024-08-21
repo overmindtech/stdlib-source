@@ -47,8 +47,7 @@ func toHex(b []byte) string {
 
 //go:generate docgen ../../docs-data
 // +overmind:type certificate
-// +overmind:get **Not supported**
-// +overmind:list **Not supported**
+// +overmind:descriptiveType Certificate
 // +overmind:search Takes a full certificate, or certificate bundle as input in PEM encoded format
 
 // +overmind:description This source parses certificates passed in PEM format

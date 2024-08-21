@@ -17,8 +17,8 @@ import (
 
 //go:generate docgen ../../docs-data
 // +overmind:type dns
+// +overmind:descriptiveType DNS Entry
 // +overmind:get A DNS A or AAAA entry to look up
-// +overmind:list **Not supported**
 // +overmind:search A DNS name (or IP for reverse DNS), this will perform a recursive search and return all results
 
 // +overmind:description Queries DNS records, currently this resolves directly

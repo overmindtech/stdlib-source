@@ -10,8 +10,8 @@ import (
 
 //go:generate docgen ../../docs-data
 // +overmind:type ip
+// +overmind:descriptiveType IP Address
 // +overmind:get An ipv4 or ipv6 address
-// +overmind:list **Not supported**
 
 // +overmind:description This source parses IP addresses and returns some
 // information about them, however it doesn't actually do any external lookups.

@@ -1,8 +1,7 @@
 {
 	"type": "ip",
-	"descriptiveType": "",
+	"descriptiveType": "IP Address",
 	"getDescription": "An ipv4 or ipv6 address",
-	"listDescription": "**Not supported**",
 	"group": "",
 	"links": [
 		"dns",
