@@ -7,7 +7,7 @@ require (
 	github.com/MrAlias/otel-schema-utils v0.2.1-alpha
 	github.com/getsentry/sentry-go v0.29.0
 	github.com/miekg/dns v1.1.62
-	github.com/nats-io/jwt/v2 v2.6.0
+	github.com/nats-io/jwt/v2 v2.7.0
 	github.com/nats-io/nkeys v0.4.7
 	github.com/openrdap/rdap v0.9.2-0.20240517203139-eb57b3a8dedd
 	github.com/overmindtech/discovery v0.27.7
