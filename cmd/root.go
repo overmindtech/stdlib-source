@@ -159,6 +159,7 @@ var rootCmd = &cobra.Command{
 		e, err := sources.InitializeEngine(
 			natsOptions,
 			sourceName,
+			ServiceVersion,
 			sourceUUID,
 			heartbeatOptions,
 			maxParallel,

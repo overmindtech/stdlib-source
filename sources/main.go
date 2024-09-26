@@ -12,11 +12,7 @@ import (
 	_ "embed"
 )
 
-//go:generate sh -c "echo -n $(git describe --tags --exact-match 2>/dev/null || git rev-parse --short HEAD) > commit.txt"
-//go:embed commit.txt
-var ServiceVersion string
-
-func InitializeEngine(natsOptions auth.NATSOptions, name string, sourceUUID uuid.UUID, heartbeatOptions *discovery.HeartbeatOptions, maxParallel int, reverseDNS bool) (*discovery.Engine, error) {
+func InitializeEngine(natsOptions auth.NATSOptions, name string, version string, sourceUUID uuid.UUID, heartbeatOptions *discovery.HeartbeatOptions, maxParallel int, reverseDNS bool) (*discovery.Engine, error) {
 	e, err := discovery.NewEngine()
 	if err != nil {
 		log.WithFields(log.Fields{
@@ -28,7 +24,7 @@ func InitializeEngine(natsOptions auth.NATSOptions, name string, sourceUUID uuid
 	e.MaxParallelExecutions = maxParallel
 	e.Name = name
 	e.UUID = sourceUUID
-	e.Version = ServiceVersion
+	e.Version = version
 	e.Type = "sdtlib"
 
 	if heartbeatOptions != nil {
