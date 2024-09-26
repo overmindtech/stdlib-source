@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -11,13 +12,19 @@ import (
 	"time"
 
 	"github.com/getsentry/sentry-go"
+	"github.com/google/uuid"
 	"github.com/nats-io/jwt/v2"
 	"github.com/nats-io/nkeys"
+	"github.com/overmindtech/discovery"
+	"github.com/overmindtech/sdp-go"
 	"github.com/overmindtech/sdp-go/auth"
+	"github.com/overmindtech/sdp-go/sdpconnect"
 	"github.com/overmindtech/stdlib-source/sources"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
+	"golang.org/x/oauth2"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -45,20 +52,15 @@ var rootCmd = &cobra.Command{
 
 		// Get srcman supplied config
 		natsServers := viper.GetStringSlice("nats-servers")
-		natsNamePrefix := viper.GetString("nats-name-prefix")
 		natsJWT := viper.GetString("nats-jwt")
 		natsNKeySeed := viper.GetString("nats-nkey-seed")
+		apiKey := viper.GetString("api-key")
+		app := viper.GetString("app")
 		maxParallel := viper.GetInt("max-parallel")
 		reverseDNS := viper.GetBool("reverse-dns")
-		hostname, err := os.Hostname()
-
-		if err != nil {
-			log.WithFields(log.Fields{
-				"error": err,
-			}).Error("Could not determine hostname for use in NATS connection name")
-
-			os.Exit(1)
-		}
+		natsConnectionName := viper.GetString("nats-connection-name")
+		sourceName := viper.GetString("source-name")
+		sourceUUIDString := viper.GetString("source-uuid")
 
 		var natsNKeySeedLog string
 		var tokenClient auth.TokenClient
@@ -68,33 +70,80 @@ var rootCmd = &cobra.Command{
 		}
 
 		log.WithFields(log.Fields{
-			"nats-servers":     natsServers,
-			"nats-name-prefix": natsNamePrefix,
-			"max-parallel":     maxParallel,
-			"nats-jwt":         natsJWT,
-			"nats-nkey-seed":   natsNKeySeedLog,
-			"reverse-dns":      reverseDNS,
+			"nats-servers":         natsServers,
+			"nats-connection-name": natsConnectionName,
+			"max-parallel":         maxParallel,
+			"nats-jwt":             natsJWT,
+			"nats-nkey-seed":       natsNKeySeedLog,
+			"reverse-dns":          reverseDNS,
+			"app":                  app,
+			"source-name":          sourceName,
+			"source-uuid":          sourceUUIDString,
 		}).Info("Got config")
+
+		// Parse the UUID
+		sourceUUID, err := uuid.Parse(sourceUUIDString)
+		if err != nil {
+			log.WithError(err).Fatal("Could not parse source UUID")
+		}
+
+		// Determine the required Overmind URLs
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		oi, err := sdp.NewOvermindInstance(ctx, app)
+		if err != nil {
+			log.WithError(err).Fatal("Could not determine Overmind instance URLs")
+		}
 
 		// Validate the auth params and create a token client if we are using
 		// auth
-		if natsJWT != "" || natsNKeySeed != "" {
+		var heartbeatOptions *discovery.HeartbeatOptions
+		if natsJWT != "" && natsNKeySeed != "" {
 			var err error
-
 			tokenClient, err = createTokenClient(natsJWT, natsNKeySeed)
-
 			if err != nil {
 				log.WithFields(log.Fields{
 					"error": err.Error(),
-				}).Fatal("Error validating authentication info")
+				}).Fatal("Error creating token client with NATS JWT and NKey seed")
 			}
+		} else if apiKey != "" {
+			var err error
+			tokenClient, err = createAPITokenClient(apiKey, oi.ApiUrl.String())
+			if err != nil {
+				log.WithFields(log.Fields{
+					"error": err.Error(),
+				}).Fatal("Error creating token client with API key")
+			}
+
+			tokenSource := auth.NewAPIKeyTokenSource(apiKey, oi.ApiUrl.String())
+			transport := oauth2.Transport{
+				Source: tokenSource,
+				Base:   http.DefaultTransport,
+			}
+			authenticatedClient := http.Client{
+				Transport: otelhttp.NewTransport(&transport),
+			}
+
+			heartbeatOptions = &discovery.HeartbeatOptions{
+				ManagementClient: sdpconnect.NewManagementServiceClient(
+					&authenticatedClient,
+					oi.ApiUrl.String(),
+				),
+				Frequency: time.Second * 30,
+				HealthCheck: func() error {
+					// There isn't anything to check here, we just return nil
+					return nil
+				},
+			}
+		} else {
+			log.Fatal("Insufficient authentication configuration: either NATS JWT and NKey seed or API key must be provided")
 		}
 
 		natsOptions := auth.NATSOptions{
 			NumRetries:        -1,
 			RetryDelay:        5 * time.Second,
 			Servers:           natsServers,
-			ConnectionName:    fmt.Sprintf("%v.%v", natsNamePrefix, hostname),
+			ConnectionName:    natsConnectionName,
 			ConnectionTimeout: (10 * time.Second), // TODO: Make configurable
 			MaxReconnects:     -1,
 			ReconnectWait:     1 * time.Second,
@@ -102,7 +151,14 @@ var rootCmd = &cobra.Command{
 			TokenClient:       tokenClient,
 		}
 
-		e, err := sources.InitializeEngine(natsOptions, maxParallel, reverseDNS)
+		e, err := sources.InitializeEngine(
+			natsOptions,
+			sourceName,
+			sourceUUID,
+			heartbeatOptions,
+			maxParallel,
+			reverseDNS,
+		)
 		if err != nil {
 			log.WithError(err).Error("Could not initialize aws source")
 			return
@@ -194,6 +250,11 @@ func init() {
 	// will be global for your application.
 	var logLevel string
 
+	hostname, err := os.Hostname()
+	if err != nil {
+		log.WithError(err).Fatal("Could not determine hostname")
+	}
+
 	// General config options
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "/etc/srcman/config/source.yaml", "config file path")
 	rootCmd.PersistentFlags().StringVar(&logLevel, "log", "info", "Set the log level. Valid values: panic, fatal, error, warn, info, debug, trace")
@@ -204,8 +265,8 @@ func init() {
 	// need to change these
 	rootCmd.PersistentFlags().StringArray("nats-servers", []string{"nats://localhost:4222", "nats://nats:4222"}, "A list of NATS servers to connect to.")
 	cobra.CheckErr(viper.BindEnv("nats-servers", "STDLIB_NATS_SERVERS", "NATS_SERVERS")) // fallback to srcman config
-	rootCmd.PersistentFlags().String("nats-name-prefix", "", "A name label prefix. Sources should append a dot and their hostname .{hostname} to this, then set this is the NATS connection name which will be sent to the server on CONNECT to identify the client")
-	cobra.CheckErr(viper.BindEnv("nats-name-prefix", "STDLIB_NATS_NAME_PREFIX", "NATS_NAME_PREFIX")) // fallback to srcman config
+	rootCmd.PersistentFlags().String("nats-connection-name", hostname, "The name that the source should use to connect to NATS")
+	cobra.CheckErr(viper.BindEnv("nats-connection-name", "STDLIB_NATS_CONNECTION_NAME", "NATS_CONNECTION_NAME")) // fallback to srcman config
 	rootCmd.PersistentFlags().String("nats-jwt", "", "The JWT token that should be used to authenticate to NATS, provided in raw format e.g. eyJ0eXAiOiJKV1Q...")
 	cobra.CheckErr(viper.BindEnv("nats-jwt", "STDLIB_NATS_JWT", "NATS_JWT")) // fallback to srcman config
 	rootCmd.PersistentFlags().String("nats-nkey-seed", "", "The NKey seed which corresponds to the NATS JWT e.g. SUAFK6QUC...")
@@ -214,6 +275,14 @@ func init() {
 	cobra.CheckErr(viper.BindEnv("max-parallel", "STDLIB_MAX_PARALLEL", "MAX_PARALLEL")) // fallback to srcman config
 	rootCmd.PersistentFlags().String("service-port", "8089", "the port to listen on")
 	cobra.CheckErr(viper.BindEnv("service-port", "STDLIB_SERVICE_PORT", "SERVICE_PORT")) // fallback to srcman config
+	rootCmd.PersistentFlags().String("api-key", "", "The API key that should be used to authenticate, this can be used instead of NATS JWT and NKey seed")
+	cobra.CheckErr(viper.BindEnv("api-key", "STDLIB_API_KEY", "API_KEY")) // fallback to srcman config
+	rootCmd.PersistentFlags().String("app", "https://app.overmind.tech", "The URL of the Overmind app")
+	cobra.CheckErr(viper.BindEnv("app", "STDLIB_APP", "APP")) // fallback to srcman config
+	rootCmd.PersistentFlags().String("source-name", fmt.Sprintf("stdlib-source-%v", hostname), "The name of the source")
+	cobra.CheckErr(viper.BindEnv("source-name", "STDLIB_SOURCE_NAME", "SOURCE_NAME")) // fallback to srcman config
+	rootCmd.PersistentFlags().String("source-uuid", "", "The UUID of the source, is this is blank it will be auto-generated. This is used in heartbeats and shouldn't be supplied usually")
+	cobra.CheckErr(viper.BindEnv("source-uuid", "STDLIB_SOURCE_UUID", "SOURCE_UUID")) // fallback to srcman config
 
 	// tracing
 	rootCmd.PersistentFlags().String("honeycomb-api-key", "", "If specified, configures opentelemetry libraries to submit traces to honeycomb")
@@ -223,7 +292,7 @@ func init() {
 	rootCmd.PersistentFlags().String("run-mode", "release", "Set the run mode for this service, 'release', 'debug' or 'test'. Defaults to 'release'.")
 
 	// Bind these to viper
-	err := viper.BindPFlags(rootCmd.PersistentFlags())
+	err = viper.BindPFlags(rootCmd.PersistentFlags())
 	if err != nil {
 		log.WithFields(log.Fields{
 			"error": err,
@@ -313,6 +382,14 @@ func createTokenClient(natsJWT string, natsNKeySeed string) (auth.TokenClient, e
 	}
 
 	return auth.NewBasicTokenClient(natsJWT, kp), nil
+}
+
+func createAPITokenClient(apiKey string, overmindURL string) (auth.TokenClient, error) {
+	if apiKey == "" {
+		return nil, errors.New("api-key was blank. This is required when using API key authentication")
+	}
+
+	return auth.NewAPIKeyClient(overmindURL, apiKey)
 }
 
 // TerminationLogHook A hook that logs fatal errors to the termination log

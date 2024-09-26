@@ -18,6 +18,8 @@ import (
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
+
+	_ "embed"
 )
 
 // for stdout debugging of traces
@@ -34,6 +36,10 @@ import (
 // 		trace.WithInstrumentationVersion(instrumentationVersion),
 // 		trace.WithSchemaURL(semconv.SchemaURL),
 // 	)
+
+//go:generate sh -c "echo -n $(git describe --tags --exact-match 2>/dev/null || git rev-parse --short HEAD) > commit.txt"
+//go:embed commit.txt
+var ServiceVersion string
 
 func tracingResource() *resource.Resource {
 	// Identify your application using resource detection
@@ -77,7 +83,7 @@ func tracingResource() *resource.Resource {
 		// Add your own custom attributes to identify your application
 		resource.WithAttributes(
 			semconv.ServiceNameKey.String("stdlib-source"),
-			semconv.ServiceVersionKey.String("0.0.1"),
+			semconv.ServiceVersionKey.String(ServiceVersion),
 		),
 	)
 	if err != nil {

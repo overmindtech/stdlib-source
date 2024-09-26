@@ -18,9 +18,13 @@ COPY main.go main.go
 COPY cmd/ cmd/
 COPY sources/ sources/
 
+# Install docgen fo generating the API documentation
+RUN go install github.com/overmindtech/docgen@latest
+
 # Build
 RUN --mount=type=cache,target=/root/.cache/go-build \
-    GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -ldflags="-s -w" -trimpath -o source main.go
+    go generate ./... \
+    && GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -ldflags="-s -w" -trimpath -o source main.go
 
 FROM alpine:3.20
 WORKDIR /
