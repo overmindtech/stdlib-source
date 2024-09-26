@@ -17,6 +17,9 @@ jobs:
         run: |
           go get -v -t -d ./...
 
+      - name: Go Generate
+        run: go generate ./...
+
       - name: Vet
         run: go vet ./...
 
