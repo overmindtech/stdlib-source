@@ -142,8 +142,6 @@ var rootCmd = &cobra.Command{
 					return nil
 				},
 			}
-		} else {
-			log.Fatal("Insufficient authentication configuration: either NATS JWT and NKey seed or API key must be provided")
 		}
 
 		natsOptions := auth.NATSOptions{
