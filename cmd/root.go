@@ -82,9 +82,16 @@ var rootCmd = &cobra.Command{
 		}).Info("Got config")
 
 		// Parse the UUID
-		sourceUUID, err := uuid.Parse(sourceUUIDString)
-		if err != nil {
-			log.WithError(err).Fatal("Could not parse source UUID")
+		var sourceUUID uuid.UUID
+		var err error
+		if sourceUUIDString == "" {
+			sourceUUID = uuid.New()
+		} else {
+			sourceUUID, err = uuid.Parse(sourceUUIDString)
+
+			if err != nil {
+				log.WithError(err).Fatal("Could not parse source UUID")
+			}
 		}
 
 		// Determine the required Overmind URLs
