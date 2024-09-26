@@ -26,15 +26,18 @@ func InitializeEngine(natsOptions auth.NATSOptions, name string, sourceUUID uuid
 	e.Name = "stdlib-source"
 	e.NATSOptions = &natsOptions
 	e.MaxParallelExecutions = maxParallel
-	e.HeartbeatOptions = heartbeatOptions
-	e.HeartbeatOptions.HealthCheck = func() error {
-		// This can't fail, it's always healthy
-		return nil
-	}
 	e.Name = name
 	e.UUID = sourceUUID
 	e.Version = ServiceVersion
 	e.Type = "sdtlib"
+
+	if heartbeatOptions != nil {
+		heartbeatOptions.HealthCheck = func() error {
+			// This can't fail, it's always healthy
+			return nil
+		}
+		e.HeartbeatOptions = heartbeatOptions
+	}
 
 	// Add the base sources
 	sources := []discovery.Source{
