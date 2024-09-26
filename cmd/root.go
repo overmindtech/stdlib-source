@@ -76,7 +76,6 @@ var rootCmd = &cobra.Command{
 			"nats-jwt":             natsJWT,
 			"nats-nkey-seed":       natsNKeySeedLog,
 			"reverse-dns":          reverseDNS,
-			"api-key":              apiKey,
 			"app":                  app,
 			"source-name":          sourceName,
 			"source-uuid":          sourceUUIDString,
