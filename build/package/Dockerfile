@@ -24,7 +24,7 @@ RUN go install github.com/overmindtech/docgen@latest
 # Build
 RUN --mount=type=cache,target=/root/.cache/go-build \
     go generate ./... \
-    GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -ldflags="-s -w" -trimpath -o source main.go
+    && GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -ldflags="-s -w" -trimpath -o source main.go
 
 FROM alpine:3.20
 WORKDIR /
