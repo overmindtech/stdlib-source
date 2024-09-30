@@ -10,7 +10,7 @@ require (
 	github.com/nats-io/jwt/v2 v2.7.0
 	github.com/nats-io/nkeys v0.4.7
 	github.com/openrdap/rdap v0.9.2-0.20240517203139-eb57b3a8dedd
-	github.com/overmindtech/discovery v0.28.1
+	github.com/overmindtech/discovery v0.28.2
 	github.com/overmindtech/sdp-go v0.94.0
 	github.com/overmindtech/sdpcache v1.6.4
 	github.com/sirupsen/logrus v1.9.3
@@ -29,7 +29,7 @@ require (
 
 // Transitive dependencies
 require (
-	connectrpc.com/connect v1.16.2 // indirect
+	connectrpc.com/connect v1.17.0 // indirect
 	github.com/Masterminds/semver/v3 v3.2.1 // indirect
 	github.com/alecthomas/kingpin/v2 v2.3.2 // indirect
 	github.com/alecthomas/units v0.0.0-20211218093645-b94a6e3cc137 // indirect
