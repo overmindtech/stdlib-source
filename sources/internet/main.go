@@ -17,11 +17,11 @@ import (
 // Cache duration for RDAP sources, these things shouldn't change very often
 const CacheDuration = 30 * time.Minute
 
-// Create sources from this package, these sources will share a cache, http
+// Create adapters from this package, these adapters will share a cache, http
 // client, and rdap client
-func NewSources() []discovery.Source {
-	return []discovery.Source{
-		&IPNetworkSource{
+func NewAdapters() []discovery.Adapter {
+	return []discovery.Adapter{
+		&IPNetworkAdapter{
 			ClientFac: newRdapClient,
 			Cache:     sdpcache.NewCache(),
 			IPCache:   NewIPCache[*rdap.IPNetwork](),
@@ -30,7 +30,7 @@ func NewSources() []discovery.Source {
 			ClientFac: newRdapClient,
 			Cache:     sdpcache.NewCache(),
 		},
-		&DomainSource{
+		&DomainAdapter{
 			ClientFac: newRdapClient,
 			Cache:     sdpcache.NewCache(),
 		},
@@ -38,7 +38,7 @@ func NewSources() []discovery.Source {
 			ClientFac: newRdapClient,
 			Cache:     sdpcache.NewCache(),
 		},
-		&NameserverSource{
+		&NameserverAdapter{
 			ClientFac: newRdapClient,
 			Cache:     sdpcache.NewCache(),
 		},

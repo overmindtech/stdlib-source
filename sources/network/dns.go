@@ -24,8 +24,8 @@ import (
 // +overmind:description Queries DNS records, currently this resolves directly
 // to IP addresses rather than CNAMEs etc.
 
-// DNSSource struct on which all methods are registered
-type DNSSource struct {
+// DNSAdapter struct on which all methods are registered
+type DNSAdapter struct {
 	// List of DNS server to use in order ot preference. They should be in the
 	// format "ip:port"
 	Servers []string
@@ -35,13 +35,13 @@ type DNSSource struct {
 
 	client dns.Client
 
-	cache       *sdpcache.Cache // The sdpcache of this source
+	cache       *sdpcache.Cache // The sdpcache of this adapter
 	cacheInitMu sync.Mutex      // Mutex to ensure cache is only initialised once
 }
 
 const dnsCacheDuration = 5 * time.Minute
 
-func (s *DNSSource) ensureCache() {
+func (s *DNSAdapter) ensureCache() {
 	s.cacheInitMu.Lock()
 	defer s.cacheInitMu.Unlock()
 
@@ -50,7 +50,7 @@ func (s *DNSSource) ensureCache() {
 	}
 }
 
-func (s *DNSSource) Cache() *sdpcache.Cache {
+func (s *DNSAdapter) Cache() *sdpcache.Cache {
 	s.ensureCache()
 	return s.cache
 }
@@ -67,7 +67,7 @@ const UniqueAttribute = "name"
 var ErrNoServersAvailable = errors.New("no dns servers available")
 
 // getActiveServer
-func (d *DNSSource) getActiveServer(ctx context.Context) (string, error) {
+func (d *DNSAdapter) getActiveServer(ctx context.Context) (string, error) {
 	if len(d.Servers) == 0 {
 		d.Servers = DefaultServers
 	}
@@ -87,22 +87,41 @@ func (d *DNSSource) getActiveServer(ctx context.Context) (string, error) {
 }
 
 // Type is the type of items that this returns
-func (d *DNSSource) Type() string {
+func (d *DNSAdapter) Type() string {
 	return "dns"
 }
 
 // Name Returns the name of the backend
-func (d *DNSSource) Name() string {
+func (d *DNSAdapter) Name() string {
 	return "stdlib-dns"
 }
 
-// Weighting of duplicate sources
-func (d *DNSSource) Weight() int {
+// Weighting of duplicate adapters
+func (d *DNSAdapter) Weight() int {
 	return 100
 }
 
-// List of scopes that this source is capable of find items for
-func (d *DNSSource) Scopes() []string {
+func (d *DNSAdapter) Metadata() sdp.AdapterMetadata {
+	return NetworkMetadata()
+}
+
+func NetworkMetadata() sdp.AdapterMetadata {
+	return sdp.AdapterMetadata{
+		DescriptiveName: "DNS Entry",
+		Type:            "dns",
+		SupportedQueryMethods: &sdp.AdapterSupportedQueryMethods{
+			Get:               true,
+			Search:            true,
+			GetDescription:    "A DNS A or AAAA entry to look up",
+			SearchDescription: "A DNS name (or IP for reverse DNS), this will perform a recursive search and return all results",
+		},
+		PotentialLinks: []string{"dns", "ip", "rdap-domain"},
+		Category:       sdp.AdapterCategory_ADAPTER_CATEGORY_NETWORK,
+	}
+}
+
+// List of scopes that this adapter is capable of find items for
+func (d *DNSAdapter) Scopes() []string {
 	return []string{
 		// DNS entries *should* be globally unique
 		"global",
@@ -110,7 +129,7 @@ func (d *DNSSource) Scopes() []string {
 }
 
 // Gets a single item. This expects a DNS name
-func (d *DNSSource) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
+func (d *DNSAdapter) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
 	if scope != "global" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
@@ -161,7 +180,7 @@ func (d *DNSSource) Get(ctx context.Context, scope string, query string, ignoreC
 }
 
 // List calls back to the ListFunction to find all items
-func (d *DNSSource) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
+func (d *DNSAdapter) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
 	if scope != "global" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
@@ -179,7 +198,7 @@ type DNSRecord struct {
 	Type   string
 }
 
-func (d *DNSSource) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
+func (d *DNSAdapter) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
 	if scope != "global" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
@@ -214,7 +233,7 @@ func (d *DNSSource) Search(ctx context.Context, scope string, query string, igno
 }
 
 // MakeReverseQuery Makes a reverse DNS query, then forward DNS queries for all results
-func (d *DNSSource) MakeReverseQuery(ctx context.Context, query string) ([]*sdp.Item, error) {
+func (d *DNSAdapter) MakeReverseQuery(ctx context.Context, query string) ([]*sdp.Item, error) {
 	arpa, err := dns.ReverseAddr(query)
 
 	if err != nil {
@@ -275,7 +294,7 @@ func trimDnsSuffix(name string) string {
 }
 
 // MakeQuery Actually makes A and AAAA queries for a given DNS entry
-func (d *DNSSource) MakeQuery(ctx context.Context, query string) ([]*sdp.Item, error) {
+func (d *DNSAdapter) MakeQuery(ctx context.Context, query string) ([]*sdp.Item, error) {
 	server, err := d.getActiveServer(ctx)
 
 	if err != nil {

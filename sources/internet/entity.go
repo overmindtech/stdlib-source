@@ -39,6 +39,24 @@ func (s *EntitySource) Weight() int {
 	return 100
 }
 
+func (s *EntitySource) Metadata() sdp.AdapterMetadata {
+	return EntityMetadata()
+}
+func EntityMetadata() sdp.AdapterMetadata {
+	return sdp.AdapterMetadata{
+		DescriptiveName: "RDAP Entity",
+		Type:            "rdap-entity",
+		SupportedQueryMethods: &sdp.AdapterSupportedQueryMethods{
+			Get:               true,
+			Search:            true,
+			GetDescription:    "Get an entity by its handle. This method is discouraged as it's not reliable since entity bootstrapping isn't comprehensive",
+			SearchDescription: "Search for an entity by its URL e.g. https://rdap.apnic.net/entity/AIC3-AP",
+		},
+		PotentialLinks: []string{"rdap-asn"},
+		Category:       sdp.AdapterCategory_ADAPTER_CATEGORY_SECURITY,
+	}
+}
+
 func (s *EntitySource) Scopes() []string {
 	return []string{
 		"global",

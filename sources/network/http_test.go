@@ -56,7 +56,7 @@ func NewTestServer() (*TestHTTPServer, error) {
 }
 
 func TestHTTPGet(t *testing.T) {
-	src := HTTPSource{}
+	src := HTTPAdapter{}
 
 	t.Run("With a valid endpoint", func(t *testing.T) {
 		item, err := src.Get(context.Background(), "global", "https://www.google.com", false)

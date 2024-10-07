@@ -11,7 +11,7 @@ import (
 func TestIpNetworkSourceSearch(t *testing.T) {
 	t.Parallel()
 
-	src := &IPNetworkSource{
+	src := &IPNetworkAdapter{
 		ClientFac: func() *rdap.Client { return testRdapClient(t) },
 		Cache:     sdpcache.NewCache(),
 		IPCache:   NewIPCache[*rdap.IPNetwork](),

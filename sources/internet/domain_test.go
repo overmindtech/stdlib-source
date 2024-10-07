@@ -11,7 +11,7 @@ import (
 func TestDomainSourceGet(t *testing.T) {
 	t.Parallel()
 
-	src := &DomainSource{
+	src := &DomainAdapter{
 		ClientFac: func() *rdap.Client { return testRdapClient(t) },
 		Cache:     sdpcache.NewCache(),
 	}

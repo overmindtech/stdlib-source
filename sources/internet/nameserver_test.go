@@ -11,7 +11,7 @@ import (
 func TestNameserverSourceSearch(t *testing.T) {
 	t.Parallel()
 
-	src := &NameserverSource{
+	src := &NameserverAdapter{
 		ClientFac: func() *rdap.Client { return testRdapClient(t) },
 		Cache:     sdpcache.NewCache(),
 	}

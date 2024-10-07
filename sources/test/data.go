@@ -45,8 +45,8 @@ import (
 
 // this global atomic variable keeps track of the generation count for test
 // items. It is increased every time a new item is created, and is used to
-// ensure that users of the test-source can determine that queries have hit the
-// actual source and were not cached.
+// ensure that users of the test-adapter can determine that queries have hit the
+// actual adapter and were not cached.
 var generation atomic.Int32
 
 // createTestItem Creates a simple item for testing
@@ -73,7 +73,7 @@ func createTestItem(typ, value string) *sdp.Item {
 			},
 		},
 		Metadata: &sdp.Metadata{
-			SourceName:            fmt.Sprintf("test-%v-source", typ),
+			SourceName:            fmt.Sprintf("test-%v-adapter", typ),
 			Timestamp:             timestamppb.Now(),
 			SourceDuration:        durationpb.New(time.Second),
 			SourceDurationPerItem: durationpb.New(time.Second),

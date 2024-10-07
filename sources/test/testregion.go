@@ -6,37 +6,44 @@ import (
 	"github.com/overmindtech/sdp-go"
 )
 
-// TestRegionSource A source of `region` items for automated tests.
-type TestRegionSource struct{}
+// TestRegionAdapter A adapter of `region` items for automated tests.
+type TestRegionAdapter struct{}
 
 // Type is the type of items that this returns
-func (s *TestRegionSource) Type() string {
+func (s *TestRegionAdapter) Type() string {
 	return "test-region"
 }
 
 // Name Returns the name of the backend
-func (s *TestRegionSource) Name() string {
+func (s *TestRegionAdapter) Name() string {
 	return "stdlib-test-region"
 }
 
-// Weighting of duplicate sources
-func (s *TestRegionSource) Weight() int {
+// Weighting of duplicate adapters
+func (s *TestRegionAdapter) Weight() int {
 	return 100
 }
 
-// List of scopes that this source is capable of find items for
-func (s *TestRegionSource) Scopes() []string {
+// List of scopes that this adapter is capable of find items for
+func (s *TestRegionAdapter) Scopes() []string {
 	return []string{
 		"test",
 	}
 }
 
-func (s *TestRegionSource) Hidden() bool {
+func (s *TestRegionAdapter) Metadata() sdp.AdapterMetadata {
+	return sdp.AdapterMetadata{
+		Type:            s.Type(),
+		DescriptiveName: s.Name(),
+	}
+}
+
+func (s *TestRegionAdapter) Hidden() bool {
 	return true
 }
 
 // Gets a single item. This expects a name
-func (d *TestRegionSource) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
+func (d *TestRegionAdapter) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
 	if scope != "test" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
@@ -56,7 +63,7 @@ func (d *TestRegionSource) Get(ctx context.Context, scope string, query string, 
 	}
 }
 
-func (d *TestRegionSource) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
+func (d *TestRegionAdapter) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
 	if scope != "test" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
@@ -68,7 +75,7 @@ func (d *TestRegionSource) List(ctx context.Context, scope string, ignoreCache b
 	return []*sdp.Item{gb()}, nil
 }
 
-func (d *TestRegionSource) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
+func (d *TestRegionAdapter) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
 	if scope != "test" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,

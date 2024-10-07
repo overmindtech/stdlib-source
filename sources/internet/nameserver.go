@@ -16,33 +16,49 @@ import (
 // +overmind:search Search for the RDAP entry for a nameserver by its full URL e.g. "https://rdap.verisign.com/com/v1/nameserver/NS4.GOOGLE.COM"
 // +overmind:description Returns details from RDAP about nameservers
 
-type NameserverSource struct {
+type NameserverAdapter struct {
 	ClientFac func() *rdap.Client
 	Cache     *sdpcache.Cache
 }
 
 // Type is the type of items that this returns
-func (s *NameserverSource) Type() string {
+func (s *NameserverAdapter) Type() string {
 	return "rdap-nameserver"
 }
 
-// Name Returns the name of the source
-func (s *NameserverSource) Name() string {
+// Name Returns the name of the adapter
+func (s *NameserverAdapter) Name() string {
 	return "rdap"
 }
 
-// Weighting of duplicate sources
-func (s *NameserverSource) Weight() int {
+// Weighting of duplicate adapters
+func (s *NameserverAdapter) Weight() int {
 	return 100
 }
 
-func (s *NameserverSource) Scopes() []string {
+func (s *NameserverAdapter) Metadata() sdp.AdapterMetadata {
+	return NameserverMetadata()
+}
+
+func NameserverMetadata() sdp.AdapterMetadata {
+	return sdp.AdapterMetadata{
+		DescriptiveName: "RDAP Nameserver",
+		Type:            "rdap-nameserver",
+		SupportedQueryMethods: &sdp.AdapterSupportedQueryMethods{
+			Search:            true,
+			SearchDescription: "Search for the RDAP entry for a nameserver by its full URL e.g. \"https://rdap.verisign.com/com/v1/nameserver/NS4.GOOGLE.COM\"",
+		},
+		PotentialLinks: []string{"dns", "ip", "rdap-entity"},
+		Category:       sdp.AdapterCategory_ADAPTER_CATEGORY_NETWORK,
+	}
+}
+func (s *NameserverAdapter) Scopes() []string {
 	return []string{
 		"global",
 	}
 }
 
-func (s *NameserverSource) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
+func (s *NameserverAdapter) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
 	// Check the cache for GET requests, if we don't hit the cache then there is
 	// nothing we can do though
 	hit, _, items, sdpErr := s.Cache.Lookup(ctx, s.Name(), sdp.QueryMethod_GET, scope, s.Type(), query, ignoreCache)
@@ -57,7 +73,7 @@ func (s *NameserverSource) Get(ctx context.Context, scope string, query string, 
 		}
 	}
 
-	// This source doesn't technically support the GET method (since you can't
+	// This adapter doesn't technically support the GET method (since you can't
 	// use the handle to query for an IP network)
 	return nil, &sdp.QueryError{
 		ErrorType:   sdp.QueryError_NOTFOUND,
@@ -66,7 +82,7 @@ func (s *NameserverSource) Get(ctx context.Context, scope string, query string, 
 	}
 }
 
-func (s *NameserverSource) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
+func (s *NameserverAdapter) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
 	return nil, &sdp.QueryError{
 		ErrorType:   sdp.QueryError_NOTFOUND,
 		Scope:       scope,
@@ -79,7 +95,7 @@ func (s *NameserverSource) List(ctx context.Context, scope string, ignoreCache b
 // which nameserver to query from the beginning. Fortunately domain queries can
 // be bootstrapped, so we can use the domain query to find the nameserver in the
 // link
-func (s *NameserverSource) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
+func (s *NameserverAdapter) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
 	hit, ck, items, sdpErr := s.Cache.Lookup(ctx, s.Name(), sdp.QueryMethod_SEARCH, scope, s.Type(), query, ignoreCache)
 
 	if sdpErr != nil {

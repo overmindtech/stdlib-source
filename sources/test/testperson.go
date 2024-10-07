@@ -6,37 +6,43 @@ import (
 	"github.com/overmindtech/sdp-go"
 )
 
-// TestPersonSource A source of `person` items for automated tests.
-type TestPersonSource struct{}
+// TestPersonAdapter A adapter of `person` items for automated tests.
+type TestPersonAdapter struct{}
 
 // Type is the type of items that this returns
-func (s *TestPersonSource) Type() string {
+func (s *TestPersonAdapter) Type() string {
 	return "test-person"
 }
 
 // Name Returns the name of the backend
-func (s *TestPersonSource) Name() string {
+func (s *TestPersonAdapter) Name() string {
 	return "stdlib-test-person"
 }
 
-// Weighting of duplicate sources
-func (s *TestPersonSource) Weight() int {
+// Weighting of duplicate adapters
+func (s *TestPersonAdapter) Weight() int {
 	return 100
 }
 
-// List of scopes that this source is capable of find items for
-func (s *TestPersonSource) Scopes() []string {
+// List of scopes that this adapter is capable of find items for
+func (s *TestPersonAdapter) Scopes() []string {
 	return []string{
 		"test",
 	}
 }
+func (s *TestPersonAdapter) Metadata() sdp.AdapterMetadata {
+	return sdp.AdapterMetadata{
+		Type:            s.Type(),
+		DescriptiveName: s.Name(),
+	}
+}
 
-func (s *TestPersonSource) Hidden() bool {
+func (s *TestPersonAdapter) Hidden() bool {
 	return true
 }
 
 // Gets a single item. This expects a name
-func (d *TestPersonSource) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
+func (d *TestPersonAdapter) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
 	if scope != "test" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
@@ -56,7 +62,7 @@ func (d *TestPersonSource) Get(ctx context.Context, scope string, query string, 
 	}
 }
 
-func (d *TestPersonSource) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
+func (d *TestPersonAdapter) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
 	if scope != "test" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
@@ -68,7 +74,7 @@ func (d *TestPersonSource) List(ctx context.Context, scope string, ignoreCache b
 	return []*sdp.Item{dylan()}, nil
 }
 
-func (d *TestPersonSource) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
+func (d *TestPersonAdapter) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
 	if scope != "test" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,

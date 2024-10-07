@@ -32,6 +32,23 @@ func (s *ASNSource) Name() string {
 	return "rdap"
 }
 
+func (s *ASNSource) Metadata() sdp.AdapterMetadata {
+	return AutumnMetadata()
+}
+
+func AutumnMetadata() sdp.AdapterMetadata {
+	return sdp.AdapterMetadata{
+		DescriptiveName: "Autonomous System Number (ASN)",
+		Type:            "rdap-asn",
+		SupportedQueryMethods: &sdp.AdapterSupportedQueryMethods{
+			Get:            true,
+			GetDescription: "Get an ASN by handle i.e. \"AS15169\"",
+		},
+		PotentialLinks: []string{"rdap-entity"},
+		Category:       sdp.AdapterCategory_ADAPTER_CATEGORY_NETWORK,
+	}
+}
+
 // Weighting of duplicate sources
 func (s *ASNSource) Weight() int {
 	return 100

@@ -6,37 +6,44 @@ import (
 	"github.com/overmindtech/sdp-go"
 )
 
-// TestGroupSource A source of `group` items for automated tests.
-type TestGroupSource struct{}
+// TestGroupAdapter A adapter of `group` items for automated tests.
+type TestGroupAdapter struct{}
 
 // Type is the type of items that this returns
-func (s *TestGroupSource) Type() string {
+func (s *TestGroupAdapter) Type() string {
 	return "test-group"
 }
 
 // Name Returns the name of the backend
-func (s *TestGroupSource) Name() string {
+func (s *TestGroupAdapter) Name() string {
 	return "stdlib-test-group"
 }
 
-// Weighting of duplicate sources
-func (s *TestGroupSource) Weight() int {
+// Weighting of duplicate adapters
+func (s *TestGroupAdapter) Weight() int {
 	return 100
 }
 
-// List of scopes that this source is capable of find items for
-func (s *TestGroupSource) Scopes() []string {
+func (s *TestGroupAdapter) Metadata() sdp.AdapterMetadata {
+	return sdp.AdapterMetadata{
+		Type:            s.Type(),
+		DescriptiveName: s.Name(),
+	}
+}
+
+// List of scopes that this adapter is capable of find items for
+func (s *TestGroupAdapter) Scopes() []string {
 	return []string{
 		"test",
 	}
 }
 
-func (s *TestGroupSource) Hidden() bool {
+func (s *TestGroupAdapter) Hidden() bool {
 	return true
 }
 
 // Gets a single item. This expects a name
-func (d *TestGroupSource) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
+func (d *TestGroupAdapter) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
 	if scope != "test" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
@@ -56,7 +63,7 @@ func (d *TestGroupSource) Get(ctx context.Context, scope string, query string, i
 	}
 }
 
-func (d *TestGroupSource) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
+func (d *TestGroupAdapter) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
 	if scope != "test" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
@@ -68,7 +75,7 @@ func (d *TestGroupSource) List(ctx context.Context, scope string, ignoreCache bo
 	return []*sdp.Item{admins()}, nil
 }
 
-func (d *TestGroupSource) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
+func (d *TestGroupAdapter) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
 	if scope != "test" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
