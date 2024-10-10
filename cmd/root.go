@@ -19,9 +19,9 @@ import (
 	"github.com/overmindtech/sdp-go"
 	"github.com/overmindtech/sdp-go/auth"
 	"github.com/overmindtech/sdp-go/sdpconnect"
-	"github.com/overmindtech/stdlib-source/sources"
-	"github.com/overmindtech/stdlib-source/sources/internet"
-	"github.com/overmindtech/stdlib-source/sources/network"
+	"github.com/overmindtech/stdlib-source/adapters"
+	"github.com/overmindtech/stdlib-source/adapters/internet"
+	"github.com/overmindtech/stdlib-source/adapters/network"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
@@ -158,7 +158,7 @@ var rootCmd = &cobra.Command{
 			TokenClient:       tokenClient,
 		}
 
-		e, err := sources.InitializeEngine(
+		e, err := adapters.InitializeEngine(
 			natsOptions,
 			sourceName,
 			ServiceVersion,
@@ -267,7 +267,7 @@ var docsJSONCmd = &cobra.Command{
 			network.HTTPMetadata(),
 			network.IPMetadata(),
 		}
-		err := discovery.AdapterMetadataToJSONFile(allMetadata, "docs-data2")
+		err := discovery.AdapterMetadataToJSONFile(allMetadata, "docs-data")
 		if err != nil {
 			log.WithError(err).Fatal("Could not generate JSON documentation")
 		}

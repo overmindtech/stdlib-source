@@ -6,45 +6,44 @@ import (
 	"github.com/overmindtech/sdp-go"
 )
 
-// TestDogAdapter An adapter of `dog` items for automated tests.
-type TestDogAdapter struct{}
+// TestGroupAdapter A adapter of `group` items for automated tests.
+type TestGroupAdapter struct{}
 
 // Type is the type of items that this returns
-func (s *TestDogAdapter) Type() string {
-	return "test-dog"
+func (s *TestGroupAdapter) Type() string {
+	return "test-group"
 }
 
 // Name Returns the name of the backend
-func (s *TestDogAdapter) Name() string {
-	return "stdlib-test-dog"
+func (s *TestGroupAdapter) Name() string {
+	return "stdlib-test-group"
 }
 
-// Metadata Returns the metadata for the adapter
-func (s *TestDogAdapter) Metadata() sdp.AdapterMetadata {
-	return sdp.AdapterMetadata{
+// Weighting of duplicate adapters
+func (s *TestGroupAdapter) Weight() int {
+	return 100
+}
+
+func (s *TestGroupAdapter) Metadata() *sdp.AdapterMetadata {
+	return &sdp.AdapterMetadata{
 		Type:            s.Type(),
 		DescriptiveName: s.Name(),
 	}
 }
 
-// Weighting of duplicate adapters
-func (s *TestDogAdapter) Weight() int {
-	return 100
-}
-
 // List of scopes that this adapter is capable of find items for
-func (s *TestDogAdapter) Scopes() []string {
+func (s *TestGroupAdapter) Scopes() []string {
 	return []string{
 		"test",
 	}
 }
 
-func (s *TestDogAdapter) Hidden() bool {
+func (s *TestGroupAdapter) Hidden() bool {
 	return true
 }
 
 // Gets a single item. This expects a name
-func (d *TestDogAdapter) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
+func (d *TestGroupAdapter) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
 	if scope != "test" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
@@ -54,8 +53,8 @@ func (d *TestDogAdapter) Get(ctx context.Context, scope string, query string, ig
 	}
 
 	switch query {
-	case "test-manny":
-		return manny(), nil
+	case "test-admins":
+		return admins(), nil
 	default:
 		return nil, &sdp.QueryError{
 			ErrorType: sdp.QueryError_NOTFOUND,
@@ -64,7 +63,7 @@ func (d *TestDogAdapter) Get(ctx context.Context, scope string, query string, ig
 	}
 }
 
-func (d *TestDogAdapter) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
+func (d *TestGroupAdapter) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
 	if scope != "test" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
@@ -73,10 +72,10 @@ func (d *TestDogAdapter) List(ctx context.Context, scope string, ignoreCache boo
 		}
 	}
 
-	return []*sdp.Item{manny()}, nil
+	return []*sdp.Item{admins()}, nil
 }
 
-func (d *TestDogAdapter) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
+func (d *TestGroupAdapter) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
 	if scope != "test" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
@@ -86,8 +85,8 @@ func (d *TestDogAdapter) Search(ctx context.Context, scope string, query string,
 	}
 
 	switch query {
-	case "", "*", "test-manny":
-		return []*sdp.Item{manny()}, nil
+	case "", "*", "test-admins":
+		return []*sdp.Item{admins()}, nil
 	default:
 		return nil, &sdp.QueryError{
 			ErrorType: sdp.QueryError_NOTFOUND,

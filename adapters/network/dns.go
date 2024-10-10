@@ -101,8 +101,9 @@ func (d *DNSAdapter) Weight() int {
 	return 100
 }
 
-func (d *DNSAdapter) Metadata() sdp.AdapterMetadata {
-	return NetworkMetadata()
+func (d *DNSAdapter) Metadata() *sdp.AdapterMetadata {
+	adapter := NetworkMetadata()
+	return &adapter
 }
 
 func NetworkMetadata() sdp.AdapterMetadata {

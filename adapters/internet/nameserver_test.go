@@ -8,7 +8,7 @@ import (
 	"github.com/overmindtech/sdpcache"
 )
 
-func TestNameserverSourceSearch(t *testing.T) {
+func TestNameserverAdapterSearch(t *testing.T) {
 	t.Parallel()
 
 	src := &NameserverAdapter{

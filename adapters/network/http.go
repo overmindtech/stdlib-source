@@ -60,8 +60,9 @@ func (s *HTTPAdapter) Name() string {
 }
 
 // Metadata Returns metadata about the adapter
-func (s *HTTPAdapter) Metadata() sdp.AdapterMetadata {
-	return HTTPMetadata()
+func (s *HTTPAdapter) Metadata() *sdp.AdapterMetadata {
+	adapter := HTTPMetadata()
+	return &adapter
 }
 
 func HTTPMetadata() sdp.AdapterMetadata {

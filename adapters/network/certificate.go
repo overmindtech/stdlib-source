@@ -67,8 +67,9 @@ func (s *CertificateAdapter) Name() string {
 	return "stdlib-certificate"
 }
 
-func (s *CertificateAdapter) Metadata() sdp.AdapterMetadata {
-	return CertificateMetadata()
+func (s *CertificateAdapter) Metadata() *sdp.AdapterMetadata {
+	adapter := CertificateMetadata()
+	return &adapter
 }
 
 func CertificateMetadata() sdp.AdapterMetadata {

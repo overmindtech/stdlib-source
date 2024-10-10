@@ -6,44 +6,44 @@ import (
 	"github.com/overmindtech/sdp-go"
 )
 
-// TestHobbyAdapter A adapter of `hobby` items for automated tests.
-type TestHobbyAdapter struct{}
+// TestLocationAdapter A adapter of `location` items for automated tests.
+type TestLocationAdapter struct{}
 
 // Type is the type of items that this returns
-func (s *TestHobbyAdapter) Type() string {
-	return "test-hobby"
+func (s *TestLocationAdapter) Type() string {
+	return "test-location"
 }
 
 // Name Returns the name of the backend
-func (s *TestHobbyAdapter) Name() string {
-	return "stdlib-test-hobby"
+func (s *TestLocationAdapter) Name() string {
+	return "stdlib-test-location"
 }
 
-func (s *TestHobbyAdapter) Metadata() sdp.AdapterMetadata {
-	return sdp.AdapterMetadata{
+// Weighting of duplicate adapters
+func (s *TestLocationAdapter) Weight() int {
+	return 100
+}
+
+func (s *TestLocationAdapter) Metadata() *sdp.AdapterMetadata {
+	return &sdp.AdapterMetadata{
 		Type:            s.Type(),
 		DescriptiveName: s.Name(),
 	}
 }
 
-// Weighting of duplicate adapters
-func (s *TestHobbyAdapter) Weight() int {
-	return 100
-}
-
 // List of scopes that this adapter is capable of find items for
-func (s *TestHobbyAdapter) Scopes() []string {
+func (s *TestLocationAdapter) Scopes() []string {
 	return []string{
 		"test",
 	}
 }
 
-func (s *TestHobbyAdapter) Hidden() bool {
+func (s *TestLocationAdapter) Hidden() bool {
 	return true
 }
 
 // Gets a single item. This expects a name
-func (d *TestHobbyAdapter) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
+func (d *TestLocationAdapter) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
 	if scope != "test" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
@@ -53,10 +53,8 @@ func (d *TestHobbyAdapter) Get(ctx context.Context, scope string, query string, 
 	}
 
 	switch query {
-	case "test-motorcycling":
-		return motorcycling(), nil
-	case "test-knitting":
-		return knitting(), nil
+	case "test-london":
+		return london(), nil
 	default:
 		return nil, &sdp.QueryError{
 			ErrorType: sdp.QueryError_NOTFOUND,
@@ -65,7 +63,7 @@ func (d *TestHobbyAdapter) Get(ctx context.Context, scope string, query string, 
 	}
 }
 
-func (d *TestHobbyAdapter) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
+func (d *TestLocationAdapter) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
 	if scope != "test" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
@@ -74,10 +72,10 @@ func (d *TestHobbyAdapter) List(ctx context.Context, scope string, ignoreCache b
 		}
 	}
 
-	return []*sdp.Item{motorcycling(), knitting()}, nil
+	return []*sdp.Item{london()}, nil
 }
 
-func (d *TestHobbyAdapter) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
+func (d *TestLocationAdapter) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
 	if scope != "test" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
@@ -87,8 +85,8 @@ func (d *TestHobbyAdapter) Search(ctx context.Context, scope string, query strin
 	}
 
 	switch query {
-	case "", "*", "test-motorcycling":
-		return []*sdp.Item{motorcycling()}, nil
+	case "", "*", "test-london":
+		return []*sdp.Item{london()}, nil
 	default:
 		return nil, &sdp.QueryError{
 			ErrorType: sdp.QueryError_NOTFOUND,

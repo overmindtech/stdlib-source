@@ -19,28 +19,29 @@ import (
 // represent the information of organizations, corporations, governments,
 // non-profits, clubs, individual persons, and informal groups of people
 
-type EntitySource struct {
+type EntityAdapter struct {
 	ClientFac func() *rdap.Client
 	Cache     *sdpcache.Cache
 }
 
 // Type is the type of items that this returns
-func (s *EntitySource) Type() string {
+func (s *EntityAdapter) Type() string {
 	return "rdap-entity"
 }
 
 // Name Returns the name of the backend
-func (s *EntitySource) Name() string {
+func (s *EntityAdapter) Name() string {
 	return "rdap"
 }
 
-// Weighting of duplicate sources
-func (s *EntitySource) Weight() int {
+// Weighting of duplicate adapters
+func (s *EntityAdapter) Weight() int {
 	return 100
 }
 
-func (s *EntitySource) Metadata() sdp.AdapterMetadata {
-	return EntityMetadata()
+func (s *EntityAdapter) Metadata() *sdp.AdapterMetadata {
+	adapter := EntityMetadata()
+	return &adapter
 }
 func EntityMetadata() sdp.AdapterMetadata {
 	return sdp.AdapterMetadata{
@@ -57,7 +58,7 @@ func EntityMetadata() sdp.AdapterMetadata {
 	}
 }
 
-func (s *EntitySource) Scopes() []string {
+func (s *EntityAdapter) Scopes() []string {
 	return []string{
 		"global",
 	}
@@ -66,7 +67,7 @@ func (s *EntitySource) Scopes() []string {
 // Gets an entity by its handle, note that this might not work as entity
 // bootstrapping in RDAP isn't comprehensive and might not be able to find the
 // correct registry to search
-func (s *EntitySource) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
+func (s *EntityAdapter) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
 	hit, ck, items, sdpErr := s.Cache.Lookup(ctx, s.Name(), sdp.QueryMethod_GET, scope, s.Type(), query, ignoreCache)
 
 	if sdpErr != nil {
@@ -81,7 +82,7 @@ func (s *EntitySource) Get(ctx context.Context, scope string, query string, igno
 	return s.runEntityRequest(ctx, query, nil, scope, ck)
 }
 
-func (s *EntitySource) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
+func (s *EntityAdapter) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
 	return nil, nil
 }
 
@@ -91,7 +92,7 @@ func (s *EntitySource) List(ctx context.Context, scope string, ignoreCache bool)
 // linked to an entity it should always have a link to itself, so we should be
 // able to do a lookup using that which will also tell us which server to use
 // for the lookup
-func (s *EntitySource) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
+func (s *EntityAdapter) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
 	hit, ck, items, sdpErr := s.Cache.Lookup(ctx, s.Name(), sdp.QueryMethod_SEARCH, scope, s.Type(), query, ignoreCache)
 
 	if sdpErr != nil {
@@ -123,7 +124,7 @@ func (s *EntitySource) Search(ctx context.Context, scope string, query string, i
 }
 
 // Runs the entity request and converts into the SDP version of an entity
-func (s *EntitySource) runEntityRequest(ctx context.Context, query string, server *url.URL, scope string, cacheKey sdpcache.CacheKey) (*sdp.Item, error) {
+func (s *EntityAdapter) runEntityRequest(ctx context.Context, query string, server *url.URL, scope string, cacheKey sdpcache.CacheKey) (*sdp.Item, error) {
 	request := &rdap.Request{
 		Type:   rdap.EntityRequest,
 		Query:  query,

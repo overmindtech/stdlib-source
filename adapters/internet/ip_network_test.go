@@ -8,7 +8,7 @@ import (
 	"github.com/overmindtech/sdpcache"
 )
 
-func TestIpNetworkSourceSearch(t *testing.T) {
+func TestIpNetworkAdapterSearch(t *testing.T) {
 	t.Parallel()
 
 	src := &IPNetworkAdapter{

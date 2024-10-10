@@ -14,7 +14,7 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
-// Cache duration for RDAP sources, these things shouldn't change very often
+// Cache duration for RDAP adapters, these things shouldn't change very often
 const CacheDuration = 30 * time.Minute
 
 // Create adapters from this package, these adapters will share a cache, http
@@ -26,7 +26,7 @@ func NewAdapters() []discovery.Adapter {
 			Cache:     sdpcache.NewCache(),
 			IPCache:   NewIPCache[*rdap.IPNetwork](),
 		},
-		&ASNSource{
+		&ASNAdapter{
 			ClientFac: newRdapClient,
 			Cache:     sdpcache.NewCache(),
 		},
@@ -34,7 +34,7 @@ func NewAdapters() []discovery.Adapter {
 			ClientFac: newRdapClient,
 			Cache:     sdpcache.NewCache(),
 		},
-		&EntitySource{
+		&EntityAdapter{
 			ClientFac: newRdapClient,
 			Cache:     sdpcache.NewCache(),
 		},

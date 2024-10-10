@@ -8,10 +8,10 @@ import (
 	"github.com/overmindtech/sdpcache"
 )
 
-func TestASNSourceGet(t *testing.T) {
+func TestASNAdapterGet(t *testing.T) {
 	t.Parallel()
 
-	src := &ASNSource{
+	src := &ASNAdapter{
 		ClientFac: func() *rdap.Client { return testRdapClient(t) },
 		Cache:     sdpcache.NewCache(),
 	}

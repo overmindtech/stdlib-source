@@ -1,12 +1,12 @@
-package sources
+package adapters
 
 import (
 	"github.com/google/uuid"
 	"github.com/overmindtech/discovery"
 	"github.com/overmindtech/sdp-go/auth"
-	"github.com/overmindtech/stdlib-source/sources/internet"
-	"github.com/overmindtech/stdlib-source/sources/network"
-	"github.com/overmindtech/stdlib-source/sources/test"
+	"github.com/overmindtech/stdlib-source/adapters/internet"
+	"github.com/overmindtech/stdlib-source/adapters/network"
+	"github.com/overmindtech/stdlib-source/adapters/test"
 	log "github.com/sirupsen/logrus"
 
 	_ "embed"

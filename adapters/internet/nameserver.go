@@ -36,8 +36,9 @@ func (s *NameserverAdapter) Weight() int {
 	return 100
 }
 
-func (s *NameserverAdapter) Metadata() sdp.AdapterMetadata {
-	return NameserverMetadata()
+func (s *NameserverAdapter) Metadata() *sdp.AdapterMetadata {
+	adapter := NameserverMetadata()
+	return &adapter
 }
 
 func NameserverMetadata() sdp.AdapterMetadata {

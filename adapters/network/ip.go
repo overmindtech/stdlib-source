@@ -36,8 +36,9 @@ func (s *IPAdapter) Weight() int {
 	return 100
 }
 
-func (s *IPAdapter) Metadata() sdp.AdapterMetadata {
-	return IPMetadata()
+func (s *IPAdapter) Metadata() *sdp.AdapterMetadata {
+	adapter := IPMetadata()
+	return &adapter
 }
 
 func IPMetadata() sdp.AdapterMetadata {

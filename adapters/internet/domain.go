@@ -34,8 +34,9 @@ func (s *DomainAdapter) Name() string {
 	return "rdap"
 }
 
-func (s *DomainAdapter) Metadata() sdp.AdapterMetadata {
-	return DomainMetadata()
+func (s *DomainAdapter) Metadata() *sdp.AdapterMetadata {
+	adapter := DomainMetadata()
+	return &adapter
 }
 func DomainMetadata() sdp.AdapterMetadata {
 	return sdp.AdapterMetadata{
@@ -50,7 +51,7 @@ func DomainMetadata() sdp.AdapterMetadata {
 	}
 }
 
-// Weighting of duplicate sources
+// Weighting of duplicate adapters
 func (s *DomainAdapter) Weight() int {
 	return 100
 }

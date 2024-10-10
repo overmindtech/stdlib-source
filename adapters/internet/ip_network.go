@@ -46,8 +46,9 @@ func (s *IPNetworkAdapter) Scopes() []string {
 	}
 }
 
-func (s *IPNetworkAdapter) Metadata() sdp.AdapterMetadata {
-	return IPNetworkMetadata()
+func (s *IPNetworkAdapter) Metadata() *sdp.AdapterMetadata {
+	adapter := IPNetworkMetadata()
+	return &adapter
 }
 
 func IPNetworkMetadata() sdp.AdapterMetadata {

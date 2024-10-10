@@ -6,44 +6,43 @@ import (
 	"github.com/overmindtech/sdp-go"
 )
 
-// TestLocationAdapter A adapter of `location` items for automated tests.
-type TestLocationAdapter struct{}
+// TestPersonAdapter A adapter of `person` items for automated tests.
+type TestPersonAdapter struct{}
 
 // Type is the type of items that this returns
-func (s *TestLocationAdapter) Type() string {
-	return "test-location"
+func (s *TestPersonAdapter) Type() string {
+	return "test-person"
 }
 
 // Name Returns the name of the backend
-func (s *TestLocationAdapter) Name() string {
-	return "stdlib-test-location"
+func (s *TestPersonAdapter) Name() string {
+	return "stdlib-test-person"
 }
 
 // Weighting of duplicate adapters
-func (s *TestLocationAdapter) Weight() int {
+func (s *TestPersonAdapter) Weight() int {
 	return 100
 }
 
-func (s *TestLocationAdapter) Metadata() sdp.AdapterMetadata {
-	return sdp.AdapterMetadata{
+// List of scopes that this adapter is capable of find items for
+func (s *TestPersonAdapter) Scopes() []string {
+	return []string{
+		"test",
+	}
+}
+func (s *TestPersonAdapter) Metadata() *sdp.AdapterMetadata {
+	return &sdp.AdapterMetadata{
 		Type:            s.Type(),
 		DescriptiveName: s.Name(),
 	}
 }
 
-// List of scopes that this adapter is capable of find items for
-func (s *TestLocationAdapter) Scopes() []string {
-	return []string{
-		"test",
-	}
-}
-
-func (s *TestLocationAdapter) Hidden() bool {
+func (s *TestPersonAdapter) Hidden() bool {
 	return true
 }
 
 // Gets a single item. This expects a name
-func (d *TestLocationAdapter) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
+func (d *TestPersonAdapter) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
 	if scope != "test" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
@@ -53,8 +52,8 @@ func (d *TestLocationAdapter) Get(ctx context.Context, scope string, query strin
 	}
 
 	switch query {
-	case "test-london":
-		return london(), nil
+	case "test-dylan":
+		return dylan(), nil
 	default:
 		return nil, &sdp.QueryError{
 			ErrorType: sdp.QueryError_NOTFOUND,
@@ -63,7 +62,7 @@ func (d *TestLocationAdapter) Get(ctx context.Context, scope string, query strin
 	}
 }
 
-func (d *TestLocationAdapter) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
+func (d *TestPersonAdapter) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
 	if scope != "test" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
@@ -72,10 +71,10 @@ func (d *TestLocationAdapter) List(ctx context.Context, scope string, ignoreCach
 		}
 	}
 
-	return []*sdp.Item{london()}, nil
+	return []*sdp.Item{dylan()}, nil
 }
 
-func (d *TestLocationAdapter) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
+func (d *TestPersonAdapter) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
 	if scope != "test" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
@@ -85,8 +84,8 @@ func (d *TestLocationAdapter) Search(ctx context.Context, scope string, query st
 	}
 
 	switch query {
-	case "", "*", "test-london":
-		return []*sdp.Item{london()}, nil
+	case "", "*", "test-dylan":
+		return []*sdp.Item{dylan()}, nil
 	default:
 		return nil, &sdp.QueryError{
 			ErrorType: sdp.QueryError_NOTFOUND,
