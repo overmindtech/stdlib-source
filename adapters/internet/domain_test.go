@@ -8,10 +8,10 @@ import (
 	"github.com/overmindtech/sdpcache"
 )
 
-func TestDomainSourceGet(t *testing.T) {
+func TestDomainAdapterGet(t *testing.T) {
 	t.Parallel()
 
-	src := &DomainSource{
+	src := &DomainAdapter{
 		ClientFac: func() *rdap.Client { return testRdapClient(t) },
 		Cache:     sdpcache.NewCache(),
 	}

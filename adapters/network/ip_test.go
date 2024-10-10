@@ -10,7 +10,7 @@ import (
 )
 
 func TestIPGet(t *testing.T) {
-	src := IPSource{}
+	src := IPAdapter{}
 
 	t.Run("with ipv4 address", func(t *testing.T) {
 		item, err := src.Get(context.Background(), "global", "213.21.3.187", false)
@@ -64,7 +64,7 @@ func TestIPGet(t *testing.T) {
 		t.Run("in the global scope", func(t *testing.T) {
 			// Link-local addresses are not guaranteed to be unique beyond their
 			// network segment, therefore routers do not forward packets with
-			// link-local source or destination addresses. This means that it
+			// link-local adapter or destination addresses. This means that it
 			// doesn't make sense to have a "global" link-local address as it's
 			// not truly global
 			_, err := src.Get(context.Background(), "global", "169.254.1.25", false)
@@ -121,7 +121,7 @@ func TestIPGet(t *testing.T) {
 		t.Run("in the global scope", func(t *testing.T) {
 			// Link-local addresses are not guaranteed to be unique beyond their
 			// network segment, therefore routers do not forward packets with
-			// link-local source or destination addresses. This means that it
+			// link-local adapter or destination addresses. This means that it
 			// doesn't make sense to have a "global" link-local address as it's
 			// not truly global
 			_, err := src.Get(context.Background(), "global", "127.0.0.1", false)
@@ -154,7 +154,7 @@ func TestIPGet(t *testing.T) {
 		t.Run("in the global scope", func(t *testing.T) {
 			// Link-local addresses are not guaranteed to be unique beyond their
 			// network segment, therefore routers do not forward packets with
-			// link-local source or destination addresses. This means that it
+			// link-local adapter or destination addresses. This means that it
 			// doesn't make sense to have a "global" link-local address as it's
 			// not truly global
 			_, err := src.Get(context.Background(), "global", "fe80::a70f:3a:338b:4801", false)
@@ -212,7 +212,7 @@ func TestIPGet(t *testing.T) {
 		t.Run("in the global scope", func(t *testing.T) {
 			// Link-local addresses are not guaranteed to be unique beyond their
 			// network segment, therefore routers do not forward packets with
-			// link-local source or destination addresses. This means that it
+			// link-local adapter or destination addresses. This means that it
 			// doesn't make sense to have a "global" link-local address as it's
 			// not truly global
 			_, err := src.Get(context.Background(), "global", "::1", false)

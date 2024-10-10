@@ -8,25 +8,19 @@ import (
 	"github.com/overmindtech/sdpcache"
 )
 
-func TestNameserverSourceSearch(t *testing.T) {
+func TestASNAdapterGet(t *testing.T) {
 	t.Parallel()
 
-	src := &NameserverSource{
+	src := &ASNAdapter{
 		ClientFac: func() *rdap.Client { return testRdapClient(t) },
 		Cache:     sdpcache.NewCache(),
 	}
 
-	items, err := src.Search(context.Background(), "global", "https://rdap.verisign.com/com/v1/nameserver/NS4.GOOGLE.COM", false)
+	item, err := src.Get(context.Background(), "global", "AS15169", false)
 
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	if len(items) != 1 {
-		t.Fatal("Expected 1 item")
-	}
-
-	item := items[0]
 
 	err = item.Validate()
 

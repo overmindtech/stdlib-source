@@ -28,14 +28,14 @@ const USER_AGENT_VERSION = "0.1"
 // get the headers, certificate, code etc. without needing to download the
 // entire page
 
-type HTTPSource struct {
-	cache       *sdpcache.Cache // The sdpcache of this source
+type HTTPAdapter struct {
+	cache       *sdpcache.Cache // The sdpcache of this adapter
 	cacheInitMu sync.Mutex      // Mutex to ensure cache is only initialised once
 }
 
 const httpCacheDuration = 5 * time.Minute
 
-func (s *HTTPSource) ensureCache() {
+func (s *HTTPAdapter) ensureCache() {
 	s.cacheInitMu.Lock()
 	defer s.cacheInitMu.Unlock()
 
@@ -44,25 +44,44 @@ func (s *HTTPSource) ensureCache() {
 	}
 }
 
-func (s *HTTPSource) Cache() *sdpcache.Cache {
+func (s *HTTPAdapter) Cache() *sdpcache.Cache {
 	s.ensureCache()
 	return s.cache
 }
 
-// Type The type of items that this source is capable of finding
-func (s *HTTPSource) Type() string {
+// Type The type of items that this adapter is capable of finding
+func (s *HTTPAdapter) Type() string {
 	return "http"
 }
 
-// Descriptive name for the source, used in logging and metadata
-func (s *HTTPSource) Name() string {
+// Descriptive name for the adapter, used in logging and metadata
+func (s *HTTPAdapter) Name() string {
 	return "stdlib-http"
 }
 
-// List of scopes that this source is capable of find items for. If the
-// source supports all scopes the special value `AllScopes` ("*")
+// Metadata Returns metadata about the adapter
+func (s *HTTPAdapter) Metadata() *sdp.AdapterMetadata {
+	adapter := HTTPMetadata()
+	return &adapter
+}
+
+func HTTPMetadata() sdp.AdapterMetadata {
+	return sdp.AdapterMetadata{
+		DescriptiveName: "HTTP Endpoint",
+		Type:            "http",
+		SupportedQueryMethods: &sdp.AdapterSupportedQueryMethods{
+			Get:            true,
+			GetDescription: "A HTTP endpoint to run a `HEAD` request against",
+		},
+		Category:       sdp.AdapterCategory_ADAPTER_CATEGORY_NETWORK,
+		PotentialLinks: []string{"ip", "dns", "certificate", "http"},
+	}
+}
+
+// List of scopes that this adapter is capable of find items for. If the
+// adapter supports all scopes the special value `AllScopes` ("*")
 // should be used
-func (s *HTTPSource) Scopes() []string {
+func (s *HTTPAdapter) Scopes() []string {
 	return []string{
 		"global", // This is a reserved word meaning that the items should be considered globally unique
 	}
@@ -71,9 +90,9 @@ func (s *HTTPSource) Scopes() []string {
 // Get Get a single item with a given scope and query. The item returned
 // should have a UniqueAttributeValue that matches the `query` parameter. The
 // ctx parameter contains a golang Context object which should be used to allow
-// this source to timeout or be cancelled when executing potentially
+// this adapter to timeout or be cancelled when executing potentially
 // long-running actions
-func (s *HTTPSource) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
+func (s *HTTPAdapter) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
 	if scope != "global" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
@@ -292,16 +311,16 @@ func (s *HTTPSource) Get(ctx context.Context, scope string, query string, ignore
 
 // List is not implemented for HTTP as this would require scanning infinitely many
 // endpoints or something, doesn't really make sense
-func (s *HTTPSource) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
+func (s *HTTPAdapter) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
 	items := make([]*sdp.Item, 0)
 
 	return items, nil
 }
 
-// Weight Returns the priority weighting of items returned by this source.
-// This is used to resolve conflicts where two sources of the same type
+// Weight Returns the priority weighting of items returned by this adapter.
+// This is used to resolve conflicts where two adapters of the same type
 // return an item for a GET request. In this instance only one item can be
 // sen on, so the one with the higher weight value will win.
-func (s *HTTPSource) Weight() int {
+func (s *HTTPAdapter) Weight() int {
 	return 100
 }

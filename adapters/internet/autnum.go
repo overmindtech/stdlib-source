@@ -17,33 +17,51 @@ import (
 // +overmind:description Uses RDAP to get the details of an Autonomous System
 // Number (ASN) by number
 
-type ASNSource struct {
+type ASNAdapter struct {
 	ClientFac func() *rdap.Client
 	Cache     *sdpcache.Cache
 }
 
 // Type is the type of items that this returns
-func (s *ASNSource) Type() string {
+func (s *ASNAdapter) Type() string {
 	return "rdap-asn"
 }
 
 // Name Returns the name of the backend
-func (s *ASNSource) Name() string {
+func (s *ASNAdapter) Name() string {
 	return "rdap"
 }
 
-// Weighting of duplicate sources
-func (s *ASNSource) Weight() int {
+func (s *ASNAdapter) Metadata() *sdp.AdapterMetadata {
+	adapter := AutumnMetadata()
+	return &adapter
+}
+
+func AutumnMetadata() sdp.AdapterMetadata {
+	return sdp.AdapterMetadata{
+		DescriptiveName: "Autonomous System Number (ASN)",
+		Type:            "rdap-asn",
+		SupportedQueryMethods: &sdp.AdapterSupportedQueryMethods{
+			Get:            true,
+			GetDescription: "Get an ASN by handle i.e. \"AS15169\"",
+		},
+		PotentialLinks: []string{"rdap-entity"},
+		Category:       sdp.AdapterCategory_ADAPTER_CATEGORY_NETWORK,
+	}
+}
+
+// Weighting of duplicate adapters
+func (s *ASNAdapter) Weight() int {
 	return 100
 }
 
-func (s *ASNSource) Scopes() []string {
+func (s *ASNAdapter) Scopes() []string {
 	return []string{
 		"global",
 	}
 }
 
-func (s *ASNSource) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
+func (s *ASNAdapter) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
 	hit, ck, items, sdpErr := s.Cache.Lookup(ctx, s.Name(), sdp.QueryMethod_GET, scope, s.Type(), query, ignoreCache)
 
 	if sdpErr != nil {
@@ -127,7 +145,7 @@ func (s *ASNSource) Get(ctx context.Context, scope string, query string, ignoreC
 	return item, nil
 }
 
-func (s *ASNSource) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
+func (s *ASNAdapter) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
 	return nil, &sdp.QueryError{
 		ErrorType:   sdp.QueryError_NOTFOUND,
 		Scope:       scope,

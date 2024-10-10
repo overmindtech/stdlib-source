@@ -10,7 +10,7 @@ import (
 	"github.com/overmindtech/sdpcache"
 )
 
-func TestEntitySourceSearch(t *testing.T) {
+func TestEntityAdapterSearch(t *testing.T) {
 	t.Parallel()
 
 	realUrls := []string{
@@ -19,7 +19,7 @@ func TestEntitySourceSearch(t *testing.T) {
 		"https://rdap.arin.net/registry/entity/HPINC-Z",
 	}
 
-	src := &EntitySource{
+	src := &EntityAdapter{
 		ClientFac: func() *rdap.Client { return testRdapClient(t) },
 		Cache:     sdpcache.NewCache(),
 	}
