@@ -114,7 +114,7 @@ func NetworkMetadata() sdp.AdapterMetadata {
 			Get:               true,
 			Search:            true,
 			GetDescription:    "A DNS A or AAAA entry to look up",
-			SearchDescription: "A DNS name (or IP for reverse DNS), this will perform a recursive search and return all results",
+			SearchDescription: "A DNS name (or IP for reverse DNS), this will perform a recursive search and return all results. It is recommended that you always use the SEARCH method",
 		},
 		PotentialLinks: []string{"dns", "ip", "rdap-domain"},
 		Category:       sdp.AdapterCategory_ADAPTER_CATEGORY_NETWORK,
