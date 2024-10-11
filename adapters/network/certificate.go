@@ -50,39 +50,56 @@ func toHex(b []byte) string {
 // +overmind:descriptiveType Certificate
 // +overmind:search Takes a full certificate, or certificate bundle as input in PEM encoded format
 
-// +overmind:description This source parses certificates passed in PEM format
+// +overmind:description This adapter parses certificates passed in PEM format
 // and returns the details of that cert (or the bundle)
 
-// CertificateSource This source only responds to Search() requests. See the
+// CertificateAdapter This adapter only responds to Search() requests. See the
 // docs for the Search() method for more info
-type CertificateSource struct{}
+type CertificateAdapter struct{}
 
-// Type The type of items that this source is capable of finding
-func (s *CertificateSource) Type() string {
+// Type The type of items that this adapter is capable of finding
+func (s *CertificateAdapter) Type() string {
 	return "certificate"
 }
 
-// Descriptive name for the source, used in logging and metadata
-func (s *CertificateSource) Name() string {
+// Descriptive name for the adapter, used in logging and metadata
+func (s *CertificateAdapter) Name() string {
 	return "stdlib-certificate"
 }
 
-// List of scopes that this source is capable of find items for. If the
-// source supports all scopes the special value `AllScopes` ("*")
+func (s *CertificateAdapter) Metadata() *sdp.AdapterMetadata {
+	adapter := CertificateMetadata()
+	return &adapter
+}
+
+func CertificateMetadata() sdp.AdapterMetadata {
+	return sdp.AdapterMetadata{
+		DescriptiveName: "Certificate",
+		Type:            "certificate",
+		SupportedQueryMethods: &sdp.AdapterSupportedQueryMethods{
+			Search:            true,
+			SearchDescription: "Takes a full certificate, or certificate bundle as input in PEM encoded format",
+		},
+		Category: sdp.AdapterCategory_ADAPTER_CATEGORY_NETWORK,
+	}
+}
+
+// List of scopes that this adapter is capable of find items for. If the
+// adapter supports all scopes the special value `AllScopes` ("*")
 // should be used
-func (s *CertificateSource) Scopes() []string {
+func (s *CertificateAdapter) Scopes() []string {
 	return []string{
 		"global", // This is a reserved word meaning that the items should be considered globally unique
 	}
 }
 
-// Get This source does not respond to Get() requests. The logic here is that
+// Get This adapter does not respond to Get() requests. The logic here is that
 // there are many places we might find a certificate, for example after making a
 // HTTP connection, sitting on disk, after making a database connection, etc.
-// Rather than implement a source that knows how to make each of these
-// connections, instead we have created this source which takes the cert itself
+// Rather than implement a adapter that knows how to make each of these
+// connections, instead we have created this adapter which takes the cert itself
 // as an input to Search() and parses it and returns the info
-func (s *CertificateSource) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
+func (s *CertificateAdapter) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
 	return nil, &sdp.QueryError{
 		ErrorType:   sdp.QueryError_NOTFOUND,
 		ErrorString: "certificate only responds to Search() requests. Consult the documentation",
@@ -92,7 +109,7 @@ func (s *CertificateSource) Get(ctx context.Context, scope string, query string,
 
 // List Is not implemented for HTTP as this would require scanning many
 // endpoints or something, doesn't really make sense
-func (s *CertificateSource) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
+func (s *CertificateAdapter) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
 	items := make([]*sdp.Item, 0)
 
 	return items, nil
@@ -101,7 +118,7 @@ func (s *CertificateSource) List(ctx context.Context, scope string, ignoreCache 
 // Search This method takes a full certificate, or certificate bundle as input
 // (in PEM encoded format), parses them, and returns a items, one for each
 // certificate that was found
-func (s *CertificateSource) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
+func (s *CertificateAdapter) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
 	var errors []error
 	var items []*sdp.Item
 
@@ -236,7 +253,7 @@ func (s *CertificateSource) Search(ctx context.Context, scope string, query stri
 
 		// If not self signed, add a link to the issuer
 		if cert.Issuer.String() != cert.Subject.String() {
-			// Even though this source doesn't support Get() requests, this will
+			// Even though this adapter doesn't support Get() requests, this will
 			// still work for linking as long as the referenced cert has been
 			// included in the bundle since the cache will correctly return the
 			// Get() request when it is run
@@ -291,11 +308,11 @@ func decodePem(certInput string) (tls.Certificate, error) {
 	return bundle, nil
 }
 
-// Weight Returns the priority weighting of items returned by this source.
-// This is used to resolve conflicts where two sources of the same type
+// Weight Returns the priority weighting of items returned by this adapter.
+// This is used to resolve conflicts where two adapters of the same type
 // return an item for a GET request. In this instance only one item can be
 // sen on, so the one with the higher weight value will win.
-func (s *CertificateSource) Weight() int {
+func (s *CertificateAdapter) Weight() int {
 	return 100
 }
 

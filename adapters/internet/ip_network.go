@@ -15,38 +15,56 @@ import (
 // +overmind:descriptiveType RDAP IP Network
 // +overmind:search Search for the most specific network that contains the specified IP or CIDR
 // +overmind:description Returns information about an IP network using the RDAP
-// protocol. Only the `SEARCH` method should be used for this source since it's
+// protocol. Only the `SEARCH` method should be used for this adapter since it's
 // not possible to list all IP networks, and they can't be queried by "handle"
 // which is the unique attribute
 
-type IPNetworkSource struct {
+type IPNetworkAdapter struct {
 	ClientFac func() *rdap.Client
 	Cache     *sdpcache.Cache
 	IPCache   *IPCache[*rdap.IPNetwork]
 }
 
 // Type is the type of items that this returns
-func (s *IPNetworkSource) Type() string {
+func (s *IPNetworkAdapter) Type() string {
 	return "rdap-ip-network"
 }
 
-// Name Returns the name of the source
-func (s *IPNetworkSource) Name() string {
+// Name Returns the name of the adapter
+func (s *IPNetworkAdapter) Name() string {
 	return "rdap"
 }
 
-// Weighting of duplicate sources
-func (s *IPNetworkSource) Weight() int {
+// Weighting of duplicate adapters
+func (s *IPNetworkAdapter) Weight() int {
 	return 100
 }
 
-func (s *IPNetworkSource) Scopes() []string {
+func (s *IPNetworkAdapter) Scopes() []string {
 	return []string{
 		"global",
 	}
 }
 
-func (s *IPNetworkSource) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
+func (s *IPNetworkAdapter) Metadata() *sdp.AdapterMetadata {
+	adapter := IPNetworkMetadata()
+	return &adapter
+}
+
+func IPNetworkMetadata() sdp.AdapterMetadata {
+	return sdp.AdapterMetadata{
+		DescriptiveName: "RDAP IP Network",
+		Type:            "rdap-ip-network",
+		SupportedQueryMethods: &sdp.AdapterSupportedQueryMethods{
+			Search:            true,
+			SearchDescription: "Search for the most specific network that contains the specified IP or CIDR",
+		},
+		PotentialLinks: []string{"rdap-entity"},
+		Category:       sdp.AdapterCategory_ADAPTER_CATEGORY_NETWORK,
+	}
+}
+
+func (s *IPNetworkAdapter) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
 	hit, _, items, sdpErr := s.Cache.Lookup(ctx, s.Name(), sdp.QueryMethod_GET, scope, s.Type(), query, ignoreCache)
 
 	if sdpErr != nil {
@@ -58,7 +76,7 @@ func (s *IPNetworkSource) Get(ctx context.Context, scope string, query string, i
 			return items[0], nil
 		}
 	}
-	// This source doesn't technically support the GET method (since you can't
+	// This adapter doesn't technically support the GET method (since you can't
 	// use the handle to query for an IP network)
 	return nil, &sdp.QueryError{
 		ErrorType:   sdp.QueryError_NOTFOUND,
@@ -67,7 +85,7 @@ func (s *IPNetworkSource) Get(ctx context.Context, scope string, query string, i
 	}
 }
 
-func (s *IPNetworkSource) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
+func (s *IPNetworkAdapter) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
 	return nil, &sdp.QueryError{
 		ErrorType:   sdp.QueryError_NOTFOUND,
 		Scope:       scope,
@@ -76,7 +94,7 @@ func (s *IPNetworkSource) List(ctx context.Context, scope string, ignoreCache bo
 }
 
 // Search for the most specific network that contains the specified IP or CIDR
-func (s *IPNetworkSource) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
+func (s *IPNetworkAdapter) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
 	hit, ck, items, sdpErr := s.Cache.Lookup(ctx, s.Name(), sdp.QueryMethod_SEARCH, scope, s.Type(), query, ignoreCache)
 
 	if sdpErr != nil {

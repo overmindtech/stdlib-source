@@ -14,38 +14,55 @@ import (
 // +overmind:type rdap-domain
 // +overmind:descriptiveType RDAP Domain
 // +overmind:search Search for a domain record by the domain name e.g. "www.google.com"
-// +overmind:description This source returns information about a domain using the
-// RDAP protocol. The `SEARCH` method should be used for this source since it's
+// +overmind:description This adapter returns information about a domain using the
+// RDAP protocol. The `SEARCH` method should be used for this adapter since it's
 // not possible to list all domains, and they can't be queried by "handle" which
 // is the unique attribute
 
-type DomainSource struct {
+type DomainAdapter struct {
 	ClientFac func() *rdap.Client
 	Cache     *sdpcache.Cache
 }
 
 // Type is the type of items that this returns
-func (s *DomainSource) Type() string {
+func (s *DomainAdapter) Type() string {
 	return "rdap-domain"
 }
 
 // Name Returns the name of the backend
-func (s *DomainSource) Name() string {
+func (s *DomainAdapter) Name() string {
 	return "rdap"
 }
 
-// Weighting of duplicate sources
-func (s *DomainSource) Weight() int {
+func (s *DomainAdapter) Metadata() *sdp.AdapterMetadata {
+	adapter := DomainMetadata()
+	return &adapter
+}
+func DomainMetadata() sdp.AdapterMetadata {
+	return sdp.AdapterMetadata{
+		DescriptiveName: "RDAP Domain",
+		Type:            "rdap-domain",
+		SupportedQueryMethods: &sdp.AdapterSupportedQueryMethods{
+			SearchDescription: "Search for a domain record by the domain name e.g. \"www.google.com\"",
+			Search:            true,
+		},
+		PotentialLinks: []string{"dns", "rdap-nameserver", "rdap-entity", "rdap-ip-network"},
+		Category:       sdp.AdapterCategory_ADAPTER_CATEGORY_NETWORK,
+	}
+}
+
+// Weighting of duplicate adapters
+func (s *DomainAdapter) Weight() int {
 	return 100
 }
 
-func (s *DomainSource) Scopes() []string {
+func (s *DomainAdapter) Scopes() []string {
 	return []string{
 		"global",
 	}
 }
 
-func (s *DomainSource) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
+func (s *DomainAdapter) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
 	// While we can't actually run GET queries, we can return them if they are
 	// cached
 	hit, _, items, sdpErr := s.Cache.Lookup(ctx, s.Name(), sdp.QueryMethod_GET, scope, s.Type(), query, ignoreCache)
@@ -67,7 +84,7 @@ func (s *DomainSource) Get(ctx context.Context, scope string, query string, igno
 	}
 }
 
-func (s *DomainSource) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
+func (s *DomainAdapter) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
 	return nil, &sdp.QueryError{
 		ErrorType:   sdp.QueryError_NOTFOUND,
 		Scope:       scope,
@@ -78,7 +95,7 @@ func (s *DomainSource) List(ctx context.Context, scope string, ignoreCache bool)
 // Search for the most specific domain that contains the specified domain. The
 // input should be something like "www.google.com". This will first search for
 // "www.google.com", then "google.com", then "com"
-func (s *DomainSource) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
+func (s *DomainAdapter) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
 	// Strip the trailing dot if it exists
 	query = strings.TrimSuffix(query, ".")
 

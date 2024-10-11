@@ -13,31 +13,49 @@ import (
 // +overmind:descriptiveType IP Address
 // +overmind:get An ipv4 or ipv6 address
 
-// +overmind:description This source parses IP addresses and returns some
+// +overmind:description This adapter parses IP addresses and returns some
 // information about them, however it doesn't actually do any external lookups.
 // It mostly exists to ensure that IPs can be used as links between other, more
 // interesting things
 
-// IPSource struct on which all methods are registered
-type IPSource struct{}
+// IPAdapter struct on which all methods are registered
+type IPAdapter struct{}
 
 // Type is the type of items that this returns
-func (bc *IPSource) Type() string {
+func (bc *IPAdapter) Type() string {
 	return "ip"
 }
 
 // Name Returns the name of the backend
-func (bc *IPSource) Name() string {
+func (bc *IPAdapter) Name() string {
 	return "stdlib-ip"
 }
 
-// Weighting of duplicate sources
-func (s *IPSource) Weight() int {
+// Weighting of duplicate adapters
+func (s *IPAdapter) Weight() int {
 	return 100
 }
 
-// List of scopes that this source is capable of find items for
-func (s *IPSource) Scopes() []string {
+func (s *IPAdapter) Metadata() *sdp.AdapterMetadata {
+	adapter := IPMetadata()
+	return &adapter
+}
+
+func IPMetadata() sdp.AdapterMetadata {
+	return sdp.AdapterMetadata{
+		DescriptiveName: "IP Address",
+		Type:            "ip",
+		SupportedQueryMethods: &sdp.AdapterSupportedQueryMethods{
+			Get:            true,
+			GetDescription: "An ipv4 or ipv6 address",
+		},
+		PotentialLinks: []string{"dns", "rdap-ip-network"},
+		Category:       sdp.AdapterCategory_ADAPTER_CATEGORY_NETWORK,
+	}
+}
+
+// List of scopes that this adapter is capable of find items for
+func (s *IPAdapter) Scopes() []string {
 	return []string{
 		// This supports all scopes since there might be local IPs that need
 		// to have a different scope. E.g. 127.0.0.1 is a different logical
@@ -62,7 +80,7 @@ func (s *IPSource) Scopes() []string {
 //
 // The purpose of this is mainly to provide a node in the graph that many things
 // can be linked to, rather than being particularly useful on its own
-func (bc *IPSource) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
+func (bc *IPAdapter) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
 	var ip net.IP
 	var err error
 	var attributes *sdp.ItemAttributes
@@ -176,7 +194,7 @@ func (bc *IPSource) Get(ctx context.Context, scope string, query string, ignoreC
 
 // List Returns an empty list as returning all possible IP addresses would be
 // unproductive
-func (bc *IPSource) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
+func (bc *IPAdapter) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
 	if scope != "global" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,

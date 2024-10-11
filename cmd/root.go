@@ -19,7 +19,9 @@ import (
 	"github.com/overmindtech/sdp-go"
 	"github.com/overmindtech/sdp-go/auth"
 	"github.com/overmindtech/sdp-go/sdpconnect"
-	"github.com/overmindtech/stdlib-source/sources"
+	"github.com/overmindtech/stdlib-source/adapters"
+	"github.com/overmindtech/stdlib-source/adapters/internet"
+	"github.com/overmindtech/stdlib-source/adapters/network"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
@@ -156,7 +158,7 @@ var rootCmd = &cobra.Command{
 			TokenClient:       tokenClient,
 		}
 
-		e, err := sources.InitializeEngine(
+		e, err := adapters.InitializeEngine(
 			natsOptions,
 			sourceName,
 			ServiceVersion,
@@ -248,6 +250,30 @@ func Execute() {
 	}
 }
 
+// documentation subcommand for generating json
+var docsJSONCmd = &cobra.Command{
+	Use:   "docs",
+	Short: "Generate JSON documentation",
+	Long:  `Generate JSON documentation for the source`,
+	Run: func(cmd *cobra.Command, args []string) {
+		allMetadata := []sdp.AdapterMetadata{
+			internet.AutumnMetadata(),
+			internet.DomainMetadata(),
+			internet.EntityMetadata(),
+			internet.IPNetworkMetadata(),
+			internet.NameserverMetadata(),
+			network.CertificateMetadata(),
+			network.NetworkMetadata(),
+			network.HTTPMetadata(),
+			network.IPMetadata(),
+		}
+		err := discovery.AdapterMetadataToJSONFile(allMetadata, "docs-data")
+		if err != nil {
+			log.WithError(err).Fatal("Could not generate JSON documentation")
+		}
+	},
+}
+
 func init() {
 	cobra.OnInitialize(initConfig)
 
@@ -256,6 +282,8 @@ func init() {
 	// will be global for your application.
 	var logLevel string
 
+	// add the documentation subcommand
+	rootCmd.AddCommand(docsJSONCmd)
 	hostname, err := os.Hostname()
 	if err != nil {
 		log.WithError(err).Fatal("Could not determine hostname")

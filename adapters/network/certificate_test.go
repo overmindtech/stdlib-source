@@ -73,7 +73,7 @@ vEsXCS+0yx5DaMkHJ8HSXPfqIbloEpw8nL+e/IBcm2PN7EeqJSdnoDfzAIJ9VNep
 -----END CERTIFICATE-----`
 
 func TestCertificateGet(t *testing.T) {
-	src := CertificateSource{}
+	src := CertificateAdapter{}
 
 	_, err := src.Get(context.Background(), "global", "foo", false)
 
@@ -83,7 +83,7 @@ func TestCertificateGet(t *testing.T) {
 }
 
 func TestCertificateList(t *testing.T) {
-	src := CertificateSource{}
+	src := CertificateAdapter{}
 
 	items, err := src.List(context.Background(), "global", false)
 
@@ -115,7 +115,7 @@ func (c *CertTest) Run(t *testing.T, cert *sdp.Item) {
 }
 
 func TestCertificateSearch(t *testing.T) {
-	src := CertificateSource{}
+	src := CertificateAdapter{}
 
 	certs, err := src.Search(context.Background(), "global", chain, false)
 

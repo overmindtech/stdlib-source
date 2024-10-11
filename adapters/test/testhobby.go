@@ -6,37 +6,44 @@ import (
 	"github.com/overmindtech/sdp-go"
 )
 
-// TestHobbySource A source of `hobby` items for automated tests.
-type TestHobbySource struct{}
+// TestHobbyAdapter A adapter of `hobby` items for automated tests.
+type TestHobbyAdapter struct{}
 
 // Type is the type of items that this returns
-func (s *TestHobbySource) Type() string {
+func (s *TestHobbyAdapter) Type() string {
 	return "test-hobby"
 }
 
 // Name Returns the name of the backend
-func (s *TestHobbySource) Name() string {
+func (s *TestHobbyAdapter) Name() string {
 	return "stdlib-test-hobby"
 }
 
-// Weighting of duplicate sources
-func (s *TestHobbySource) Weight() int {
+func (s *TestHobbyAdapter) Metadata() *sdp.AdapterMetadata {
+	return &sdp.AdapterMetadata{
+		Type:            s.Type(),
+		DescriptiveName: s.Name(),
+	}
+}
+
+// Weighting of duplicate adapters
+func (s *TestHobbyAdapter) Weight() int {
 	return 100
 }
 
-// List of scopes that this source is capable of find items for
-func (s *TestHobbySource) Scopes() []string {
+// List of scopes that this adapter is capable of find items for
+func (s *TestHobbyAdapter) Scopes() []string {
 	return []string{
 		"test",
 	}
 }
 
-func (s *TestHobbySource) Hidden() bool {
+func (s *TestHobbyAdapter) Hidden() bool {
 	return true
 }
 
 // Gets a single item. This expects a name
-func (d *TestHobbySource) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
+func (d *TestHobbyAdapter) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
 	if scope != "test" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
@@ -58,7 +65,7 @@ func (d *TestHobbySource) Get(ctx context.Context, scope string, query string, i
 	}
 }
 
-func (d *TestHobbySource) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
+func (d *TestHobbyAdapter) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
 	if scope != "test" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,
@@ -70,7 +77,7 @@ func (d *TestHobbySource) List(ctx context.Context, scope string, ignoreCache bo
 	return []*sdp.Item{motorcycling(), knitting()}, nil
 }
 
-func (d *TestHobbySource) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
+func (d *TestHobbyAdapter) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
 	if scope != "test" {
 		return nil, &sdp.QueryError{
 			ErrorType:   sdp.QueryError_NOSCOPE,

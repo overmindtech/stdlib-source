@@ -8,10 +8,10 @@ import (
 	"github.com/overmindtech/sdpcache"
 )
 
-func TestIpNetworkSourceSearch(t *testing.T) {
+func TestIpNetworkAdapterSearch(t *testing.T) {
 	t.Parallel()
 
-	src := &IPNetworkSource{
+	src := &IPNetworkAdapter{
 		ClientFac: func() *rdap.Client { return testRdapClient(t) },
 		Cache:     sdpcache.NewCache(),
 		IPCache:   NewIPCache[*rdap.IPNetwork](),
