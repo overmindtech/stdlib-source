@@ -15,15 +15,6 @@ import (
 	"github.com/overmindtech/sdpcache"
 )
 
-//go:generate docgen ../../docs-data
-// +overmind:type dns
-// +overmind:descriptiveType DNS Entry
-// +overmind:get A DNS A or AAAA entry to look up
-// +overmind:search A DNS name (or IP for reverse DNS), this will perform a recursive search and return all results
-
-// +overmind:description Queries DNS records, currently this resolves directly
-// to IP addresses rather than CNAMEs etc.
-
 // DNSAdapter struct on which all methods are registered
 type DNSAdapter struct {
 	// List of DNS server to use in order ot preference. They should be in the
@@ -374,7 +365,6 @@ func (d *DNSAdapter) MakeQuery(ctx context.Context, query string) ([]*sdp.Item, 
 				UniqueAttribute: UniqueAttribute,
 				Scope:           "global",
 				Attributes:      attrs,
-				// +overmind:link dns
 				LinkedItems: []*sdp.LinkedItem{
 					{
 						Item: &sdp.Reference{
@@ -385,7 +375,6 @@ func (d *DNSAdapter) MakeQuery(ctx context.Context, query string) ([]*sdp.Item, 
 					},
 				},
 				LinkedItemQueries: []*sdp.LinkedItemQuery{
-					// +overmind:link rdap-domain
 					{
 						Query: &sdp.Query{
 							Type:   "rdap-domain",
@@ -523,7 +512,6 @@ func AToItem(name string, records []dns.RR) (*sdp.Item, error) {
 		LinkedItemQueries: liq,
 	}
 
-	// +overmind:link rdap-domain
 	item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
 		Query: &sdp.Query{
 			Type:   "rdap-domain",

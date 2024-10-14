@@ -10,15 +10,6 @@ import (
 	"github.com/overmindtech/sdpcache"
 )
 
-//go:generate docgen ../../docs-data
-// +overmind:type rdap-domain
-// +overmind:descriptiveType RDAP Domain
-// +overmind:search Search for a domain record by the domain name e.g. "www.google.com"
-// +overmind:description This adapter returns information about a domain using the
-// RDAP protocol. The `SEARCH` method should be used for this adapter since it's
-// not possible to list all domains, and they can't be queried by "handle" which
-// is the unique attribute
-
 type DomainAdapter struct {
 	ClientFac func() *rdap.Client
 	Cache     *sdpcache.Cache
@@ -189,7 +180,6 @@ func (s *DomainAdapter) Search(ctx context.Context, scope string, query string, 
 			if parsed != nil {
 				newURL := parsed.ServerRoot.JoinPath("/nameserver/" + nameServer.LDHName)
 
-				// +overmind:link rdap-nameserver
 				item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
 					Query: &sdp.Query{
 						Type:   "rdap-nameserver",
@@ -209,12 +199,12 @@ func (s *DomainAdapter) Search(ctx context.Context, scope string, query string, 
 		}
 
 		// Link to entities
-		// +overmind:link rdap-entity
+
 		item.LinkedItemQueries = append(item.LinkedItemQueries, extractEntityLinks(domain.Entities)...)
 
 		// Link to IP Network
 		if network := domain.Network; network != nil {
-			// +overmind:link rdap-ip-network
+
 			item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
 				Query: &sdp.Query{
 					Type:   "rdap-ip-network",

@@ -1,9 +1,0 @@
-{
-	"type": "certificate",
-	"descriptiveType": "Certificate",
-	"searchDescription": "Takes a full certificate, or certificate bundle as input in PEM encoded format",
-	"group": "",
-	"links": [
-		"certificate"
-	]
-}

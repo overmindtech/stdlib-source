@@ -10,13 +10,6 @@ import (
 	"github.com/overmindtech/sdpcache"
 )
 
-//go:generate docgen ../../docs-data
-// +overmind:type rdap-asn
-// +overmind:descriptiveType Autonomous System Number (ASN)
-// +overmind:get Get an ASN by handle i.e. "AS15169"
-// +overmind:description Uses RDAP to get the details of an Autonomous System
-// Number (ASN) by number
-
 type ASNAdapter struct {
 	ClientFac func() *rdap.Client
 	Cache     *sdpcache.Cache
@@ -137,7 +130,7 @@ func (s *ASNAdapter) Get(ctx context.Context, scope string, query string, ignore
 	}
 
 	// Link the entities
-	// +overmind:link rdap-entity
+
 	item.LinkedItemQueries = extractEntityLinks(asn.Entities)
 
 	s.Cache.StoreItem(item, CacheDuration, ck)

@@ -10,12 +10,6 @@ import (
 	"github.com/overmindtech/sdpcache"
 )
 
-//go:generate docgen ../../docs-data
-// +overmind:type rdap-nameserver
-// +overmind:descriptiveType RDAP Nameserver
-// +overmind:search Search for the RDAP entry for a nameserver by its full URL e.g. "https://rdap.verisign.com/com/v1/nameserver/NS4.GOOGLE.COM"
-// +overmind:description Returns details from RDAP about nameservers
-
 type NameserverAdapter struct {
 	ClientFac func() *rdap.Client
 	Cache     *sdpcache.Cache
@@ -171,11 +165,9 @@ func (s *NameserverAdapter) Search(ctx context.Context, scope string, query stri
 	}
 
 	// Link entities
-	// +overmind:link rdap-entity
 	item.LinkedItemQueries = append(item.LinkedItemQueries, extractEntityLinks(nameserver.Entities)...)
 
 	// Nameservers are resolvable in DNS too
-	// +overmind:link dns
 	item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
 		Query: &sdp.Query{
 			Type:   "dns",
@@ -195,7 +187,6 @@ func (s *NameserverAdapter) Search(ctx context.Context, scope string, query stri
 		allIPs := append(nameserver.IPAddresses.V4, nameserver.IPAddresses.V6...)
 
 		for _, ip := range allIPs {
-			// +overmind:link ip
 			item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
 				Query: &sdp.Query{
 					Type:   "ip",

@@ -8,16 +8,6 @@ import (
 	"github.com/overmindtech/sdp-go"
 )
 
-//go:generate docgen ../../docs-data
-// +overmind:type ip
-// +overmind:descriptiveType IP Address
-// +overmind:get An ipv4 or ipv6 address
-
-// +overmind:description This adapter parses IP addresses and returns some
-// information about them, however it doesn't actually do any external lookups.
-// It mostly exists to ensure that IPs can be used as links between other, more
-// interesting things
-
 // IPAdapter struct on which all methods are registered
 type IPAdapter struct{}
 
@@ -158,7 +148,6 @@ func (bc *IPAdapter) Get(ctx context.Context, scope string, query string, ignore
 		Scope:           scope,
 		LinkedItemQueries: []*sdp.LinkedItemQuery{
 			// Reverse DNS
-			// +overmind:link dns
 			{
 				Query: &sdp.Query{
 					Type:   "dns",
@@ -174,7 +163,6 @@ func (bc *IPAdapter) Get(ctx context.Context, scope string, query string, ignore
 			},
 			{
 				// RDAP
-				// +overmind:link rdap-ip-network
 				Query: &sdp.Query{
 					Type:   "rdap-ip-network",
 					Method: sdp.QueryMethod_SEARCH,
