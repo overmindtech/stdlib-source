@@ -93,24 +93,21 @@ func (d *DNSAdapter) Weight() int {
 }
 
 func (d *DNSAdapter) Metadata() *sdp.AdapterMetadata {
-	adapter := NetworkMetadata()
-	return &adapter
+	return dnsMetadata
 }
 
-func NetworkMetadata() sdp.AdapterMetadata {
-	return sdp.AdapterMetadata{
-		DescriptiveName: "DNS Entry",
-		Type:            "dns",
-		SupportedQueryMethods: &sdp.AdapterSupportedQueryMethods{
-			Get:               true,
-			Search:            true,
-			GetDescription:    "A DNS A or AAAA entry to look up",
-			SearchDescription: "A DNS name (or IP for reverse DNS), this will perform a recursive search and return all results. It is recommended that you always use the SEARCH method",
-		},
-		PotentialLinks: []string{"dns", "ip", "rdap-domain"},
-		Category:       sdp.AdapterCategory_ADAPTER_CATEGORY_NETWORK,
-	}
-}
+var dnsMetadata = Metadata.Register(&sdp.AdapterMetadata{
+	DescriptiveName: "DNS Entry",
+	Type:            "dns",
+	SupportedQueryMethods: &sdp.AdapterSupportedQueryMethods{
+		Get:               true,
+		Search:            true,
+		GetDescription:    "A DNS A or AAAA entry to look up",
+		SearchDescription: "A DNS name (or IP for reverse DNS), this will perform a recursive search and return all results. It is recommended that you always use the SEARCH method",
+	},
+	PotentialLinks: []string{"dns", "ip", "rdap-domain"},
+	Category:       sdp.AdapterCategory_ADAPTER_CATEGORY_NETWORK,
+})
 
 // List of scopes that this adapter is capable of find items for
 func (d *DNSAdapter) Scopes() []string {

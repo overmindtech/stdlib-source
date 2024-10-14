@@ -26,21 +26,19 @@ func (s *RdapDomainAdapter) Name() string {
 }
 
 func (s *RdapDomainAdapter) Metadata() *sdp.AdapterMetadata {
-	adapter := DomainMetadata()
-	return &adapter
+	return rdapDomainMetadata
 }
-func DomainMetadata() sdp.AdapterMetadata {
-	return sdp.AdapterMetadata{
-		DescriptiveName: "RDAP Domain",
-		Type:            "rdap-domain",
-		SupportedQueryMethods: &sdp.AdapterSupportedQueryMethods{
-			SearchDescription: "Search for a domain record by the domain name e.g. \"www.google.com\"",
-			Search:            true,
-		},
-		PotentialLinks: []string{"dns", "rdap-nameserver", "rdap-entity", "rdap-ip-network"},
-		Category:       sdp.AdapterCategory_ADAPTER_CATEGORY_NETWORK,
-	}
-}
+
+var rdapDomainMetadata = Metadata.Register(&sdp.AdapterMetadata{
+	DescriptiveName: "RDAP Domain",
+	Type:            "rdap-domain",
+	SupportedQueryMethods: &sdp.AdapterSupportedQueryMethods{
+		SearchDescription: "Search for a domain record by the domain name e.g. \"www.google.com\"",
+		Search:            true,
+	},
+	PotentialLinks: []string{"dns", "rdap-nameserver", "rdap-entity", "rdap-ip-network"},
+	Category:       sdp.AdapterCategory_ADAPTER_CATEGORY_NETWORK,
+})
 
 // Weighting of duplicate adapters
 func (s *RdapDomainAdapter) Weight() int {

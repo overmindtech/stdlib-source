@@ -31,22 +31,20 @@ func (s *RdapNameserverAdapter) Weight() int {
 }
 
 func (s *RdapNameserverAdapter) Metadata() *sdp.AdapterMetadata {
-	adapter := NameserverMetadata()
-	return &adapter
+	return rdapNameserverMetadata
 }
 
-func NameserverMetadata() sdp.AdapterMetadata {
-	return sdp.AdapterMetadata{
-		DescriptiveName: "RDAP Nameserver",
-		Type:            "rdap-nameserver",
-		SupportedQueryMethods: &sdp.AdapterSupportedQueryMethods{
-			Search:            true,
-			SearchDescription: "Search for the RDAP entry for a nameserver by its full URL e.g. \"https://rdap.verisign.com/com/v1/nameserver/NS4.GOOGLE.COM\"",
-		},
-		PotentialLinks: []string{"dns", "ip", "rdap-entity"},
-		Category:       sdp.AdapterCategory_ADAPTER_CATEGORY_NETWORK,
-	}
-}
+var rdapNameserverMetadata = Metadata.Register(&sdp.AdapterMetadata{
+	DescriptiveName: "RDAP Nameserver",
+	Type:            "rdap-nameserver",
+	SupportedQueryMethods: &sdp.AdapterSupportedQueryMethods{
+		Search:            true,
+		SearchDescription: "Search for the RDAP entry for a nameserver by its full URL e.g. \"https://rdap.verisign.com/com/v1/nameserver/NS4.GOOGLE.COM\"",
+	},
+	PotentialLinks: []string{"dns", "ip", "rdap-entity"},
+	Category:       sdp.AdapterCategory_ADAPTER_CATEGORY_NETWORK,
+})
+
 func (s *RdapNameserverAdapter) Scopes() []string {
 	return []string{
 		"global",

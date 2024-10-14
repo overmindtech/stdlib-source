@@ -38,22 +38,19 @@ func (s *RdapIPNetworkAdapter) Scopes() []string {
 }
 
 func (s *RdapIPNetworkAdapter) Metadata() *sdp.AdapterMetadata {
-	adapter := IPNetworkMetadata()
-	return &adapter
+	return rdapIPNetworkMetadata
 }
 
-func IPNetworkMetadata() sdp.AdapterMetadata {
-	return sdp.AdapterMetadata{
-		DescriptiveName: "RDAP IP Network",
-		Type:            "rdap-ip-network",
-		SupportedQueryMethods: &sdp.AdapterSupportedQueryMethods{
-			Search:            true,
-			SearchDescription: "Search for the most specific network that contains the specified IP or CIDR",
-		},
-		PotentialLinks: []string{"rdap-entity"},
-		Category:       sdp.AdapterCategory_ADAPTER_CATEGORY_NETWORK,
-	}
-}
+var rdapIPNetworkMetadata = Metadata.Register(&sdp.AdapterMetadata{
+	DescriptiveName: "RDAP IP Network",
+	Type:            "rdap-ip-network",
+	SupportedQueryMethods: &sdp.AdapterSupportedQueryMethods{
+		Search:            true,
+		SearchDescription: "Search for the most specific network that contains the specified IP or CIDR",
+	},
+	PotentialLinks: []string{"rdap-entity"},
+	Category:       sdp.AdapterCategory_ADAPTER_CATEGORY_NETWORK,
+})
 
 func (s *RdapIPNetworkAdapter) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
 	hit, _, items, sdpErr := s.Cache.Lookup(ctx, s.Name(), sdp.QueryMethod_GET, scope, s.Type(), query, ignoreCache)

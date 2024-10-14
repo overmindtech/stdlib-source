@@ -26,22 +26,19 @@ func (s *RdapASNAdapter) Name() string {
 }
 
 func (s *RdapASNAdapter) Metadata() *sdp.AdapterMetadata {
-	adapter := AutumnMetadata()
-	return &adapter
+	return rdapAsnMetadata
 }
 
-func AutumnMetadata() sdp.AdapterMetadata {
-	return sdp.AdapterMetadata{
-		DescriptiveName: "Autonomous System Number (ASN)",
-		Type:            "rdap-asn",
-		SupportedQueryMethods: &sdp.AdapterSupportedQueryMethods{
-			Get:            true,
-			GetDescription: "Get an ASN by handle i.e. \"AS15169\"",
-		},
-		PotentialLinks: []string{"rdap-entity"},
-		Category:       sdp.AdapterCategory_ADAPTER_CATEGORY_NETWORK,
-	}
-}
+var rdapAsnMetadata = Metadata.Register(&sdp.AdapterMetadata{
+	DescriptiveName: "Autonomous System Number (ASN)",
+	Type:            "rdap-asn",
+	SupportedQueryMethods: &sdp.AdapterSupportedQueryMethods{
+		Get:            true,
+		GetDescription: "Get an ASN by handle i.e. \"AS15169\"",
+	},
+	PotentialLinks: []string{"rdap-entity"},
+	Category:       sdp.AdapterCategory_ADAPTER_CATEGORY_NETWORK,
+})
 
 // Weighting of duplicate adapters
 func (s *RdapASNAdapter) Weight() int {
