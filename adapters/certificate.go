@@ -1,4 +1,4 @@
-package network
+package adapters
 
 import (
 	"context"
@@ -60,21 +60,18 @@ func (s *CertificateAdapter) Name() string {
 }
 
 func (s *CertificateAdapter) Metadata() *sdp.AdapterMetadata {
-	adapter := CertificateMetadata()
-	return &adapter
+	return certificateMetadata
 }
 
-func CertificateMetadata() sdp.AdapterMetadata {
-	return sdp.AdapterMetadata{
-		DescriptiveName: "Certificate",
-		Type:            "certificate",
-		SupportedQueryMethods: &sdp.AdapterSupportedQueryMethods{
-			Search:            true,
-			SearchDescription: "Takes a full certificate, or certificate bundle as input in PEM encoded format",
-		},
-		Category: sdp.AdapterCategory_ADAPTER_CATEGORY_NETWORK,
-	}
-}
+var certificateMetadata = Metadata.Register(&sdp.AdapterMetadata{
+	DescriptiveName: "Certificate",
+	Type:            "certificate",
+	SupportedQueryMethods: &sdp.AdapterSupportedQueryMethods{
+		Search:            true,
+		SearchDescription: "Takes a full certificate, or certificate bundle as input in PEM encoded format",
+	},
+	Category: sdp.AdapterCategory_ADAPTER_CATEGORY_NETWORK,
+})
 
 // List of scopes that this adapter is capable of find items for. If the
 // adapter supports all scopes the special value `AllScopes` ("*")

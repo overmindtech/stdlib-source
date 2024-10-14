@@ -1,4 +1,4 @@
-package network
+package adapters
 
 import (
 	"context"
@@ -51,22 +51,19 @@ func (s *HTTPAdapter) Name() string {
 
 // Metadata Returns metadata about the adapter
 func (s *HTTPAdapter) Metadata() *sdp.AdapterMetadata {
-	adapter := HTTPMetadata()
-	return &adapter
+	return httpMetadata
 }
 
-func HTTPMetadata() sdp.AdapterMetadata {
-	return sdp.AdapterMetadata{
-		DescriptiveName: "HTTP Endpoint",
-		Type:            "http",
-		SupportedQueryMethods: &sdp.AdapterSupportedQueryMethods{
-			Get:            true,
-			GetDescription: "A HTTP endpoint to run a `HEAD` request against",
-		},
-		Category:       sdp.AdapterCategory_ADAPTER_CATEGORY_NETWORK,
-		PotentialLinks: []string{"ip", "dns", "certificate", "http"},
-	}
-}
+var httpMetadata = Metadata.Register(&sdp.AdapterMetadata{
+	DescriptiveName: "HTTP Endpoint",
+	Type:            "http",
+	SupportedQueryMethods: &sdp.AdapterSupportedQueryMethods{
+		Get:            true,
+		GetDescription: "A HTTP endpoint to run a `HEAD` request against",
+	},
+	Category:       sdp.AdapterCategory_ADAPTER_CATEGORY_NETWORK,
+	PotentialLinks: []string{"ip", "dns", "certificate", "http"},
+})
 
 // List of scopes that this adapter is capable of find items for. If the
 // adapter supports all scopes the special value `AllScopes` ("*")

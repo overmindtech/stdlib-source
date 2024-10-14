@@ -1,4 +1,4 @@
-package internet
+package adapters
 
 import (
 	"context"
@@ -10,46 +10,44 @@ import (
 	"github.com/overmindtech/sdpcache"
 )
 
-type EntityAdapter struct {
+type RdapEntityAdapter struct {
 	ClientFac func() *rdap.Client
 	Cache     *sdpcache.Cache
 }
 
 // Type is the type of items that this returns
-func (s *EntityAdapter) Type() string {
+func (s *RdapEntityAdapter) Type() string {
 	return "rdap-entity"
 }
 
 // Name Returns the name of the backend
-func (s *EntityAdapter) Name() string {
+func (s *RdapEntityAdapter) Name() string {
 	return "rdap"
 }
 
 // Weighting of duplicate adapters
-func (s *EntityAdapter) Weight() int {
+func (s *RdapEntityAdapter) Weight() int {
 	return 100
 }
 
-func (s *EntityAdapter) Metadata() *sdp.AdapterMetadata {
-	adapter := EntityMetadata()
-	return &adapter
-}
-func EntityMetadata() sdp.AdapterMetadata {
-	return sdp.AdapterMetadata{
-		DescriptiveName: "RDAP Entity",
-		Type:            "rdap-entity",
-		SupportedQueryMethods: &sdp.AdapterSupportedQueryMethods{
-			Get:               true,
-			Search:            true,
-			GetDescription:    "Get an entity by its handle. This method is discouraged as it's not reliable since entity bootstrapping isn't comprehensive",
-			SearchDescription: "Search for an entity by its URL e.g. https://rdap.apnic.net/entity/AIC3-AP",
-		},
-		PotentialLinks: []string{"rdap-asn"},
-		Category:       sdp.AdapterCategory_ADAPTER_CATEGORY_SECURITY,
-	}
+func (s *RdapEntityAdapter) Metadata() *sdp.AdapterMetadata {
+	return rdapEntityMetadata
 }
 
-func (s *EntityAdapter) Scopes() []string {
+var rdapEntityMetadata = Metadata.Register(&sdp.AdapterMetadata{
+	DescriptiveName: "RDAP Entity",
+	Type:            "rdap-entity",
+	SupportedQueryMethods: &sdp.AdapterSupportedQueryMethods{
+		Get:               true,
+		Search:            true,
+		GetDescription:    "Get an entity by its handle. This method is discouraged as it's not reliable since entity bootstrapping isn't comprehensive",
+		SearchDescription: "Search for an entity by its URL e.g. https://rdap.apnic.net/entity/AIC3-AP",
+	},
+	PotentialLinks: []string{"rdap-asn"},
+	Category:       sdp.AdapterCategory_ADAPTER_CATEGORY_SECURITY,
+})
+
+func (s *RdapEntityAdapter) Scopes() []string {
 	return []string{
 		"global",
 	}
@@ -58,7 +56,7 @@ func (s *EntityAdapter) Scopes() []string {
 // Gets an entity by its handle, note that this might not work as entity
 // bootstrapping in RDAP isn't comprehensive and might not be able to find the
 // correct registry to search
-func (s *EntityAdapter) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
+func (s *RdapEntityAdapter) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
 	hit, ck, items, sdpErr := s.Cache.Lookup(ctx, s.Name(), sdp.QueryMethod_GET, scope, s.Type(), query, ignoreCache)
 
 	if sdpErr != nil {
@@ -73,7 +71,7 @@ func (s *EntityAdapter) Get(ctx context.Context, scope string, query string, ign
 	return s.runEntityRequest(ctx, query, nil, scope, ck)
 }
 
-func (s *EntityAdapter) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
+func (s *RdapEntityAdapter) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
 	return nil, nil
 }
 
@@ -83,7 +81,7 @@ func (s *EntityAdapter) List(ctx context.Context, scope string, ignoreCache bool
 // linked to an entity it should always have a link to itself, so we should be
 // able to do a lookup using that which will also tell us which server to use
 // for the lookup
-func (s *EntityAdapter) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
+func (s *RdapEntityAdapter) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
 	hit, ck, items, sdpErr := s.Cache.Lookup(ctx, s.Name(), sdp.QueryMethod_SEARCH, scope, s.Type(), query, ignoreCache)
 
 	if sdpErr != nil {
@@ -115,7 +113,7 @@ func (s *EntityAdapter) Search(ctx context.Context, scope string, query string, 
 }
 
 // Runs the entity request and converts into the SDP version of an entity
-func (s *EntityAdapter) runEntityRequest(ctx context.Context, query string, server *url.URL, scope string, cacheKey sdpcache.CacheKey) (*sdp.Item, error) {
+func (s *RdapEntityAdapter) runEntityRequest(ctx context.Context, query string, server *url.URL, scope string, cacheKey sdpcache.CacheKey) (*sdp.Item, error) {
 	request := &rdap.Request{
 		Type:   rdap.EntityRequest,
 		Query:  query,
@@ -128,7 +126,7 @@ func (s *EntityAdapter) runEntityRequest(ctx context.Context, query string, serv
 	if err != nil {
 		err = wrapRdapError(err)
 
-		s.Cache.StoreError(err, CacheDuration, cacheKey)
+		s.Cache.StoreError(err, RdapCacheDuration, cacheKey)
 
 		return nil, err
 	}
@@ -203,7 +201,7 @@ func (s *EntityAdapter) runEntityRequest(ctx context.Context, query string, serv
 		})
 	}
 
-	s.Cache.StoreItem(item, CacheDuration, cacheKey)
+	s.Cache.StoreItem(item, RdapCacheDuration, cacheKey)
 
 	return item, nil
 }

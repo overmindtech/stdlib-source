@@ -1,4 +1,4 @@
-package network
+package adapters
 
 import (
 	"context"
@@ -27,22 +27,19 @@ func (s *IPAdapter) Weight() int {
 }
 
 func (s *IPAdapter) Metadata() *sdp.AdapterMetadata {
-	adapter := IPMetadata()
-	return &adapter
+	return ipMetadata
 }
 
-func IPMetadata() sdp.AdapterMetadata {
-	return sdp.AdapterMetadata{
-		DescriptiveName: "IP Address",
-		Type:            "ip",
-		SupportedQueryMethods: &sdp.AdapterSupportedQueryMethods{
-			Get:            true,
-			GetDescription: "An ipv4 or ipv6 address",
-		},
-		PotentialLinks: []string{"dns", "rdap-ip-network"},
-		Category:       sdp.AdapterCategory_ADAPTER_CATEGORY_NETWORK,
-	}
-}
+var ipMetadata = Metadata.Register(&sdp.AdapterMetadata{
+	DescriptiveName: "IP Address",
+	Type:            "ip",
+	SupportedQueryMethods: &sdp.AdapterSupportedQueryMethods{
+		Get:            true,
+		GetDescription: "An ipv4 or ipv6 address",
+	},
+	PotentialLinks: []string{"dns", "rdap-ip-network"},
+	Category:       sdp.AdapterCategory_ADAPTER_CATEGORY_NETWORK,
+})
 
 // List of scopes that this adapter is capable of find items for
 func (s *IPAdapter) Scopes() []string {

@@ -1,4 +1,4 @@
-package internet
+package adapters
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 func TestNameserverAdapterSearch(t *testing.T) {
 	t.Parallel()
 
-	src := &NameserverAdapter{
+	src := &RdapNameserverAdapter{
 		ClientFac: func() *rdap.Client { return testRdapClient(t) },
 		Cache:     sdpcache.NewCache(),
 	}
