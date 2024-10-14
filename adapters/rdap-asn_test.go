@@ -1,4 +1,4 @@
-package internet
+package adapters
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 func TestASNAdapterGet(t *testing.T) {
 	t.Parallel()
 
-	src := &ASNAdapter{
+	src := &RdapASNAdapter{
 		ClientFac: func() *rdap.Client { return testRdapClient(t) },
 		Cache:     sdpcache.NewCache(),
 	}

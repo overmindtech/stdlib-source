@@ -1,4 +1,4 @@
-package internet
+package adapters
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 func TestIpNetworkAdapterSearch(t *testing.T) {
 	t.Parallel()
 
-	src := &IPNetworkAdapter{
+	src := &RdapIPNetworkAdapter{
 		ClientFac: func() *rdap.Client { return testRdapClient(t) },
 		Cache:     sdpcache.NewCache(),
 		IPCache:   NewIPCache[*rdap.IPNetwork](),

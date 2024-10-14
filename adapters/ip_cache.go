@@ -1,4 +1,4 @@
-package internet
+package adapters
 
 import (
 	"context"

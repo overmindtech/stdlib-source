@@ -1,4 +1,4 @@
-package internet
+package adapters
 
 import (
 	"context"
@@ -10,34 +10,34 @@ import (
 	"github.com/overmindtech/sdpcache"
 )
 
-type IPNetworkAdapter struct {
+type RdapIPNetworkAdapter struct {
 	ClientFac func() *rdap.Client
 	Cache     *sdpcache.Cache
 	IPCache   *IPCache[*rdap.IPNetwork]
 }
 
 // Type is the type of items that this returns
-func (s *IPNetworkAdapter) Type() string {
+func (s *RdapIPNetworkAdapter) Type() string {
 	return "rdap-ip-network"
 }
 
 // Name Returns the name of the adapter
-func (s *IPNetworkAdapter) Name() string {
+func (s *RdapIPNetworkAdapter) Name() string {
 	return "rdap"
 }
 
 // Weighting of duplicate adapters
-func (s *IPNetworkAdapter) Weight() int {
+func (s *RdapIPNetworkAdapter) Weight() int {
 	return 100
 }
 
-func (s *IPNetworkAdapter) Scopes() []string {
+func (s *RdapIPNetworkAdapter) Scopes() []string {
 	return []string{
 		"global",
 	}
 }
 
-func (s *IPNetworkAdapter) Metadata() *sdp.AdapterMetadata {
+func (s *RdapIPNetworkAdapter) Metadata() *sdp.AdapterMetadata {
 	adapter := IPNetworkMetadata()
 	return &adapter
 }
@@ -55,7 +55,7 @@ func IPNetworkMetadata() sdp.AdapterMetadata {
 	}
 }
 
-func (s *IPNetworkAdapter) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
+func (s *RdapIPNetworkAdapter) Get(ctx context.Context, scope string, query string, ignoreCache bool) (*sdp.Item, error) {
 	hit, _, items, sdpErr := s.Cache.Lookup(ctx, s.Name(), sdp.QueryMethod_GET, scope, s.Type(), query, ignoreCache)
 
 	if sdpErr != nil {
@@ -76,7 +76,7 @@ func (s *IPNetworkAdapter) Get(ctx context.Context, scope string, query string, 
 	}
 }
 
-func (s *IPNetworkAdapter) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
+func (s *RdapIPNetworkAdapter) List(ctx context.Context, scope string, ignoreCache bool) ([]*sdp.Item, error) {
 	return nil, &sdp.QueryError{
 		ErrorType:   sdp.QueryError_NOTFOUND,
 		Scope:       scope,
@@ -85,7 +85,7 @@ func (s *IPNetworkAdapter) List(ctx context.Context, scope string, ignoreCache b
 }
 
 // Search for the most specific network that contains the specified IP or CIDR
-func (s *IPNetworkAdapter) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
+func (s *RdapIPNetworkAdapter) Search(ctx context.Context, scope string, query string, ignoreCache bool) ([]*sdp.Item, error) {
 	hit, ck, items, sdpErr := s.Cache.Lookup(ctx, s.Name(), sdp.QueryMethod_SEARCH, scope, s.Type(), query, ignoreCache)
 
 	if sdpErr != nil {
@@ -124,7 +124,7 @@ func (s *IPNetworkAdapter) Search(ctx context.Context, scope string, query strin
 		if err != nil {
 			err = wrapRdapError(err)
 
-			s.Cache.StoreError(err, CacheDuration, ck)
+			s.Cache.StoreError(err, RdapCacheDuration, ck)
 
 			return nil, err
 		}
@@ -154,7 +154,7 @@ func (s *IPNetworkAdapter) Search(ctx context.Context, scope string, query strin
 		}
 
 		// Cache this network
-		s.IPCache.Store(network, ipNetwork, CacheDuration)
+		s.IPCache.Store(network, ipNetwork, RdapCacheDuration)
 	}
 
 	attributes, err := sdp.ToAttributesCustom(map[string]interface{}{
@@ -190,7 +190,7 @@ func (s *IPNetworkAdapter) Search(ctx context.Context, scope string, query strin
 	// Loop over the entities and create linkedin item queries
 	item.LinkedItemQueries = extractEntityLinks(ipNetwork.Entities)
 
-	s.Cache.StoreItem(item, CacheDuration, ck)
+	s.Cache.StoreItem(item, RdapCacheDuration, ck)
 
 	return []*sdp.Item{item}, nil
 }

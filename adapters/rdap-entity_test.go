@@ -1,4 +1,4 @@
-package internet
+package adapters
 
 import (
 	"context"
@@ -19,7 +19,7 @@ func TestEntityAdapterSearch(t *testing.T) {
 		"https://rdap.arin.net/registry/entity/HPINC-Z",
 	}
 
-	src := &EntityAdapter{
+	src := &RdapEntityAdapter{
 		ClientFac: func() *rdap.Client { return testRdapClient(t) },
 		Cache:     sdpcache.NewCache(),
 	}
