@@ -8,10 +8,6 @@ import (
 	"github.com/overmindtech/sdp-go"
 )
 
-// information about them, however it doesn't actually do any external lookups.
-// It mostly exists to ensure that IPs can be used as links between other, more
-// interesting things
-
 // IPAdapter struct on which all methods are registered
 type IPAdapter struct{}
 
@@ -152,7 +148,6 @@ func (bc *IPAdapter) Get(ctx context.Context, scope string, query string, ignore
 		Scope:           scope,
 		LinkedItemQueries: []*sdp.LinkedItemQuery{
 			// Reverse DNS
-
 			{
 				Query: &sdp.Query{
 					Type:   "dns",
@@ -168,7 +163,6 @@ func (bc *IPAdapter) Get(ctx context.Context, scope string, query string, ignore
 			},
 			{
 				// RDAP
-
 				Query: &sdp.Query{
 					Type:   "rdap-ip-network",
 					Method: sdp.QueryMethod_SEARCH,

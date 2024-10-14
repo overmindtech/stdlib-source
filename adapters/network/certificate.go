@@ -45,8 +45,6 @@ func toHex(b []byte) string {
 	return strings.ToUpper(s)
 }
 
-// and returns the details of that cert (or the bundle)
-
 // CertificateAdapter This adapter only responds to Search() requests. See the
 // docs for the Search() method for more info
 type CertificateAdapter struct{}
@@ -251,7 +249,6 @@ func (s *CertificateAdapter) Search(ctx context.Context, scope string, query str
 			// still work for linking as long as the referenced cert has been
 			// included in the bundle since the cache will correctly return the
 			// Get() request when it is run
-
 			item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
 				Query: &sdp.Query{
 					Type:   "certificate",

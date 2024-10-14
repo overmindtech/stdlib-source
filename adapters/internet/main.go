@@ -88,7 +88,6 @@ func extractEntityLinks(entities []rdap.Entity) []*sdp.LinkedItemQuery {
 		}
 
 		if selfLink != "" {
-
 			queries = append(queries, &sdp.LinkedItemQuery{
 				Query: &sdp.Query{
 					Type:   "rdap-entity",

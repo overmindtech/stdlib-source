@@ -165,11 +165,9 @@ func (s *NameserverAdapter) Search(ctx context.Context, scope string, query stri
 	}
 
 	// Link entities
-
 	item.LinkedItemQueries = append(item.LinkedItemQueries, extractEntityLinks(nameserver.Entities)...)
 
 	// Nameservers are resolvable in DNS too
-
 	item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
 		Query: &sdp.Query{
 			Type:   "dns",
@@ -189,7 +187,6 @@ func (s *NameserverAdapter) Search(ctx context.Context, scope string, query stri
 		allIPs := append(nameserver.IPAddresses.V4, nameserver.IPAddresses.V6...)
 
 		for _, ip := range allIPs {
-
 			item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
 				Query: &sdp.Query{
 					Type:   "ip",

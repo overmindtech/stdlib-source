@@ -15,8 +15,6 @@ import (
 	"github.com/overmindtech/sdpcache"
 )
 
-// to IP addresses rather than CNAMEs etc.
-
 // DNSAdapter struct on which all methods are registered
 type DNSAdapter struct {
 	// List of DNS server to use in order ot preference. They should be in the
@@ -367,7 +365,6 @@ func (d *DNSAdapter) MakeQuery(ctx context.Context, query string) ([]*sdp.Item, 
 				UniqueAttribute: UniqueAttribute,
 				Scope:           "global",
 				Attributes:      attrs,
-
 				LinkedItems: []*sdp.LinkedItem{
 					{
 						Item: &sdp.Reference{
@@ -378,7 +375,6 @@ func (d *DNSAdapter) MakeQuery(ctx context.Context, query string) ([]*sdp.Item, 
 					},
 				},
 				LinkedItemQueries: []*sdp.LinkedItemQuery{
-
 					{
 						Query: &sdp.Query{
 							Type:   "rdap-domain",

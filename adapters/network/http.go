@@ -18,10 +18,6 @@ import (
 
 const USER_AGENT_VERSION = "0.1"
 
-// HTTPS) endpoints by running a HEAD request against them. This means that we
-// get the headers, certificate, code etc. without needing to download the
-// entire page
-
 type HTTPAdapter struct {
 	cache       *sdpcache.Cache // The sdpcache of this adapter
 	cacheInitMu sync.Mutex      // Mutex to ensure cache is only initialised once
@@ -193,7 +189,6 @@ func (s *HTTPAdapter) Get(ctx context.Context, scope string, query string, ignor
 
 	if ip := net.ParseIP(req.URL.Hostname()); ip != nil {
 		// If the host is an IP, add a linked item to that IP address
-
 		item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
 			Query: &sdp.Query{
 				Type:   "ip",
@@ -209,7 +204,6 @@ func (s *HTTPAdapter) Get(ctx context.Context, scope string, query string, ignor
 		})
 	} else {
 		// If the host is not an ip, try to resolve via DNS
-
 		item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
 			Query: &sdp.Query{
 				Type:   "dns",
@@ -280,7 +274,6 @@ func (s *HTTPAdapter) Get(ctx context.Context, scope string, query string, ignor
 	// Detect redirect and add a linked item for the redirect target
 	if res.StatusCode >= 300 && res.StatusCode < 400 {
 		if loc := res.Header.Get("Location"); loc != "" {
-
 			item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
 				Query: &sdp.Query{
 					Type:   "http",

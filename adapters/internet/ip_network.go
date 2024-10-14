@@ -10,10 +10,6 @@ import (
 	"github.com/overmindtech/sdpcache"
 )
 
-// protocol. Only the `SEARCH` method should be used for this adapter since it's
-// not possible to list all IP networks, and they can't be queried by "handle"
-// which is the unique attribute
-
 type IPNetworkAdapter struct {
 	ClientFac func() *rdap.Client
 	Cache     *sdpcache.Cache

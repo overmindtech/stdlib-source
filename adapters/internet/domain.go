@@ -10,10 +10,6 @@ import (
 	"github.com/overmindtech/sdpcache"
 )
 
-// RDAP protocol. The `SEARCH` method should be used for this adapter since it's
-// not possible to list all domains, and they can't be queried by "handle" which
-// is the unique attribute
-
 type DomainAdapter struct {
 	ClientFac func() *rdap.Client
 	Cache     *sdpcache.Cache

@@ -10,9 +10,6 @@ import (
 	"github.com/overmindtech/sdpcache"
 )
 
-// represent the information of organizations, corporations, governments,
-// non-profits, clubs, individual persons, and informal groups of people
-
 type EntityAdapter struct {
 	ClientFac func() *rdap.Client
 	Cache     *sdpcache.Cache
