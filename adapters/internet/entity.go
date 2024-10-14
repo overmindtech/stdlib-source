@@ -10,12 +10,6 @@ import (
 	"github.com/overmindtech/sdpcache"
 )
 
-//go:generate docgen ../../docs-data
-// +overmind:type rdap-entity
-// +overmind:descriptiveType RDAP Entity
-// +overmind:get Get an entity by its handle. This method is discouraged as it's not reliable since entity bootstrapping isn't comprehensive
-// +overmind:search Search for an entity by its URL e.g. https://rdap.apnic.net/entity/AIC3-AP
-// +overmind:description Returns information from RDAP about Entities. These can
 // represent the information of organizations, corporations, governments,
 // non-profits, clubs, individual persons, and informal groups of people
 
@@ -194,7 +188,7 @@ func (s *EntityAdapter) runEntityRequest(ctx context.Context, query string, serv
 
 	// Link to related ASNs
 	for _, autnum := range entity.Autnums {
-		// +overmind:link rdap-asn
+
 		item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
 			Query: &sdp.Query{
 				Type:   "rdap-asn",

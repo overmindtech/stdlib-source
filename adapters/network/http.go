@@ -18,12 +18,6 @@ import (
 
 const USER_AGENT_VERSION = "0.1"
 
-//go:generate docgen ../../docs-data
-// +overmind:type http
-// +overmind:descriptiveType HTTP Endpoint
-// +overmind:get A HTTP endpoint to run a `HEAD` request against
-
-// +overmind:description The HTTP search gathers information about HTTP (or
 // HTTPS) endpoints by running a HEAD request against them. This means that we
 // get the headers, certificate, code etc. without needing to download the
 // entire page
@@ -199,7 +193,7 @@ func (s *HTTPAdapter) Get(ctx context.Context, scope string, query string, ignor
 
 	if ip := net.ParseIP(req.URL.Hostname()); ip != nil {
 		// If the host is an IP, add a linked item to that IP address
-		// +overmind:link ip
+
 		item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
 			Query: &sdp.Query{
 				Type:   "ip",
@@ -215,7 +209,7 @@ func (s *HTTPAdapter) Get(ctx context.Context, scope string, query string, ignor
 		})
 	} else {
 		// If the host is not an ip, try to resolve via DNS
-		// +overmind:link dns
+
 		item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
 			Query: &sdp.Query{
 				Type:   "dns",
@@ -267,7 +261,6 @@ func (s *HTTPAdapter) Get(ctx context.Context, scope string, query string, ignor
 				certs = append(certs, string(pem.EncodeToMemory(&block)))
 			}
 
-			// +overmind:link certificate
 			item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
 				Query: &sdp.Query{
 					Type:   "certificate",
@@ -287,7 +280,7 @@ func (s *HTTPAdapter) Get(ctx context.Context, scope string, query string, ignor
 	// Detect redirect and add a linked item for the redirect target
 	if res.StatusCode >= 300 && res.StatusCode < 400 {
 		if loc := res.Header.Get("Location"); loc != "" {
-			// +overmind:link http
+
 			item.LinkedItemQueries = append(item.LinkedItemQueries, &sdp.LinkedItemQuery{
 				Query: &sdp.Query{
 					Type:   "http",
