@@ -7,7 +7,6 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/openrdap/rdap"
 	"github.com/overmindtech/discovery"
 	"github.com/overmindtech/sdp-go"
@@ -25,21 +24,15 @@ var Metadata = sdp.AdapterMetadataList{}
 // Cache duration for RDAP adapters, these things shouldn't change very often
 const RdapCacheDuration = 30 * time.Minute
 
-func InitializeEngine(natsOptions auth.NATSOptions, name string, version string, sourceUUID uuid.UUID, heartbeatOptions *discovery.HeartbeatOptions, maxParallel int, reverseDNS bool) (*discovery.Engine, error) {
-	e, err := discovery.NewEngine()
+func InitializeEngine(ec *discovery.EngineConfig, natsOptions auth.NATSOptions, heartbeatOptions *discovery.HeartbeatOptions, reverseDNS bool) (*discovery.Engine, error) {
+	e, err := discovery.NewEngine(ec)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"error": err.Error(),
 		}).Fatal("Error initializing Engine")
 	}
-	e.Name = "stdlib-source"
-	e.NATSOptions = &natsOptions
-	e.MaxParallelExecutions = maxParallel
-	e.Name = name
-	e.UUID = sourceUUID
-	e.Version = version
-	e.Type = "stdlib"
 
+	e.NATSOptions = &natsOptions
 	if heartbeatOptions != nil {
 		heartbeatOptions.HealthCheck = func() error {
 			// This can't fail, it's always healthy
