@@ -23,8 +23,10 @@ jobs:
       - name: Vet
         run: go vet ./...
 
-      - name: Test
-        run: go test -v -race ./...
+      - name: find deadcode
+        run: |
+          go install golang.org/x/tools/cmd/deadcode@latest
+          deadcode . | tee out && [ ! -s out ]
 
       # get .golangci.yml from github.com/overmindtech/golangci-lint_config
       - name: Get .golangci.yml from github.com/overmindtech/golangci-lint_configs
@@ -37,6 +39,9 @@ jobs:
           version: v1.60.1
           args: --timeout 3m
           skip-cache: true # the linters require all code generation and dependecies to be present, but the cache implementation completely falls over when there is already existing content. See https://github.com/golangci/golangci-lint-action/issues/23, https://github.com/golangci/golangci-lint-action/issues/863, https://github.com/golangci/golangci-lint-action/issues/984
+
+      - name: Test
+        run: go test -v -race ./...
 
   scan-container:
     name: Scan Container
