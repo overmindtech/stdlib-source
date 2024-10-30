@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/getsentry/sentry-go"
-	"github.com/google/uuid"
 	"github.com/nats-io/jwt/v2"
 	"github.com/nats-io/nkeys"
 	"github.com/overmindtech/discovery"
@@ -50,17 +49,18 @@ var rootCmd = &cobra.Command{
 			}
 		}()
 
+		// get engine config
+		ec, err := discovery.EngineConfigFromViper("stdlib", ServiceVersion)
+		if err != nil {
+			log.WithError(err).Fatal("Could not get engine config from viper")
+		}
 		// Get srcman supplied config
 		natsServers := viper.GetStringSlice("nats-servers")
 		natsJWT := viper.GetString("nats-jwt")
 		natsNKeySeed := viper.GetString("nats-nkey-seed")
-		apiKey := viper.GetString("api-key")
-		app := viper.GetString("app")
-		maxParallel := viper.GetInt("max-parallel")
-		reverseDNS := viper.GetBool("reverse-dns")
 		natsConnectionName := viper.GetString("nats-connection-name")
-		sourceName := viper.GetString("source-name")
-		sourceUUIDString := viper.GetString("source-uuid")
+
+		reverseDNS := viper.GetBool("reverse-dns")
 
 		var natsNKeySeedLog string
 		var tokenClient auth.TokenClient
@@ -72,32 +72,19 @@ var rootCmd = &cobra.Command{
 		log.WithFields(log.Fields{
 			"nats-servers":         natsServers,
 			"nats-connection-name": natsConnectionName,
-			"max-parallel":         maxParallel,
+			"max-parallel":         ec.MaxParallelExecutions,
 			"nats-jwt":             natsJWT,
 			"nats-nkey-seed":       natsNKeySeedLog,
 			"reverse-dns":          reverseDNS,
-			"app":                  app,
-			"source-name":          sourceName,
-			"source-uuid":          sourceUUIDString,
+			"app":                  ec.App,
+			"source-name":          ec.SourceName,
+			"source-uuid":          ec.SourceUUID,
 		}).Info("Got config")
-
-		// Parse the UUID
-		var sourceUUID uuid.UUID
-		var err error
-		if sourceUUIDString == "" {
-			sourceUUID = uuid.New()
-		} else {
-			sourceUUID, err = uuid.Parse(sourceUUIDString)
-
-			if err != nil {
-				log.WithError(err).Fatal("Could not parse source UUID")
-			}
-		}
 
 		// Determine the required Overmind URLs
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-		oi, err := sdp.NewOvermindInstance(ctx, app)
+		oi, err := sdp.NewOvermindInstance(ctx, ec.App)
 		if err != nil {
 			log.WithError(err).Fatal("Could not determine Overmind instance URLs")
 		}
@@ -113,16 +100,16 @@ var rootCmd = &cobra.Command{
 					"error": err.Error(),
 				}).Fatal("Error creating token client with NATS JWT and NKey seed")
 			}
-		} else if apiKey != "" {
+		} else if ec.ApiKey != "" {
 			var err error
-			tokenClient, err = createAPITokenClient(apiKey, oi.ApiUrl.String())
+			tokenClient, err = createAPITokenClient(ec.ApiKey, oi.ApiUrl.String())
 			if err != nil {
 				log.WithFields(log.Fields{
 					"error": err.Error(),
 				}).Fatal("Error creating token client with API key")
 			}
 
-			tokenSource := auth.NewAPIKeyTokenSource(apiKey, oi.ApiUrl.String())
+			tokenSource := auth.NewAPIKeyTokenSource(ec.ApiKey, oi.ApiUrl.String())
 			transport := oauth2.Transport{
 				Source: tokenSource,
 				Base:   http.DefaultTransport,
@@ -157,12 +144,9 @@ var rootCmd = &cobra.Command{
 		}
 
 		e, err := adapters.InitializeEngine(
+			ec,
 			natsOptions,
-			sourceName,
-			ServiceVersion,
-			sourceUUID,
 			heartbeatOptions,
-			maxParallel,
 			reverseDNS,
 		)
 		if err != nil {
@@ -268,6 +252,8 @@ func init() {
 	cobra.CheckErr(viper.BindEnv("log", "STDLIB_LOG", "LOG")) // fallback to global config
 	rootCmd.PersistentFlags().Bool("reverse-dns", false, "If true, will perform reverse DNS lookups on IP addresses")
 
+	// engine config options
+	discovery.AddEngineFlags(rootCmd)
 	// Config required by all sources in order to connect to NATS. You shouldn't
 	// need to change these
 	rootCmd.PersistentFlags().StringArray("nats-servers", []string{"nats://localhost:4222", "nats://nats:4222"}, "A list of NATS servers to connect to.")
@@ -278,19 +264,8 @@ func init() {
 	cobra.CheckErr(viper.BindEnv("nats-jwt", "STDLIB_NATS_JWT", "NATS_JWT")) // fallback to srcman config
 	rootCmd.PersistentFlags().String("nats-nkey-seed", "", "The NKey seed which corresponds to the NATS JWT e.g. SUAFK6QUC...")
 	cobra.CheckErr(viper.BindEnv("nats-nkey-seed", "STDLIB_NATS_NKEY_SEED", "NATS_NKEY_SEED")) // fallback to srcman config
-	rootCmd.PersistentFlags().Int("max-parallel", 2_000, "Max number of requests to run in parallel")
-	cobra.CheckErr(viper.BindEnv("max-parallel", "STDLIB_MAX_PARALLEL", "MAX_PARALLEL")) // fallback to srcman config
 	rootCmd.PersistentFlags().String("service-port", "8089", "the port to listen on")
 	cobra.CheckErr(viper.BindEnv("service-port", "STDLIB_SERVICE_PORT", "SERVICE_PORT")) // fallback to srcman config
-	rootCmd.PersistentFlags().String("api-key", "", "The API key that should be used to authenticate, this can be used instead of NATS JWT and NKey seed")
-	cobra.CheckErr(viper.BindEnv("api-key", "STDLIB_API_KEY", "API_KEY")) // fallback to srcman config
-	rootCmd.PersistentFlags().String("app", "https://app.overmind.tech", "The URL of the Overmind app")
-	cobra.CheckErr(viper.BindEnv("app", "STDLIB_APP", "APP")) // fallback to srcman config
-	rootCmd.PersistentFlags().String("source-name", fmt.Sprintf("stdlib-source-%v", hostname), "The name of the source")
-	cobra.CheckErr(viper.BindEnv("source-name", "STDLIB_SOURCE_NAME", "SOURCE_NAME")) // fallback to srcman config
-	rootCmd.PersistentFlags().String("source-uuid", "", "The UUID of the source, is this is blank it will be auto-generated. This is used in heartbeats and shouldn't be supplied usually")
-	cobra.CheckErr(viper.BindEnv("source-uuid", "STDLIB_SOURCE_UUID", "SOURCE_UUID")) // fallback to srcman config
-
 	// tracing
 	rootCmd.PersistentFlags().String("honeycomb-api-key", "", "If specified, configures opentelemetry libraries to submit traces to honeycomb")
 	cobra.CheckErr(viper.BindEnv("honeycomb-api-key", "STDLIB_HONEYCOMB_API_KEY", "HONEYCOMB_API_KEY")) // fallback to global config
