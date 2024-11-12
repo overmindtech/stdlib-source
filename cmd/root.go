@@ -105,6 +105,9 @@ var rootCmd = &cobra.Command{
 					"error": err.Error(),
 				}).Fatal("Error creating token client with NATS JWT and NKey seed")
 			}
+		} else if allow, exists := os.LookupEnv("ALLOW_UNAUTHENTICATED"); exists && allow == "true" {
+			// this is a special case for testing the api-server
+			log.Debug("Using unauthenticated mode as ALLOW_UNAUTHENTICATED is set")
 		} else {
 			log.Fatal("No authentication method was provided")
 		}
