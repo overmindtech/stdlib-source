@@ -17,13 +17,10 @@ import (
 	"github.com/overmindtech/discovery"
 	"github.com/overmindtech/sdp-go"
 	"github.com/overmindtech/sdp-go/auth"
-	"github.com/overmindtech/sdp-go/sdpconnect"
 	"github.com/overmindtech/stdlib-source/adapters"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
-	"golang.org/x/oauth2"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -50,7 +47,7 @@ var rootCmd = &cobra.Command{
 		}()
 
 		// get engine config
-		ec, err := discovery.EngineConfigFromViper("stdlib", ServiceVersion)
+		engineConfig, err := discovery.EngineConfigFromViper("stdlib", ServiceVersion)
 		if err != nil {
 			log.WithError(err).Fatal("Could not get engine config from viper")
 		}
@@ -59,7 +56,6 @@ var rootCmd = &cobra.Command{
 		natsJWT := viper.GetString("nats-jwt")
 		natsNKeySeed := viper.GetString("nats-nkey-seed")
 		natsConnectionName := viper.GetString("nats-connection-name")
-
 		reverseDNS := viper.GetBool("reverse-dns")
 
 		var natsNKeySeedLog string
@@ -72,27 +68,36 @@ var rootCmd = &cobra.Command{
 		log.WithFields(log.Fields{
 			"nats-servers":         natsServers,
 			"nats-connection-name": natsConnectionName,
-			"max-parallel":         ec.MaxParallelExecutions,
+			"max-parallel":         engineConfig.MaxParallelExecutions,
 			"nats-jwt":             natsJWT,
 			"nats-nkey-seed":       natsNKeySeedLog,
 			"reverse-dns":          reverseDNS,
-			"app":                  ec.App,
-			"source-name":          ec.SourceName,
-			"source-uuid":          ec.SourceUUID,
+			"app":                  engineConfig.App,
+			"source-name":          engineConfig.SourceName,
+			"source-uuid":          engineConfig.SourceUUID,
 		}).Info("Got config")
-
-		// Determine the required Overmind URLs
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-		oi, err := sdp.NewOvermindInstance(ctx, ec.App)
-		if err != nil {
-			log.WithError(err).Fatal("Could not determine Overmind instance URLs")
-		}
 
 		// Validate the auth params and create a token client if we are using
 		// auth
 		var heartbeatOptions *discovery.HeartbeatOptions
-		if natsJWT != "" && natsNKeySeed != "" {
+		if engineConfig.ApiKey != "" || engineConfig.SourceAccessToken != "" {
+			// Determine the required Overmind URLs
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+			oi, err := sdp.NewOvermindInstance(ctx, engineConfig.App)
+			if err != nil {
+				log.WithError(err).Fatal("Could not determine Overmind instance URLs")
+			}
+			tokenClient, heartbeatOptions, err = engineConfig.CreateClients(oi)
+			if err != nil {
+				sentry.CaptureException(err)
+				log.WithError(err).Fatal("could not create auth clients")
+			}
+			heartbeatOptions.HealthCheck = func() error {
+				// There isn't anything to check here, we just return nil
+				return nil
+			}
+		} else if natsJWT != "" && natsNKeySeed != "" {
 			var err error
 			tokenClient, err = createTokenClient(natsJWT, natsNKeySeed)
 			if err != nil {
@@ -100,35 +105,8 @@ var rootCmd = &cobra.Command{
 					"error": err.Error(),
 				}).Fatal("Error creating token client with NATS JWT and NKey seed")
 			}
-		} else if ec.ApiKey != "" {
-			var err error
-			tokenClient, err = createAPITokenClient(ec.ApiKey, oi.ApiUrl.String())
-			if err != nil {
-				log.WithFields(log.Fields{
-					"error": err.Error(),
-				}).Fatal("Error creating token client with API key")
-			}
-
-			tokenSource := auth.NewAPIKeyTokenSource(ec.ApiKey, oi.ApiUrl.String())
-			transport := oauth2.Transport{
-				Source: tokenSource,
-				Base:   http.DefaultTransport,
-			}
-			authenticatedClient := http.Client{
-				Transport: otelhttp.NewTransport(&transport),
-			}
-
-			heartbeatOptions = &discovery.HeartbeatOptions{
-				ManagementClient: sdpconnect.NewManagementServiceClient(
-					&authenticatedClient,
-					oi.ApiUrl.String(),
-				),
-				Frequency: time.Second * 30,
-				HealthCheck: func() error {
-					// There isn't anything to check here, we just return nil
-					return nil
-				},
-			}
+		} else {
+			log.Fatal("No authentication method was provided")
 		}
 
 		natsOptions := auth.NATSOptions{
@@ -144,7 +122,7 @@ var rootCmd = &cobra.Command{
 		}
 
 		e, err := adapters.InitializeEngine(
-			ec,
+			engineConfig,
 			natsOptions,
 			heartbeatOptions,
 			reverseDNS,
@@ -364,14 +342,6 @@ func createTokenClient(natsJWT string, natsNKeySeed string) (auth.TokenClient, e
 	}
 
 	return auth.NewBasicTokenClient(natsJWT, kp), nil
-}
-
-func createAPITokenClient(apiKey string, overmindURL string) (auth.TokenClient, error) {
-	if apiKey == "" {
-		return nil, errors.New("api-key was blank. This is required when using API key authentication")
-	}
-
-	return auth.NewAPIKeyClient(overmindURL, apiKey)
 }
 
 // TerminationLogHook A hook that logs fatal errors to the termination log
