@@ -221,12 +221,6 @@ func init() {
 	// will be global for your application.
 	var logLevel string
 
-	// add the documentation subcommand
-	hostname, err := os.Hostname()
-	if err != nil {
-		log.WithError(err).Fatal("Could not determine hostname")
-	}
-
 	// General config options
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "/etc/srcman/config/source.yaml", "config file path")
 	rootCmd.PersistentFlags().StringVar(&logLevel, "log", "info", "Set the log level. Valid values: panic, fatal, error, warn, info, debug, trace")
@@ -235,16 +229,7 @@ func init() {
 
 	// engine config options
 	discovery.AddEngineFlags(rootCmd)
-	// Config required by all sources in order to connect to NATS. You shouldn't
-	// need to change these
-	rootCmd.PersistentFlags().StringArray("nats-servers", []string{"nats://localhost:4222", "nats://nats:4222"}, "A list of NATS servers to connect to.")
-	cobra.CheckErr(viper.BindEnv("nats-servers", "STDLIB_NATS_SERVERS", "NATS_SERVERS")) // fallback to srcman config
-	rootCmd.PersistentFlags().String("nats-connection-name", hostname, "The name that the source should use to connect to NATS")
-	cobra.CheckErr(viper.BindEnv("nats-connection-name", "STDLIB_NATS_CONNECTION_NAME", "NATS_CONNECTION_NAME")) // fallback to srcman config
-	rootCmd.PersistentFlags().String("nats-jwt", "", "The JWT token that should be used to authenticate to NATS, provided in raw format e.g. eyJ0eXAiOiJKV1Q...")
-	cobra.CheckErr(viper.BindEnv("nats-jwt", "STDLIB_NATS_JWT", "NATS_JWT")) // fallback to srcman config
-	rootCmd.PersistentFlags().String("nats-nkey-seed", "", "The NKey seed which corresponds to the NATS JWT e.g. SUAFK6QUC...")
-	cobra.CheckErr(viper.BindEnv("nats-nkey-seed", "STDLIB_NATS_NKEY_SEED", "NATS_NKEY_SEED")) // fallback to srcman config
+
 	rootCmd.PersistentFlags().String("service-port", "8089", "the port to listen on")
 	cobra.CheckErr(viper.BindEnv("service-port", "STDLIB_SERVICE_PORT", "SERVICE_PORT")) // fallback to srcman config
 	// tracing
@@ -255,7 +240,7 @@ func init() {
 	rootCmd.PersistentFlags().String("run-mode", "release", "Set the run mode for this service, 'release', 'debug' or 'test'. Defaults to 'release'.")
 
 	// Bind these to viper
-	err = viper.BindPFlags(rootCmd.PersistentFlags())
+	err := viper.BindPFlags(rootCmd.PersistentFlags())
 	if err != nil {
 		log.WithFields(log.Fields{
 			"error": err,

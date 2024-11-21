@@ -32,7 +32,7 @@ func InitializeEngine(ec *discovery.EngineConfig, natsOptions auth.NATSOptions, 
 		}).Fatal("Error initializing Engine")
 	}
 
-	e.NATSOptions = &natsOptions
+	e.EngineConfig.NATSOptions = &natsOptions
 	if heartbeatOptions != nil {
 		heartbeatOptions.HealthCheck = func() error {
 			// This can't fail, it's always healthy
