@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -12,11 +10,7 @@ import (
 	"time"
 
 	"github.com/getsentry/sentry-go"
-	"github.com/nats-io/jwt/v2"
-	"github.com/nats-io/nkeys"
 	"github.com/overmindtech/discovery"
-	"github.com/overmindtech/sdp-go"
-	"github.com/overmindtech/sdp-go/auth"
 	"github.com/overmindtech/stdlib-source/adapters"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -51,57 +45,22 @@ var rootCmd = &cobra.Command{
 		if err != nil {
 			log.WithError(err).Fatal("Could not get engine config from viper")
 		}
-		// Get srcman supplied config
 		reverseDNS := viper.GetBool("reverse-dns")
 
-		var tokenClient auth.TokenClient
-
 		log.WithFields(log.Fields{
-			"max-parallel": engineConfig.MaxParallelExecutions,
-			"reverse-dns":  reverseDNS,
-			"app":          engineConfig.App,
-			"source-name":  engineConfig.SourceName,
-			"source-uuid":  engineConfig.SourceUUID,
+			"reverse-dns": reverseDNS,
 		}).Info("Got config")
 
 		// Validate the auth params and create a token client if we are using
 		// auth
-		var heartbeatOptions *discovery.HeartbeatOptions
-		if engineConfig.ApiKey != "" || engineConfig.SourceAccessToken != "" {
-			// Determine the required Overmind URLs
-			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-			defer cancel()
-			oi, err := sdp.NewOvermindInstance(ctx, engineConfig.App)
-			if err != nil {
-				log.WithError(err).Fatal("Could not determine Overmind instance URLs")
-			}
-			tokenClient, heartbeatOptions, err = engineConfig.CreateClients(oi)
-			if err != nil {
-				sentry.CaptureException(err)
-				log.WithError(err).Fatal("could not create auth clients")
-			}
-			heartbeatOptions.HealthCheck = func() error {
-				// There isn't anything to check here, we just return nil
-				return nil
-			}
-		} else if natsJWT != "" && natsNKeySeed != "" {
-			var err error
-			tokenClient, err = createTokenClient(natsJWT, natsNKeySeed)
-			if err != nil {
-				log.WithFields(log.Fields{
-					"error": err.Error(),
-				}).Fatal("Error creating token client with NATS JWT and NKey seed")
-			}
-		} else if allow, exists := os.LookupEnv("ALLOW_UNAUTHENTICATED"); exists && allow == "true" {
-			// this is a special case for testing the api-server
-			log.Debug("Using unauthenticated mode as ALLOW_UNAUTHENTICATED is set")
-		} else {
-			log.Fatal("No authentication method was provided")
+		err = engineConfig.CreateClients()
+		if err != nil {
+			sentry.CaptureException(err)
+			log.WithError(err).Fatal("could not create auth clients")
 		}
 
 		e, err := adapters.InitializeEngine(
 			engineConfig,
-			heartbeatOptions,
 			reverseDNS,
 		)
 		if err != nil {
@@ -279,31 +238,6 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err == nil {
 		log.Infof("Using config file: %v", viper.ConfigFileUsed())
 	}
-}
-
-// createTokenClient Creates a basic token client that will authenticate to NATS
-// using the given values
-func createTokenClient(natsJWT string, natsNKeySeed string) (auth.TokenClient, error) {
-	var kp nkeys.KeyPair
-	var err error
-
-	if natsJWT == "" {
-		return nil, errors.New("nats-jwt was blank. This is required when using authentication")
-	}
-
-	if natsNKeySeed == "" {
-		return nil, errors.New("nats-nkey-seed was blank. This is required when using authentication")
-	}
-
-	if _, err = jwt.DecodeUserClaims(natsJWT); err != nil {
-		return nil, fmt.Errorf("could not parse nats-jwt: %w", err)
-	}
-
-	if kp, err = nkeys.FromSeed([]byte(natsNKeySeed)); err != nil {
-		return nil, fmt.Errorf("could not parse nats-nkey-seed: %w", err)
-	}
-
-	return auth.NewBasicTokenClient(natsJWT, kp), nil
 }
 
 // TerminationLogHook A hook that logs fatal errors to the termination log

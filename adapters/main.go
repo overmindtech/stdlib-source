@@ -23,7 +23,7 @@ var Metadata = sdp.AdapterMetadataList{}
 // Cache duration for RDAP adapters, these things shouldn't change very often
 const RdapCacheDuration = 30 * time.Minute
 
-func InitializeEngine(ec *discovery.EngineConfig, heartbeatOptions *discovery.HeartbeatOptions, reverseDNS bool) (*discovery.Engine, error) {
+func InitializeEngine(ec *discovery.EngineConfig, reverseDNS bool) (*discovery.Engine, error) {
 	e, err := discovery.NewEngine(ec)
 	if err != nil {
 		log.WithFields(log.Fields{
@@ -31,12 +31,11 @@ func InitializeEngine(ec *discovery.EngineConfig, heartbeatOptions *discovery.He
 		}).Fatal("Error initializing Engine")
 	}
 
-	if heartbeatOptions != nil {
-		heartbeatOptions.HealthCheck = func() error {
+	if ec.HeartbeatOptions != nil {
+		ec.HeartbeatOptions.HealthCheck = func() error {
 			// This can't fail, it's always healthy
 			return nil
 		}
-		e.HeartbeatOptions = heartbeatOptions
 	}
 
 	// Add the base adapters
