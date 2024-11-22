@@ -52,29 +52,16 @@ var rootCmd = &cobra.Command{
 			log.WithError(err).Fatal("Could not get engine config from viper")
 		}
 		// Get srcman supplied config
-		natsServers := viper.GetStringSlice("nats-servers")
-		natsJWT := viper.GetString("nats-jwt")
-		natsNKeySeed := viper.GetString("nats-nkey-seed")
-		natsConnectionName := viper.GetString("nats-connection-name")
 		reverseDNS := viper.GetBool("reverse-dns")
 
-		var natsNKeySeedLog string
 		var tokenClient auth.TokenClient
 
-		if natsNKeySeed != "" {
-			natsNKeySeedLog = "[REDACTED]"
-		}
-
 		log.WithFields(log.Fields{
-			"nats-servers":         natsServers,
-			"nats-connection-name": natsConnectionName,
-			"max-parallel":         engineConfig.MaxParallelExecutions,
-			"nats-jwt":             natsJWT,
-			"nats-nkey-seed":       natsNKeySeedLog,
-			"reverse-dns":          reverseDNS,
-			"app":                  engineConfig.App,
-			"source-name":          engineConfig.SourceName,
-			"source-uuid":          engineConfig.SourceUUID,
+			"max-parallel": engineConfig.MaxParallelExecutions,
+			"reverse-dns":  reverseDNS,
+			"app":          engineConfig.App,
+			"source-name":  engineConfig.SourceName,
+			"source-uuid":  engineConfig.SourceUUID,
 		}).Info("Got config")
 
 		// Validate the auth params and create a token client if we are using
@@ -112,21 +99,8 @@ var rootCmd = &cobra.Command{
 			log.Fatal("No authentication method was provided")
 		}
 
-		natsOptions := auth.NATSOptions{
-			NumRetries:        -1,
-			RetryDelay:        5 * time.Second,
-			Servers:           natsServers,
-			ConnectionName:    natsConnectionName,
-			ConnectionTimeout: (10 * time.Second), // TODO: Make configurable
-			MaxReconnects:     -1,
-			ReconnectWait:     1 * time.Second,
-			ReconnectJitter:   1 * time.Second,
-			TokenClient:       tokenClient,
-		}
-
 		e, err := adapters.InitializeEngine(
 			engineConfig,
-			natsOptions,
 			heartbeatOptions,
 			reverseDNS,
 		)
