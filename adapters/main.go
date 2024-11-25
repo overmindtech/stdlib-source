@@ -10,7 +10,6 @@ import (
 	"github.com/openrdap/rdap"
 	"github.com/overmindtech/discovery"
 	"github.com/overmindtech/sdp-go"
-	"github.com/overmindtech/sdp-go/auth"
 	"github.com/overmindtech/sdpcache"
 	"github.com/overmindtech/stdlib-source/adapters/test"
 	log "github.com/sirupsen/logrus"
@@ -24,7 +23,7 @@ var Metadata = sdp.AdapterMetadataList{}
 // Cache duration for RDAP adapters, these things shouldn't change very often
 const RdapCacheDuration = 30 * time.Minute
 
-func InitializeEngine(ec *discovery.EngineConfig, natsOptions auth.NATSOptions, heartbeatOptions *discovery.HeartbeatOptions, reverseDNS bool) (*discovery.Engine, error) {
+func InitializeEngine(ec *discovery.EngineConfig, reverseDNS bool) (*discovery.Engine, error) {
 	e, err := discovery.NewEngine(ec)
 	if err != nil {
 		log.WithFields(log.Fields{
@@ -32,13 +31,11 @@ func InitializeEngine(ec *discovery.EngineConfig, natsOptions auth.NATSOptions, 
 		}).Fatal("Error initializing Engine")
 	}
 
-	e.NATSOptions = &natsOptions
-	if heartbeatOptions != nil {
-		heartbeatOptions.HealthCheck = func() error {
+	if ec.HeartbeatOptions != nil {
+		ec.HeartbeatOptions.HealthCheck = func() error {
 			// This can't fail, it's always healthy
 			return nil
 		}
-		e.HeartbeatOptions = heartbeatOptions
 	}
 
 	// Add the base adapters
