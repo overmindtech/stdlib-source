@@ -11,7 +11,7 @@ require (
 	github.com/nats-io/nkeys v0.4.8 // indirect
 	github.com/openrdap/rdap v0.9.2-0.20240517203139-eb57b3a8dedd
 	github.com/overmindtech/discovery v0.32.0
-	github.com/overmindtech/sdp-go v0.101.4
+	github.com/overmindtech/sdp-go v0.102.0
 	github.com/overmindtech/sdpcache v1.6.4
 	github.com/sirupsen/logrus v1.9.3
 	github.com/spf13/cobra v1.8.1
