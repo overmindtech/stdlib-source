@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -72,11 +74,35 @@ var rootCmd = &cobra.Command{
 		healthCheckPort := viper.GetString("service-port")
 		healthCheckPath := "/healthz"
 
+		healthCheckDNSAdapter := adapters.DNSAdapter{}
+
+		// Set up the health check
+		healthCheck := func() error {
+			if !e.IsNATSConnected() {
+				return errors.New("NATS not connected")
+			}
+
+			// We have seen some issues with DNS lookups within kube where the
+			// stdlib container will just start timing out on DNS requests. We
+			// should check that the DNS adapter is working so that the
+			// container can die if this happens to it
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			_, err := healthCheckDNSAdapter.Search(ctx, "global", "www.google.com", true)
+			if err != nil {
+				return fmt.Errorf("test dns lookup failed: %w", err)
+			}
+
+			return nil
+		}
+
+		e.EngineConfig.HeartbeatOptions.HealthCheck = healthCheck
 		http.HandleFunc(healthCheckPath, func(rw http.ResponseWriter, r *http.Request) {
-			if e.IsNATSConnected() {
+			err := healthCheck()
+			if err == nil {
 				fmt.Fprint(rw, "ok")
 			} else {
-				http.Error(rw, "NATS not connected", http.StatusInternalServerError)
+				http.Error(rw, err.Error(), http.StatusInternalServerError)
 			}
 		})
 
