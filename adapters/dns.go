@@ -10,6 +10,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	"github.com/miekg/dns"
 	"github.com/overmindtech/sdp-go"
 	"github.com/overmindtech/sdpcache"
@@ -47,6 +48,7 @@ func (s *DNSAdapter) Cache() *sdpcache.Cache {
 }
 
 var DefaultServers = []string{
+	"169.254.169.253:53",
 	"1.1.1.1:53",
 	"8.8.8.8:53",
 	"8.8.4.4:53",
@@ -56,26 +58,6 @@ const ItemType = "dns"
 const UniqueAttribute = "name"
 
 var ErrNoServersAvailable = errors.New("no dns servers available")
-
-// getActiveServer
-func (d *DNSAdapter) getActiveServer(ctx context.Context) (string, error) {
-	if len(d.Servers) == 0 {
-		d.Servers = DefaultServers
-	}
-
-	for _, server := range d.Servers {
-		conn, err := d.client.DialContext(ctx, server)
-
-		if err != nil {
-			continue
-		}
-
-		defer conn.Close()
-		return server, nil
-	}
-
-	return "", ErrNoServersAvailable
-}
 
 // Type is the type of items that this returns
 func (d *DNSAdapter) Type() string {
@@ -90,6 +72,13 @@ func (d *DNSAdapter) Name() string {
 // Weighting of duplicate adapters
 func (d *DNSAdapter) Weight() int {
 	return 100
+}
+
+func (d *DNSAdapter) GetServers() []string {
+	if len(d.Servers) == 0 {
+		return DefaultServers
+	}
+	return d.Servers
 }
 
 func (d *DNSAdapter) Metadata() *sdp.AdapterMetadata {
@@ -221,15 +210,67 @@ func (d *DNSAdapter) Search(ctx context.Context, scope string, query string, ign
 	return items, nil
 }
 
-// MakeReverseQuery Makes a reverse DNS query, then forward DNS queries for all results
-func (d *DNSAdapter) MakeReverseQuery(ctx context.Context, query string) ([]*sdp.Item, error) {
-	arpa, err := dns.ReverseAddr(query)
+// retryDNSQuery handles retrying DNS queries with backoff and server rotation
+func (d *DNSAdapter) retryDNSQuery(ctx context.Context, queryFn func(context.Context, string) ([]*sdp.Item, error)) ([]*sdp.Item, error) {
+	b := backoff.NewExponentialBackOff()
+	b.InitialInterval = 100 * time.Millisecond
+	b.MaxInterval = 500 * time.Millisecond
+	b.MaxElapsedTime = 2 * time.Second
 
+	var items []*sdp.Item
+	var i int
+
+	operation := func() error {
+		if i >= len(d.GetServers()) {
+			i = 0
+		}
+
+		ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+		defer cancel()
+
+		server := d.GetServers()[i]
+
+		var err error
+		items, err = queryFn(ctx, server)
+
+		if err != nil {
+			i++ // Move to next server on error
+
+			if errors.Is(err, context.DeadlineExceeded) ||
+				strings.Contains(err.Error(), "timeout") ||
+				strings.Contains(err.Error(), "temporary failure") {
+				return err // Retry on timeout
+			}
+			return backoff.Permanent(err)
+		}
+
+		return nil
+	}
+
+	err := backoff.Retry(operation, b)
 	if err != nil {
 		return nil, err
 	}
 
-	server, err := d.getActiveServer(ctx)
+	return items, nil
+}
+
+// Updated MakeQuery
+func (d *DNSAdapter) MakeQuery(ctx context.Context, query string) ([]*sdp.Item, error) {
+	return d.retryDNSQuery(ctx, func(ctx context.Context, server string) ([]*sdp.Item, error) {
+		return d.makeQueryImpl(ctx, query, server)
+	})
+}
+
+// Updated MakeReverseQuery
+func (d *DNSAdapter) MakeReverseQuery(ctx context.Context, query string) ([]*sdp.Item, error) {
+	return d.retryDNSQuery(ctx, func(ctx context.Context, server string) ([]*sdp.Item, error) {
+		return d.makeReverseQueryImpl(ctx, query, server)
+	})
+}
+
+func (d *DNSAdapter) makeReverseQueryImpl(ctx context.Context, query string, server string) ([]*sdp.Item, error) {
+	arpa, err := dns.ReverseAddr(query)
 
 	if err != nil {
 		return nil, err
@@ -282,14 +323,7 @@ func trimDnsSuffix(name string) string {
 	return name
 }
 
-// MakeQuery Actually makes A and AAAA queries for a given DNS entry
-func (d *DNSAdapter) MakeQuery(ctx context.Context, query string) ([]*sdp.Item, error) {
-	server, err := d.getActiveServer(ctx)
-
-	if err != nil {
-		return nil, err
-	}
-
+func (d *DNSAdapter) makeQueryImpl(ctx context.Context, query string, server string) ([]*sdp.Item, error) {
 	// Create the query
 	msg := dns.Msg{
 		Question: []dns.Question{
