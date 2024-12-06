@@ -78,7 +78,7 @@ var rootCmd = &cobra.Command{
 		// Set up the health check
 		healthCheck := func() error {
 			if !e.IsNATSConnected() {
-				return fmt.Errorf("NATS not connected")
+				return errors.New("NATS not connected")
 			}
 
 			// We have seen some issues with DNS lookups within kube where the
@@ -89,7 +89,7 @@ var rootCmd = &cobra.Command{
 			defer cancel()
 			_, err := healthCheckDNSAdapter.Search(ctx, "global", "www.google.com", true)
 			if err != nil {
-				return err
+				return fmt.Errorf("test dns lookup failed: %w", err)
 			}
 
 			return nil

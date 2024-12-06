@@ -48,7 +48,7 @@ func (s *DNSAdapter) Cache() *sdpcache.Cache {
 }
 
 var DefaultServers = []string{
-	"169.254.169.253:53",
+	"169.254.169.253:53", // Route 53 default resolver. See https://docs.aws.amazon.com/vpc/latest/userguide/AmazonDNS-concepts.html#AmazonDNS
 	"1.1.1.1:53",
 	"8.8.8.8:53",
 	"8.8.4.4:53",
@@ -215,7 +215,7 @@ func (d *DNSAdapter) retryDNSQuery(ctx context.Context, queryFn func(context.Con
 	b := backoff.NewExponentialBackOff()
 	b.InitialInterval = 100 * time.Millisecond
 	b.MaxInterval = 500 * time.Millisecond
-	b.MaxElapsedTime = 2 * time.Second
+	b.MaxElapsedTime = 30 * time.Second
 
 	var items []*sdp.Item
 	var i int
@@ -232,7 +232,6 @@ func (d *DNSAdapter) retryDNSQuery(ctx context.Context, queryFn func(context.Con
 
 		var err error
 		items, err = queryFn(ctx, server)
-
 		if err != nil {
 			i++ // Move to next server on error
 
@@ -248,6 +247,10 @@ func (d *DNSAdapter) retryDNSQuery(ctx context.Context, queryFn func(context.Con
 	}
 
 	err := backoff.Retry(operation, b)
+  span := trace.SpanFromContext(ctx)
+  span.SetAttributes(
+    attributes.String("ovm.dns.server", server)
+  )
 	if err != nil {
 		return nil, err
 	}
