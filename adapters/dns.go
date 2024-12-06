@@ -14,6 +14,8 @@ import (
 	"github.com/miekg/dns"
 	"github.com/overmindtech/sdp-go"
 	"github.com/overmindtech/sdpcache"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/trace"
 )
 
 // DNSAdapter struct on which all methods are registered
@@ -219,6 +221,7 @@ func (d *DNSAdapter) retryDNSQuery(ctx context.Context, queryFn func(context.Con
 
 	var items []*sdp.Item
 	var i int
+	var server string
 
 	operation := func() error {
 		if i >= len(d.GetServers()) {
@@ -228,7 +231,7 @@ func (d *DNSAdapter) retryDNSQuery(ctx context.Context, queryFn func(context.Con
 		ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 		defer cancel()
 
-		server := d.GetServers()[i]
+		server = d.GetServers()[i]
 
 		var err error
 		items, err = queryFn(ctx, server)
@@ -247,10 +250,10 @@ func (d *DNSAdapter) retryDNSQuery(ctx context.Context, queryFn func(context.Con
 	}
 
 	err := backoff.Retry(operation, b)
-  span := trace.SpanFromContext(ctx)
-  span.SetAttributes(
-    attributes.String("ovm.dns.server", server)
-  )
+	span := trace.SpanFromContext(ctx)
+	span.SetAttributes(
+		attribute.String("ovm.dns.server", server),
+	)
 	if err != nil {
 		return nil, err
 	}
