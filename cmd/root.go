@@ -96,7 +96,9 @@ var rootCmd = &cobra.Command{
 			return nil
 		}
 
-		e.EngineConfig.HeartbeatOptions.HealthCheck = healthCheck
+		if e.EngineConfig.HeartbeatOptions != nil {
+			e.EngineConfig.HeartbeatOptions.HealthCheck = healthCheck
+		}
 		http.HandleFunc(healthCheckPath, func(rw http.ResponseWriter, r *http.Request) {
 			err := healthCheck()
 			if err == nil {
@@ -163,7 +165,7 @@ var rootCmd = &cobra.Command{
 	},
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
+// Execute adds all child commands to the root command and sets flags appropriately.add
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	if err := rootCmd.Execute(); err != nil {

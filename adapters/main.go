@@ -75,9 +75,9 @@ func InitializeEngine(ec *discovery.EngineConfig, reverseDNS bool) (*discovery.E
 		},
 	}
 
-	e.AddAdapters(adapters...)
+	err = e.AddAdapters(adapters...)
 
-	return e, nil
+	return e, err
 }
 
 // newRdapClient Creates a new RDAP client using otelhttp.DefaultClient. rdap is suspected to not be thread safe, so we create a new client for each request
